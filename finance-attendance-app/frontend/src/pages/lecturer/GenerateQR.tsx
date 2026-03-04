@@ -1,6 +1,7 @@
 import Navbar from "../../components/Navbar";
 import axios from "../../api/axios";
 import { useState } from "react";
+
 import { QRCodeCanvas } from "qrcode.react";
 
 export default function GenerateQR(){
