@@ -1,0 +1,464 @@
+:root {
+  --lasiru-bg: radial-gradient(circle at top left, #022c22 0, #020617 45%, #020617 100%);
+  --lasiru-card-bg: rgba(10, 23, 20, 0.97);
+  --lasiru-border-subtle: rgba(34, 197, 94, 0.18);
+  --lasiru-primary: #16a34a; /* dark green */
+  --lasiru-primary-soft: rgba(34, 197, 94, 0.1);
+  --lasiru-accent: #22c55e;
+  --lasiru-accent-soft: rgba(22, 163, 74, 0.8);
+  --lasiru-text-main: #e5f6ec;
+  --lasiru-text-muted: #9ca3af;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  place-items: stretch;
+  background: var(--lasiru-bg);
+  color: var(--lasiru-text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    sans-serif;
+}
+
+.lasiru-auth-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.lasiru-auth-card {
+  width: 100%;
+  max-width: 1200px;
+  height: min(640px, 92vh);
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  gap: 0;
+  border-radius: 24px;
+  background: linear-gradient(
+      140deg,
+      rgba(15, 118, 110, 0.32),
+      rgba(6, 95, 70, 0.96)
+    ),
+    radial-gradient(circle at top, rgba(22, 163, 74, 0.5), transparent 60%);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 30px 70px rgba(6, 78, 59, 0.9);
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(26px);
+}
+
+.lasiru-auth-page::before,
+.lasiru-auth-page::after {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  background: radial-gradient(circle at center, rgba(16, 185, 129, 0.55), transparent 60%);
+  opacity: 0.25;
+  filter: blur(8px);
+  mix-blend-mode: screen;
+  animation: lasiru-orb 32s linear infinite;
+}
+
+.lasiru-auth-page::before {
+  top: -120px;
+  left: -120px;
+}
+
+.lasiru-auth-page::after {
+  bottom: -140px;
+  right: -100px;
+  animation-duration: 38s;
+  animation-direction: reverse;
+}
+
+.lasiru-auth-card.reverse {
+  direction: rtl;
+}
+
+.lasiru-auth-card.reverse > * {
+  direction: ltr;
+}
+
+.lasiru-auth-illustration {
+  position: relative;
+  padding: 2.2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.lasiru-auth-graphic {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto 1.7rem;
+  aspect-ratio: 13 / 11;
+  filter: drop-shadow(0 24px 40px rgba(6, 78, 59, 0.85));
+}
+
+.lasiru-auth-graphic-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lasiru-auth-gradient-orbit {
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(16, 185, 129, 0.26), transparent 55%),
+    radial-gradient(circle at 90% 10%, rgba(45, 212, 191, 0.25), transparent 55%),
+    radial-gradient(circle at 20% 100%, rgba(21, 128, 61, 0.3), transparent 55%);
+  opacity: 0.8;
+  filter: blur(12px);
+  transform: translate3d(0, 0, 0);
+  animation: lasiru-orbit 26s linear infinite alternate;
+  z-index: -2;
+}
+
+.lasiru-auth-floating-card {
+  position: relative;
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  padding: 1.75rem 1.9rem;
+  border-radius: 22px;
+  background: linear-gradient(
+    135deg,
+    rgba(6, 78, 59, 0.96),
+    rgba(15, 46, 38, 0.85)
+  );
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(18px);
+  animation: lasiru-float 9s ease-in-out infinite;
+}
+
+.lasiru-auth-floating-card h2 {
+  font-size: 1.35rem;
+  margin: 0 0 0.35rem;
+  letter-spacing: 0.03em;
+}
+
+.lasiru-auth-floating-card p {
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+  color: var(--lasiru-text-muted);
+}
+
+.lasiru-auth-floating-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.lasiru-auth-floating-card li::before {
+  content: "•";
+  color: var(--lasiru-accent);
+  margin-right: 0.5rem;
+}
+
+.lasiru-auth-floating-card li {
+  font-size: 0.9rem;
+  color: var(--lasiru-text-main);
+}
+
+.lasiru-auth-metrics {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.lasiru-auth-metrics div {
+  flex: 1 1 0;
+  min-width: 90px;
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  background: radial-gradient(
+    circle at top left,
+    rgba(21, 128, 61, 0.65),
+    rgba(6, 78, 59, 0.95)
+  );
+  box-shadow: 0 20px 32px rgba(6, 78, 59, 0.9);
+}
+
+.lasiru-auth-metrics span {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.lasiru-auth-metrics p {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--lasiru-text-muted);
+}
+
+.lasiru-auth-form-wrapper {
+  padding: 2.6rem 2.75rem;
+  background: radial-gradient(
+      circle at top right,
+      rgba(22, 163, 74, 0.24),
+      transparent 60%
+    ),
+    rgba(3, 37, 30, 0.98);
+  border-left: 1px solid rgba(16, 185, 129, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.lasiru-auth-header h1 {
+  font-size: 1.7rem;
+  margin: 0 0 0.4rem;
+}
+
+.lasiru-auth-header p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--lasiru-text-muted);
+}
+
+.lasiru-auth-form-container {
+  margin-top: 1.8rem;
+}
+
+.lasiru-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.lasiru-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lasiru-field label {
+  font-size: 0.84rem;
+  color: var(--lasiru-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.lasiru-field input,
+.lasiru-field select {
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 0.8rem 0.9rem;
+  font-size: 0.92rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--lasiru-text-main);
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    transform 0.1s ease;
+}
+
+.lasiru-field input::placeholder {
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.lasiru-field input:focus,
+.lasiru-field select:focus {
+  border-color: var(--lasiru-primary);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.75),
+    0 18px 32px rgba(4, 120, 87, 0.5);
+  background: rgba(15, 23, 42, 0.95);
+  transform: translateY(-1px);
+}
+
+.lasiru-password-wrapper {
+  display: flex;
+  align-items: center;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.9);
+  overflow: hidden;
+}
+
+.lasiru-password-wrapper input {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  padding-right: 0.25rem;
+}
+
+.lasiru-password-toggle {
+  border: none;
+  border-left: 1px solid rgba(55, 65, 81, 0.9);
+  background: radial-gradient(
+    circle at top,
+    rgba(22, 163, 74, 0.2),
+    rgba(6, 78, 59, 0.98)
+  );
+  color: var(--lasiru-text-main);
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lasiru-password-toggle:hover {
+  background: radial-gradient(
+    circle at top,
+    rgba(22, 163, 74, 0.3),
+    rgba(6, 78, 59, 0.98)
+  );
+}
+
+.lasiru-primary-btn {
+  border-radius: 999px;
+  padding: 0.85rem 1.2rem;
+  border: none;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+  box-shadow:
+    0 18px 38px rgba(5, 150, 105, 0.75),
+    0 0 0 1px rgba(16, 185, 129, 0.85);
+  cursor: pointer;
+  transform: translateY(0);
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.18s ease,
+    filter 0.18s ease;
+}
+
+.lasiru-primary-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow:
+    0 24px 48px rgba(5, 150, 105, 0.95),
+    0 0 0 1px rgba(16, 185, 129, 0.95);
+}
+
+.lasiru-primary-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+  box-shadow:
+    0 12px 32px rgba(55, 65, 81, 0.5),
+    0 0 0 1px rgba(75, 85, 99, 0.8);
+}
+
+.lasiru-error {
+  font-size: 0.85rem;
+  color: #f97373;
+  padding: 0.65rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: radial-gradient(
+    circle at top left,
+    rgba(248, 113, 113, 0.1),
+    rgba(15, 23, 42, 0.95)
+  );
+}
+
+.lasiru-switch-link {
+  margin-top: 0.5rem;
+  font-size: 0.86rem;
+  color: var(--lasiru-text-muted);
+}
+
+.lasiru-switch-link a {
+  color: var(--lasiru-primary);
+  font-weight: 500;
+}
+
+.lasiru-switch-link a:hover {
+  text-decoration: underline;
+}
+
+.lasiru-two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@keyframes lasiru-orbit {
+  0% {
+    transform: translate3d(-10px, -12px, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(10px, 8px, 0) scale(1.03);
+  }
+  100% {
+    transform: translate3d(-6px, 4px, 0) scale(1.02);
+  }
+}
+
+@keyframes lasiru-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
+@keyframes lasiru-orb {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(40px, 30px, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(10px, 60px, 0) scale(1.02);
+  }
+  75% {
+    transform: translate3d(-30px, 20px, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (max-width: 960px) {
+  .lasiru-auth-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lasiru-auth-illustration {
+    display: none;
+  }
+
+  .lasiru-auth-form-wrapper {
+    border-left: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .lasiru-auth-form-wrapper {
+    padding: 2.2rem 1.6rem 2.1rem;
+  }
+
+  .lasiru-two-column {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
