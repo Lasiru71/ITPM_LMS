@@ -19,7 +19,7 @@ const generateToken = (user) => {
 
 export const register = async (req, res) => {
   try {
-    const { name, address, phone, email, password, role } = req.body;
+    const { name, address, phone, email, password, role, studentId } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -42,14 +42,20 @@ export const register = async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const user = await User.create({
+    const newUserPayload = {
       name: name.trim(),
       address: address?.trim() || "",
       phone: phone?.trim() || "",
       email: email.toLowerCase(),
       password: hashedPassword,
       role: effectiveRole,
-    });
+    };
+
+    if (effectiveRole === "Student" && studentId && studentId.trim()) {
+      newUserPayload.studentId = studentId.trim();
+    }
+
+    const user = await User.create(newUserPayload);
 
     const token = generateToken(user);
 
@@ -81,6 +87,10 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Account is deactivated. Please contact admin." });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
