@@ -1,0 +1,6 @@
+/* Login-specific tweaks. Shared layout and animations live in AuthLayout.css */
+
+.lasiru-auth-form {
+  /* reuse base styles; add subtle differentiation if needed */
+}
+
