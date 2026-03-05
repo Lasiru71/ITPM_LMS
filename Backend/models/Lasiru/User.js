@@ -35,6 +35,15 @@ const userSchema = new mongoose.Schema(
       default: "Student",
       required: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    studentId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   { timestamps: true }
 );
