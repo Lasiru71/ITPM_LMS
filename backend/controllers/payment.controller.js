@@ -5,6 +5,18 @@ exports.createPayment = async (req, res) => {
   try {
     const { studentId, courseId, method } = req.body;
 
+    if (!studentId || !courseId || !method) {
+      return res.status(400).json({ message: 'Student ID, course, and payment method are required' });
+    }
+
+    if (!/^IT\d{4,}$/.test(studentId)) {
+      return res.status(400).json({ message: 'Invalid student ID format' });
+    }
+
+    if (!['CARD', 'BANK_TRANSFER'].includes(method)) {
+      return res.status(400).json({ message: 'Invalid payment method' });
+    }
+
     const course = await Course.findById(courseId);
     if (!course) {
       return res.status(404).json({ message: 'Course not found' });
@@ -18,7 +30,10 @@ exports.createPayment = async (req, res) => {
       status: 'PENDING',
     });
 
-    res.status(201).json(payment);
+    res.status(201).json({
+      message: 'Payment created successfully',
+      payment,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -54,7 +69,10 @@ exports.approvePayment = async (req, res) => {
       return res.status(404).json({ message: 'Payment not found' });
     }
 
-    res.json({ message: 'Payment approved', payment });
+    res.json({
+      message: 'Payment approved',
+      payment,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -72,7 +90,10 @@ exports.rejectPayment = async (req, res) => {
       return res.status(404).json({ message: 'Payment not found' });
     }
 
-    res.json({ message: 'Payment rejected', payment });
+    res.json({
+      message: 'Payment rejected',
+      payment,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

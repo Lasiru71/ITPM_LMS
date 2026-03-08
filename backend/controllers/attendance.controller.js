@@ -1,10 +1,24 @@
 const crypto = require('crypto');
 const AttendanceSession = require('../models/AttendanceSession');
 const AttendanceRecord = require('../models/AttendanceRecord');
+const Course = require('../models/Course');
 
 exports.generateQRSession = async (req, res) => {
   try {
     const { courseId, lecturerId } = req.body;
+
+    if (!courseId || !lecturerId) {
+      return res.status(400).json({ message: 'Course ID and lecturer ID are required' });
+    }
+
+    if (!/^LEC\d{3,}$/.test(lecturerId)) {
+      return res.status(400).json({ message: 'Invalid lecturer ID format' });
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
 
     const token = crypto.randomBytes(16).toString('hex');
     const now = new Date();
@@ -13,8 +27,8 @@ exports.generateQRSession = async (req, res) => {
     const session = await AttendanceSession.create({
       course: courseId,
       lecturerId,
-      qrToken: token,
       sessionDate: now,
+      qrToken: token,
       expiresAt,
     });
 
@@ -32,6 +46,14 @@ exports.generateQRSession = async (req, res) => {
 exports.markAttendanceByQR = async (req, res) => {
   try {
     const { studentId, token } = req.body;
+
+    if (!studentId || !token) {
+      return res.status(400).json({ message: 'Student ID and token are required' });
+    }
+
+    if (!/^IT\d{4,}$/.test(studentId)) {
+      return res.status(400).json({ message: 'Invalid student ID format' });
+    }
 
     const session = await AttendanceSession.findOne({ qrToken: token });
 
@@ -70,6 +92,11 @@ exports.markAttendanceByQR = async (req, res) => {
 
 exports.getAttendanceByCourse = async (req, res) => {
   try {
+    const course = await Course.findById(req.params.courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
     const records = await AttendanceRecord.find({ course: req.params.courseId })
       .populate('course')
       .populate('session');
@@ -83,6 +110,15 @@ exports.getAttendanceByCourse = async (req, res) => {
 exports.getStudentMonthlyAttendance = async (req, res) => {
   try {
     const { studentId, courseId } = req.params;
+
+    if (!/^IT\d{4,}$/.test(studentId)) {
+      return res.status(400).json({ message: 'Invalid student ID format' });
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
 
     const records = await AttendanceRecord.find({
       studentId,
