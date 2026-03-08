@@ -1,0 +1,79 @@
+const Payment = require('../models/Payment');
+const Course = require('../models/Course');
+
+exports.createPayment = async (req, res) => {
+  try {
+    const { studentId, courseId, method } = req.body;
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    const payment = await Payment.create({
+      studentId,
+      course: courseId,
+      amount: course.fee || 0,
+      method,
+      status: 'PENDING',
+    });
+
+    res.status(201).json(payment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getAllPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find().populate('course');
+    res.json(payments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getPaymentByStudent = async (req, res) => {
+  try {
+    const payments = await Payment.find({ studentId: req.params.studentId }).populate('course');
+    res.json(payments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.approvePayment = async (req, res) => {
+  try {
+    const payment = await Payment.findByIdAndUpdate(
+      req.params.id,
+      { status: 'APPROVED' },
+      { new: true }
+    ).populate('course');
+
+    if (!payment) {
+      return res.status(404).json({ message: 'Payment not found' });
+    }
+
+    res.json({ message: 'Payment approved', payment });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.rejectPayment = async (req, res) => {
+  try {
+    const payment = await Payment.findByIdAndUpdate(
+      req.params.id,
+      { status: 'REJECTED' },
+      { new: true }
+    ).populate('course');
+
+    if (!payment) {
+      return res.status(404).json({ message: 'Payment not found' });
+    }
+
+    res.json({ message: 'Payment rejected', payment });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
