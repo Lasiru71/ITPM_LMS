@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import { PORT, MONGO_URI } from "./config.js";
 import authRoutes from "./routes/Lasiru/authRoutes.js";
+import adminRoutes from "./routes/Lasiru/adminRoutes.js";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.get("/", (req, res) => {
 
 // Auth & RBAC routes (Lasiru)
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 // MongoDB connection (modern Mongoose 9+)
 mongoose
