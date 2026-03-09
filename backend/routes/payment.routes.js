@@ -7,5 +7,6 @@ router.get('/', paymentController.getAllPayments);
 router.get('/student/:studentId', paymentController.getPaymentByStudent);
 router.put('/approve/:id', paymentController.approvePayment);
 router.put('/reject/:id', paymentController.rejectPayment);
+router.delete('/:id', paymentController.deletePayment);
 
 module.exports = router;

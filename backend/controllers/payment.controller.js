@@ -6,20 +6,29 @@ exports.createPayment = async (req, res) => {
     const { studentId, courseId, method } = req.body;
 
     if (!studentId || !courseId || !method) {
-      return res.status(400).json({ message: 'Student ID, course, and payment method are required' });
+      return res.status(400).json({
+        message: 'Student ID, course, and payment method are required',
+      });
     }
 
     if (!/^IT\d{4,}$/.test(studentId)) {
-      return res.status(400).json({ message: 'Invalid student ID format' });
+      return res.status(400).json({
+        message: 'Invalid student ID format',
+      });
     }
 
     if (!['CARD', 'BANK_TRANSFER'].includes(method)) {
-      return res.status(400).json({ message: 'Invalid payment method' });
+      return res.status(400).json({
+        message: 'Invalid payment method',
+      });
     }
 
     const course = await Course.findById(courseId);
+
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({
+        message: 'Course not found',
+      });
     }
 
     const payment = await Payment.create({
@@ -35,7 +44,9 @@ exports.createPayment = async (req, res) => {
       payment,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
@@ -44,16 +55,23 @@ exports.getAllPayments = async (req, res) => {
     const payments = await Payment.find().populate('course');
     res.json(payments);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
 exports.getPaymentByStudent = async (req, res) => {
   try {
-    const payments = await Payment.find({ studentId: req.params.studentId }).populate('course');
+    const payments = await Payment.find({
+      studentId: req.params.studentId,
+    }).populate('course');
+
     res.json(payments);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
@@ -66,7 +84,9 @@ exports.approvePayment = async (req, res) => {
     ).populate('course');
 
     if (!payment) {
-      return res.status(404).json({ message: 'Payment not found' });
+      return res.status(404).json({
+        message: 'Payment not found',
+      });
     }
 
     res.json({
@@ -74,7 +94,9 @@ exports.approvePayment = async (req, res) => {
       payment,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
@@ -87,7 +109,9 @@ exports.rejectPayment = async (req, res) => {
     ).populate('course');
 
     if (!payment) {
-      return res.status(404).json({ message: 'Payment not found' });
+      return res.status(404).json({
+        message: 'Payment not found',
+      });
     }
 
     res.json({
@@ -95,6 +119,29 @@ exports.rejectPayment = async (req, res) => {
       payment,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+exports.deletePayment = async (req, res) => {
+  try {
+    const payment = await Payment.findByIdAndDelete(req.params.id);
+
+    if (!payment) {
+      return res.status(404).json({
+        message: 'Payment not found',
+      });
+    }
+
+    res.json({
+      message: 'Payment deleted successfully',
+      payment,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
