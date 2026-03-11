@@ -14,6 +14,7 @@ function RegisterPage() {
     phone: "",
     email: "",
     password: "",
+    studentId: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -98,6 +99,18 @@ function RegisterPage() {
             required
             placeholder="you@example.com"
             value={form.email}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="lasiru-field">
+          <label htmlFor="studentId">Student ID (Optional for non-students)</label>
+          <input
+            id="studentId"
+            name="studentId"
+            type="text"
+            placeholder="e.g. IT12345678"
+            value={form.studentId}
             onChange={handleChange}
           />
         </div>
