@@ -30,9 +30,15 @@ function LoginPage() {
       // Save token & role for later use (client-side session)
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      // In future you can route based on role here
+
       showToast("success", "Successfully signed in.");
-      navigate("/dashboard"); // placeholder path
+
+      // Route based on role
+      if (data.user.role === "Admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/dashboard"); // Default for Student/Lecturer
+      }
     } catch (err) {
       setError(err.message);
       showToast("error", err.message || "Login failed");
@@ -126,6 +132,23 @@ function LoginPage() {
           Don&apos;t have an account?{" "}
           <Link to="/register">Create one now</Link>
         </p>
+
+        <div className="lasiru-login-extra">
+          <h4>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Secure Role-Based Access
+          </h4>
+          <p>
+            Depending on your role, you will be directed to:
+          </p>
+          <ul>
+            <li><strong>Admin Dashboard:</strong> Manage lectures & students.</li>
+            <li><strong>Lecturer Portal:</strong> Publish course materials.</li>
+            <li><strong>Student Hub:</strong> Access your modules.</li>
+          </ul>
+        </div>
       </form>
     </AuthLayout>
   );
