@@ -24,20 +24,29 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) {
+      showToast("error", "Please enter a valid email address.");
+      return;
+    }
+
+    if (!form.password.trim()) {
+      showToast("error", "Please enter your password.");
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await loginUser(form);
-      // Save token & role for later use (client-side session)
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       showToast("success", "Successfully signed in.");
 
-      // Route based on role
       if (data.user.role === "Admin") {
         navigate("/admin-dashboard");
       } else {
-        navigate("/dashboard"); // Default for Student/Lecturer
+        navigate("/dashboard");
       }
     } catch (err) {
       setError(err.message);
@@ -49,37 +58,46 @@ function LoginPage() {
 
   return (
     <AuthLayout
-      title="Welcome back to EduVault"
-      subtitle="Sign in securely to access your personalised dashboard."
-      illustrationSide="left"
+      title="Welcome back"
+      subtitle="Sign in to continue your learning journey"
+      illustrationSide="right"
+      illustrationTitle="Start Learning Today"
+      illustrationSubtitle="Access 234+ expert-led courses and join 45,000+ learners advancing their careers."
     >
       <form className="lasiru-auth-form" onSubmit={handleSubmit}>
         <div className="lasiru-field">
-          <label htmlFor="email">Email address</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={handleChange}
-          />
+          <label htmlFor="email">Email Address</label>
+          <div className="lasiru-input-wrapper">
+            <span className="lasiru-input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+            />
+          </div>
         </div>
 
         <div className="lasiru-field">
           <label htmlFor="password">Password</label>
-          <div className="lasiru-password-wrapper">
+          <div className="lasiru-input-wrapper">
+            <span className="lasiru-input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </span>
             <input
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              required
-              placeholder="••••••••"
+              placeholder="Enter your password"
               value={form.password}
               onChange={handleChange}
+              style={{ paddingRight: '2.5rem' }}
             />
             <button
               type="button"
@@ -96,7 +114,7 @@ function LoginPage() {
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.7"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
@@ -125,34 +143,20 @@ function LoginPage() {
           type="submit"
           disabled={loading}
         >
-          {loading ? "Signing you in..." : "Sign in"}
+          {loading ? "Signing in..." : "Sign In"}
         </button>
+
+        <div className="lasiru-login-extra">
+          <h4>QUICK DEMO ACCESS</h4>
+        </div>
 
         <p className="lasiru-switch-link">
           Don&apos;t have an account?{" "}
-          <Link to="/register">Create one now</Link>
+          <Link to="/register">Create one</Link>
         </p>
-
-        <div className="lasiru-login-extra">
-          <h4>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-            Secure Role-Based Access
-          </h4>
-          <p>
-            Depending on your role, you will be directed to:
-          </p>
-          <ul>
-            <li><strong>Admin Dashboard:</strong> Manage lectures & students.</li>
-            <li><strong>Lecturer Portal:</strong> Publish course materials.</li>
-            <li><strong>Student Hub:</strong> Access your modules.</li>
-          </ul>
-        </div>
       </form>
     </AuthLayout>
   );
 }
 
 export default LoginPage;
-
