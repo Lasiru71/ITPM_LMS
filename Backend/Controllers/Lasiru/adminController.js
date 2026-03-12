@@ -77,6 +77,60 @@ export const deleteStudent = async (req, res) => {
 
 // --- Common ---
 
+// Get Dashboard Stats
+export const getDashboardStats = async (req, res) => {
+    try {
+        const totalStudents = await User.countDocuments({ role: "Student" });
+        const totalLecturers = await User.countDocuments({ role: "Lecturer" });
+        const activeUsers = await User.countDocuments({ isActive: true });
+        
+        // Month-wise user growth (for the last 6 months)
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+        sixMonthsAgo.setDate(1);
+        sixMonthsAgo.setHours(0, 0, 0, 0);
+
+        const growthData = await User.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: sixMonthsAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        month: { $month: "$createdAt" },
+                        year: { $year: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { "_id.year": 1, "_id.month": 1 }
+            }
+        ]);
+
+        // Map growth data to standard month names
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const formattedGrowth = growthData.map(item => ({
+            name: monthNames[item._id.month - 1],
+            users: item.count
+        }));
+
+        res.status(200).json({
+            totals: {
+                students: totalStudents,
+                lecturers: totalLecturers,
+                active: activeUsers,
+                total: totalStudents + totalLecturers + 1 // +1 for the admin itself
+            },
+            growth: formattedGrowth
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
 // Toggle User Status (Activate/Deactivate)
 export const toggleUserStatus = async (req, res) => {
     try {

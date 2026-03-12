@@ -6,6 +6,7 @@ import {
     getAllStudents,
     deleteStudent,
     toggleUserStatus,
+    getDashboardStats,
 } from "../../controllers/Lasiru/adminController.js";
 import { authenticate, authorizeRoles } from "../../middleware/Lasiru/authMiddleware.js";
 
@@ -26,5 +27,8 @@ router.delete("/students/:id", deleteStudent);
 
 // Toggle status for any user
 router.patch("/users/:id/toggle", toggleUserStatus);
+
+// Dashboard Stats
+router.get("/stats", getDashboardStats);
 
 export default router;
