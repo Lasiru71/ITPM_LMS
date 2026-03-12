@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Search, Trash2, Power, PowerOff } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Search, Trash2, Power, PowerOff, AlertTriangle } from "lucide-react";
 import { getAllStudents, deleteStudent, toggleUserStatus } from "../../api/Lasiru/adminApi";
+import { useToast } from "../../components/Lasiru/ToastProvider";
 
 const StudentManagement = ({ onUpdate }) => {
     const [students, setStudents] = useState([]);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const { showToast } = useToast();
 
     useEffect(() => {
         fetchStudents();
@@ -16,27 +21,35 @@ const StudentManagement = ({ onUpdate }) => {
             setStudents(data);
         } catch (error) {
             console.error("Error fetching students:", error);
+            showToast("error", "Failed to load students");
         }
     };
 
     const handleToggleStatus = async (id) => {
         try {
             await toggleUserStatus(id);
+            showToast("success", "Status updated successfully");
             fetchStudents();
         } catch (error) {
-            alert("Failed to toggle status");
+            showToast("error", "Failed to toggle status");
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this student?")) {
-            try {
-                await deleteStudent(id);
-                fetchStudents();
-                onUpdate();
-            } catch (error) {
-                alert("Failed to delete student");
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteId(id);
+        setShowConfirm(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await deleteStudent(deleteId);
+            showToast("success", "Student deleted successfully");
+            setShowConfirm(false);
+            setDeleteId(null);
+            fetchStudents();
+            onUpdate();
+        } catch (error) {
+            showToast("error", "Failed to delete student");
         }
     };
 
@@ -96,7 +109,7 @@ const StudentManagement = ({ onUpdate }) => {
                                     </button>
                                     <button
                                         className="admin-btn admin-btn-danger"
-                                        onClick={() => handleDelete(std._id)}
+                                        onClick={() => handleDeleteClick(std._id)}
                                         title="Delete"
                                     >
                                         <Trash2 size={16} />
@@ -108,6 +121,34 @@ const StudentManagement = ({ onUpdate }) => {
                     </tbody>
                 </table>
             </div>
+
+            {showConfirm && createPortal(
+                <div className="admin-modal-overlay">
+                    <div className="admin-confirm-modal">
+                        <div className="confirm-icon-container">
+                            <AlertTriangle size={32} />
+                        </div>
+                        <h3>Delete Student?</h3>
+                        <p>This action cannot be undone. All data associated with this student will be permanently removed.</p>
+                        <div className="confirm-actions">
+                            <button 
+                                className="admin-btn admin-btn-ghost" 
+                                onClick={() => setShowConfirm(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="admin-btn admin-btn-danger" 
+                                onClick={confirmDelete}
+                                style={{ background: "#ef4444", color: "white" }}
+                            >
+                                Delete Now
+                            </button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 };

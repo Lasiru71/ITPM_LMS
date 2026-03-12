@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { UserPlus, Search, Trash2, Power, PowerOff, X } from "lucide-react";
+import { UserPlus, Search, Trash2, Power, PowerOff, X, AlertTriangle } from "lucide-react";
 import { getAllLecturers, createLecturer, deleteLecturer, toggleUserStatus } from "../../api/Lasiru/adminApi";
+import { useToast } from "../../components/Lasiru/ToastProvider";
 
 const LectureManagement = ({ onUpdate }) => {
     const [lecturers, setLecturers] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [formData, setFormData] = useState({
         name: "",
@@ -14,6 +17,7 @@ const LectureManagement = ({ onUpdate }) => {
         address: "",
         phone: "",
     });
+    const { showToast } = useToast();
 
     useEffect(() => {
         fetchLecturers();
@@ -25,40 +29,76 @@ const LectureManagement = ({ onUpdate }) => {
             setLecturers(data);
         } catch (error) {
             console.error("Error fetching lecturers:", error);
+            showToast("error", "Failed to load lecturers");
         }
     };
 
     const handleToggleStatus = async (id) => {
         try {
             await toggleUserStatus(id);
+            showToast("success", "Status updated successfully");
             fetchLecturers();
         } catch (error) {
-            alert("Failed to toggle status");
+            showToast("error", "Failed to toggle status");
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this lecturer?")) {
-            try {
-                await deleteLecturer(id);
-                fetchLecturers();
-                onUpdate();
-            } catch (error) {
-                alert("Failed to delete lecturer");
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteId(id);
+        setShowConfirm(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await deleteLecturer(deleteId);
+            showToast("success", "Lecturer deleted successfully");
+            setShowConfirm(false);
+            setDeleteId(null);
+            fetchLecturers();
+            onUpdate();
+        } catch (error) {
+            showToast("error", "Failed to delete lecturer");
         }
+    };
+
+    const validateForm = () => {
+        if (!formData.name.trim()) {
+            showToast("error", "Full Name is required");
+            return false;
+        }
+        if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            showToast("error", "Valid Email Address is required");
+            return false;
+        }
+        if (formData.password.length < 6) {
+            showToast("error", "Password must be at least 6 characters long");
+            return false;
+        }
+        if (!formData.address.trim()) {
+            showToast("error", "Address is required");
+            return false;
+        }
+        if (!formData.phone.trim() || !/^\d{10}$/.test(formData.phone.replace(/[\s-]/g, ''))) {
+            showToast("error", "Valid 10-digit Phone Number is required");
+            return false;
+        }
+        return true;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!validateForm()) return;
+
         try {
             await createLecturer(formData);
+            showToast("success", "Lecturer added successfully");
             setShowModal(false);
             setFormData({ name: "", email: "", password: "", address: "", phone: "" });
             fetchLecturers();
             onUpdate();
         } catch (error) {
-            alert(error.response?.data?.message || "Failed to create lecturer");
+            showToast("error", error.response?.data?.message || "Failed to create lecturer");
         }
     };
 
@@ -120,7 +160,7 @@ const LectureManagement = ({ onUpdate }) => {
                                     </button>
                                     <button
                                         className="admin-btn admin-btn-danger"
-                                        onClick={() => handleDelete(lec._id)}
+                                        onClick={() => handleDeleteClick(lec._id)}
                                         title="Delete"
                                     >
                                         <Trash2 size={16} />
@@ -137,12 +177,11 @@ const LectureManagement = ({ onUpdate }) => {
                 <div className="admin-modal-overlay">
                     <div className="admin-modal">
                         <h2>Add New Lecturer</h2>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} noValidate>
                             <div className="admin-form-group">
                                 <label>Full Name</label>
                                 <input
                                     className="admin-input"
-                                    required
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />
@@ -151,8 +190,7 @@ const LectureManagement = ({ onUpdate }) => {
                                 <label>Email Address</label>
                                 <input
                                     className="admin-input"
-                                    type="email"
-                                    required
+                                    type="text"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 />
@@ -162,7 +200,6 @@ const LectureManagement = ({ onUpdate }) => {
                                 <input
                                     className="admin-input"
                                     type="password"
-                                    required
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 />
@@ -197,6 +234,34 @@ const LectureManagement = ({ onUpdate }) => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {showConfirm && createPortal(
+                <div className="admin-modal-overlay">
+                    <div className="admin-confirm-modal">
+                        <div className="confirm-icon-container">
+                            <AlertTriangle size={32} />
+                        </div>
+                        <h3>Delete Lecturer?</h3>
+                        <p>This action cannot be undone. All data associated with this lecturer will be permanently removed.</p>
+                        <div className="confirm-actions">
+                            <button 
+                                className="admin-btn admin-btn-ghost" 
+                                onClick={() => setShowConfirm(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="admin-btn admin-btn-danger" 
+                                onClick={confirmDelete}
+                                style={{ background: "#ef4444", color: "white" }}
+                            >
+                                Delete Now
+                            </button>
+                        </div>
                     </div>
                 </div>,
                 document.body
