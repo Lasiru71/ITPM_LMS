@@ -43,9 +43,3 @@ export const toggleUserStatus = async (id) => {
     const response = await axios.patch(`${API_URL}/users/${id}/toggle`, {}, getAuthHeader());
     return response.data;
 };
-
-// --- Dashboard Stats ---
-export const getDashboardStats = async () => {
-    const response = await axios.get(`${API_URL}/stats`, getAuthHeader());
-    return response.data;
-};

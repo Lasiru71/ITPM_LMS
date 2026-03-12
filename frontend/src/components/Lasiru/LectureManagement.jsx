@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { UserPlus, Search, Trash2, Power, PowerOff, X } from "lucide-react";
 import { getAllLecturers, createLecturer, deleteLecturer, toggleUserStatus } from "../../api/Lasiru/adminApi";
 
 const LectureManagement = ({ onUpdate }) => {
@@ -64,27 +63,25 @@ const LectureManagement = ({ onUpdate }) => {
 
     const filteredLecturers = lecturers.filter(
         (lec) =>
-            (lec.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-            (lec.email?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+            lec.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            lec.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
         <div className="admin-content-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                <h3 style={{ margin: 0 }}>Lecturer Directory</h3>
+                <h3>Lecturer Directory</h3>
                 <div style={{ display: "flex", gap: "1rem" }}>
-                    <div className="admin-search-container">
-                        <Search size={18} className="search-icon" />
-                        <input
-                            type="text"
-                            placeholder="Search by name or email..."
-                            className="admin-input"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <button className="admin-btn admin-btn-primary" onClick={() => setShowModal(true)}>
-                        <UserPlus size={18} /> Add New Lecturer
+                    <input
+                        type="text"
+                        placeholder="Search by name or email..."
+                        className="admin-input"
+                        style={{ width: "250px" }}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <button className="admin-btn admin-btn-primary" onClick={() => setShowModal(true)} style={{ whiteSpace: "nowrap" }}>
+                        + Add New Lecturer
                     </button>
                 </div>
             </div>
@@ -113,17 +110,13 @@ const LectureManagement = ({ onUpdate }) => {
                                     <button
                                         className="admin-btn admin-btn-ghost"
                                         onClick={() => handleToggleStatus(lec._id)}
-                                        title={lec.isActive ? "Deactivate" : "Activate"}
                                     >
-                                        {lec.isActive ? <PowerOff size={16} /> : <Power size={16} />}
                                         {lec.isActive ? "Deactivate" : "Activate"}
                                     </button>
                                     <button
                                         className="admin-btn admin-btn-danger"
                                         onClick={() => handleDelete(lec._id)}
-                                        title="Delete"
                                     >
-                                        <Trash2 size={16} />
                                         Delete
                                     </button>
                                 </td>
