@@ -35,6 +35,7 @@ import { useToast } from "../../components/Lasiru/ToastProvider";
 import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
+import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
 
 const COLORS = ['#12b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
@@ -301,7 +302,8 @@ const AdminDashboard = () => {
             case "students": return <StudentManagement onUpdate={fetchStats} />;
             case "reports": return renderReports();
             case "courses": return renderPlaceholder("All Courses", <BookOpen size={48} />);
-            case "announcement": return renderPlaceholder("Announcements", <Megaphone size={48} />);
+            case "attendance": return renderPlaceholder("Student Attendance", <Activity size={48} />);
+            case "announcement": return <AnnouncementManagement />;
             default: return renderOverview();
         }
     };
@@ -338,6 +340,10 @@ const AdminDashboard = () => {
                         <div className="nav-item-content"><BookOpen size={20} /> All Courses</div>
                         {activeTab === "courses" && <ChevronRight size={16} />}
                     </div>
+                    <div className={`admin-nav-item ${activeTab === "attendance" ? "active" : ""}`} onClick={() => setActiveTab("attendance")}>
+                        <div className="nav-item-content"><Activity size={20} /> Attendance</div>
+                        {activeTab === "attendance" && <ChevronRight size={16} />}
+                    </div>
 
                     <div className="nav-section-title">Business</div>
                     <div className={`admin-nav-item ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>
@@ -353,7 +359,11 @@ const AdminDashboard = () => {
                 </nav>
 
                 <div className="sidebar-footer">
-                    <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" }}>
+                    <div 
+                        style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem", cursor: "pointer" }}
+                        onClick={() => navigate("/profile")}
+                        title="View My Profile"
+                    >
                         <div style={{ width: 40, height: 40, borderRadius: 10, background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
                             {user.name ? user.name.charAt(0).toUpperCase() : "A"}
                         </div>
