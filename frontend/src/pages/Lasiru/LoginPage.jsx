@@ -46,7 +46,7 @@ function LoginPage() {
       if (data.user.role === "Admin") {
         navigate("/admin-dashboard");
       } else {
-        navigate("/dashboard");
+        navigate("/profile");
       }
     } catch (err) {
       setError(err.message);

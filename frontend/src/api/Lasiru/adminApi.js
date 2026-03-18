@@ -49,3 +49,44 @@ export const getDashboardStats = async () => {
     const response = await axios.get(`${API_URL}/stats`, getAuthHeader());
     return response.data;
 };
+
+// --- User Profile ---
+const AUTH_URL = "http://localhost:5000/api/auth";
+
+export const getMyProfile = async () => {
+    const response = await axios.get(`${AUTH_URL}/me`, getAuthHeader());
+    return response.data;
+};
+
+export const updateMyProfile = async (data) => {
+    const response = await axios.put(`${AUTH_URL}/update-profile`, data, getAuthHeader());
+    return response.data;
+};
+
+export const changeMyPassword = async (data) => {
+    const response = await axios.put(`${AUTH_URL}/change-password`, data, getAuthHeader());
+    return response.data;
+};
+
+// --- Announcements ---
+const ANNOUNCE_URL = "http://localhost:5000/api/announcements";
+
+export const getAllAnnouncements = async () => {
+    const response = await axios.get(`${ANNOUNCE_URL}`, getAuthHeader());
+    return response.data;
+};
+
+export const createAnnouncement = async (data) => {
+    const response = await axios.post(`${ANNOUNCE_URL}`, data, getAuthHeader());
+    return response.data;
+};
+
+export const updateAnnouncement = async (id, data) => {
+    const response = await axios.put(`${ANNOUNCE_URL}/${id}`, data, getAuthHeader());
+    return response.data;
+};
+
+export const deleteAnnouncement = async (id) => {
+    const response = await axios.delete(`${ANNOUNCE_URL}/${id}`, getAuthHeader());
+    return response.data;
+};

@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, getProfile } from "../../controllers/Lasiru/authController.js";
+import { register, login, getProfile, updateProfile, changePassword } from "../../Controllers/Lasiru/authController.js";
 import { authenticate, authorizeRoles } from "../../middleware/Lasiru/authMiddleware.js";
 
 const router = express.Router();
@@ -10,6 +10,8 @@ router.post("/login", login);
 
 // Authenticated only
 router.get("/me", authenticate, getProfile);
+router.put("/update-profile", authenticate, updateProfile);
+router.put("/change-password", authenticate, changePassword);
 
 // Role-based example routes
 router.get(
