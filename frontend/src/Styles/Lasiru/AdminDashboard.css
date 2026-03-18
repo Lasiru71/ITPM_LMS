@@ -280,6 +280,19 @@
   color: var(--text-main);
 }
 
+/* Modal Input Overrides */
+.admin-modal .admin-input {
+  width: 100%;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.admin-modal textarea.admin-input {
+  min-height: 120px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
 .admin-table-container {
   overflow-x: auto;
   margin-top: 1.5rem;
