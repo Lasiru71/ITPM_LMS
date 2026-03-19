@@ -45,6 +45,10 @@ function LoginPage() {
 
       if (data.user.role === "Admin") {
         navigate("/admin-dashboard");
+      } else if (data.user.role === "Lecturer") {
+        navigate("/lecturer-dashboard");
+      } else if (data.user.role === "Student") {
+        navigate("/student-dashboard");
       } else {
         navigate("/profile");
       }
