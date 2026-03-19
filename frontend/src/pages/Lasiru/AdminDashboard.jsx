@@ -36,6 +36,7 @@ import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
+import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
 
 const COLORS = ['#12b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
@@ -379,18 +380,17 @@ const AdminDashboard = () => {
             </aside>
 
             <main className="admin-main-content">
-                <header className="admin-header">
-                    <div>
-                        <h1 style={{ margin: 0, fontSize: '1.75rem' }}>Admin Dashboard</h1>
-                        <p style={{ color: '#64748b', margin: '0.5rem 0 0' }}>Manage your platform components from one place.</p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                        <Bell size={24} style={{ color: '#64748b', cursor: 'pointer' }} />
-                        <div onClick={() => navigate("/")} style={{ color: '#64748b', cursor: 'pointer', fontSize: '0.9rem' }}>← Back to Site</div>
-                    </div>
-                </header>
+                <DashboardHeader 
+                    title="Admin Dashboard" 
+                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'} 
+                    onSearchChange={(val) => console.log("Searching for:", val)}
+                />
 
                 <div className="admin-scroll-container">
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h1 style={{ margin: 0, fontSize: '1.75rem' }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
+                        <p style={{ color: '#64748b', margin: '0.5rem 0 0' }}>Manage your platform components from one place.</p>
+                    </div>
                     {loading && activeTab === 'overview' ? (
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>
                     ) : renderContent()}

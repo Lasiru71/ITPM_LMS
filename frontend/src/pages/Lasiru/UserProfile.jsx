@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { getMyProfile, updateMyProfile, changeMyPassword } from "../../api/Lasiru/adminApi";
 import { useToast } from "../../components/Lasiru/ToastProvider";
+import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import "../../Styles/Lasiru/UserProfile.css";
 
 const UserProfile = () => {
@@ -141,10 +142,7 @@ const UserProfile = () => {
 
     return (
         <div className="up-page">
-            {/* Back Nav */}
-            <button className="up-back-btn" onClick={() => navigate(-1)}>
-                <ChevronLeft size={20} /> Back to Dashboard
-            </button>
+            <DashboardHeader title="My Profile" variant="dark" />
 
             <div className="up-layout">
                 {/* Sidebar */}
