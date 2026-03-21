@@ -48,7 +48,7 @@ function createEmptyModule() {
 export default function CourseCreationForm({ onSuccess }) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { addCourse, isLoading } = useCourseStore();
+  const { addCourse, fetchCourses, isLoading } = useCourseStore();
   const { showToast } = useToast();
 
   const [title, setTitle] = useState('');
