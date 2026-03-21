@@ -65,14 +65,14 @@ export default function PaymentPage() {
       return;
     }
 
-    // CARD PAYMENT FLOW
     if (method === "CARD") {
       if (!cardName || !cardNumber || !expiry || !cvv) {
         setMessage("Please fill all card details");
         return;
       }
 
-      if (cardNumber.replace(/\s/g, "").length < 16) {
+      const cleanedCard = cardNumber.replace(/\s/g, "");
+      if (cleanedCard.length < 16) {
         setMessage("Card number must be 16 digits");
         return;
       }
@@ -87,9 +87,14 @@ export default function PaymentPage() {
         formData.append("studentId", studentId);
         formData.append("courseId", courseId);
         formData.append("method", method);
+        formData.append("cardName", cardName);
+        formData.append("cardNumber", cardNumber);
+        formData.append("expiry", expiry);
 
         const res = await api.post("/payments", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
 
         setMessage(
@@ -102,10 +107,10 @@ export default function PaymentPage() {
       } catch (error) {
         setMessage(error.response?.data?.message || "Payment failed");
       }
+
       return;
     }
 
-    // BANK TRANSFER STEP 1 -> SHOW UPLOAD
     if (method === "BANK_TRANSFER" && !showSlipUpload) {
       setShowSlipUpload(true);
       setMessage("Please upload your bank payment slip to continue");
@@ -115,6 +120,16 @@ export default function PaymentPage() {
 
   const handleSlipSubmit = async () => {
     setMessage("");
+
+    if (!/^IT\d{4,}$/.test(studentId)) {
+      setMessage("Student ID must be like IT2023001");
+      return;
+    }
+
+    if (!courseId) {
+      setMessage("Please select a course");
+      return;
+    }
 
     if (!slipImage) {
       setMessage("Please upload the bank payment slip");
@@ -129,7 +144,9 @@ export default function PaymentPage() {
       formData.append("slipImage", slipImage);
 
       const res = await api.post("/payments", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       setMessage(
@@ -145,167 +162,389 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="page-card">
-      <h2>Student Payment</h2>
-
-      <form onSubmit={handleSubmit} className="form-grid">
-        <div>
-          <label>Student ID</label>
-          <input
-            type="text"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            placeholder="Enter student ID"
-            required
-          />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
+            Secure Payment Portal
+          </p>
+          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
+            Student Course Payment
+          </h1>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            Complete your course payment quickly and securely using card or bank
+            transfer. Select your course, choose a payment method, and confirm
+            your registration.
+          </p>
         </div>
 
-        <div>
-          <label>Select Course</label>
-          <select value={courseId} onChange={handleCourseChange} required>
-            <option value="">-- Select Course --</option>
-            {courses.map((course) => (
-              <option key={course._id} value={course._id}>
-                {course.title}
-              </option>
-            ))}
-          </select>
-        </div>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  1. Student Information
+                </h2>
 
-        {selectedCourse && (
-          <div className="info-box">
-            <p><strong>Course:</strong> {selectedCourse.title}</p>
-            <p><strong>Fee:</strong> Rs. {selectedCourse.fee}</p>
-          </div>
-        )}
+                <div className="mt-5 grid gap-5">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">
+                      Student ID
+                    </label>
+                    <input
+                      type="text"
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      placeholder="Enter student ID"
+                      required
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                    />
+                  </div>
 
-        <div>
-          <label>Payment Method</label>
-          <select
-            value={method}
-            onChange={(e) => {
-              setMethod(e.target.value);
-              setShowSlipUpload(false);
-              setSlipImage(null);
-            }}
-          >
-            <option value="CARD">Card</option>
-            <option value="BANK_TRANSFER">Bank Transfer</option>
-          </select>
-        </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">
+                      Select Course
+                    </label>
+                    <select
+                      value={courseId}
+                      onChange={handleCourseChange}
+                      required
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                    >
+                      <option value="">-- Select Course --</option>
+                      {courses.map((course) => (
+                        <option key={course._id} value={course._id}>
+                          {course.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </section>
 
-        {method === "CARD" && (
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "12px",
-              padding: "20px",
-              background: "#f8fbff",
-              marginTop: "10px",
-            }}
-          >
-            <h3 style={{ marginTop: 0 }}>Card Payment Gateway</h3>
+              <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  2. Payment Method
+                </h2>
 
-            <div style={{ marginBottom: "15px" }}>
-              <label>Card Holder Name</label>
-              <input
-                type="text"
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-                placeholder="Enter card holder name"
-              />
-            </div>
+                <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMethod("CARD");
+                      setShowSlipUpload(false);
+                      setSlipImage(null);
+                      setMessage("");
+                    }}
+                    className={`rounded-2xl border-2 px-5 py-4 text-left transition ${
+                      method === "CARD"
+                        ? "border-indigo-600 bg-indigo-50 shadow-sm"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-base font-semibold text-slate-900">
+                          Card Payment
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Fast and instant checkout
+                        </p>
+                      </div>
+                      {method === "CARD" && (
+                        <span className="rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                  </button>
 
-            <div style={{ marginBottom: "15px" }}>
-              <label>Card Number</label>
-              <input
-                type="text"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-                placeholder="1234 5678 9012 3456"
-                maxLength="19"
-              />
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMethod("BANK_TRANSFER");
+                      setShowSlipUpload(false);
+                      setSlipImage(null);
+                      setMessage("");
+                    }}
+                    className={`rounded-2xl border-2 px-5 py-4 text-left transition ${
+                      method === "BANK_TRANSFER"
+                        ? "border-indigo-600 bg-indigo-50 shadow-sm"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-base font-semibold text-slate-900">
+                          Bank Transfer
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Upload payment slip after transfer
+                        </p>
+                      </div>
+                      {method === "BANK_TRANSFER" && (
+                        <span className="rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                </div>
+              </section>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "15px",
-              }}
-            >
-              <div>
-                <label>Expiry Date</label>
-                <input
-                  type="text"
-                  value={expiry}
-                  onChange={(e) => setExpiry(e.target.value)}
-                  placeholder="MM/YY"
-                  maxLength="5"
-                />
-              </div>
+              {method === "CARD" && (
+                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    3. Card Details
+                  </h2>
 
-              <div>
-                <label>CVV</label>
-                <input
-                  type="password"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
-                  placeholder="123"
-                  maxLength="4"
-                />
-              </div>
-            </div>
-          </div>
-        )}
+                  <div className="mt-5 space-y-4">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">
+                        Card Holder Name
+                      </label>
+                      <input
+                        type="text"
+                        value={cardName}
+                        onChange={(e) => setCardName(e.target.value)}
+                        placeholder="Enter card holder name"
+                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                      />
+                    </div>
 
-        {method === "BANK_TRANSFER" && (
-          <div
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "12px",
-              padding: "20px",
-              background: "#fff8f0",
-              marginTop: "10px",
-            }}
-          >
-            <h3 style={{ marginTop: 0 }}>Bank Transfer Details</h3>
-            <p><strong>Bank:</strong> Bank of Ceylon</p>
-            <p><strong>Account Name:</strong> University LMS</p>
-            <p><strong>Account Number:</strong> 1234567890</p>
-            <p><strong>Branch:</strong> Colombo Main Branch</p>
-            <p>Please complete the transfer and upload your payment slip for verification.</p>
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">
+                        Card Number
+                      </label>
+                      <input
+                        type="text"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        placeholder="1234 5678 9012 3456"
+                        maxLength="19"
+                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                      />
+                    </div>
 
-            {showSlipUpload && (
-              <div style={{ marginTop: "20px" }}>
-                <label>Upload Payment Slip</label>
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => setSlipImage(e.target.files[0])}
-                />
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700">
+                          Expiry Date
+                        </label>
+                        <input
+                          type="text"
+                          value={expiry}
+                          onChange={(e) => setExpiry(e.target.value)}
+                          placeholder="MM/YY"
+                          maxLength="5"
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                        />
+                      </div>
 
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700">
+                          CVV
+                        </label>
+                        <input
+                          type="password"
+                          value={cvv}
+                          onChange={(e) => setCvv(e.target.value)}
+                          placeholder="123"
+                          maxLength="4"
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {method === "BANK_TRANSFER" && (
+                <section className="rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-sm">
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    3. Bank Transfer Details
+                  </h2>
+
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-amber-100 bg-white p-4">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">
+                        Bank
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        Bank of Ceylon
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-amber-100 bg-white p-4">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">
+                        Account Name
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        University LMS
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-amber-100 bg-white p-4">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">
+                        Account Number
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        1234567890
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-amber-100 bg-white p-4">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">
+                        Branch
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        Colombo Main Branch
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mt-5 text-sm text-slate-600">
+                    Please complete the transfer and upload your payment slip
+                    for verification.
+                  </p>
+
+                  {showSlipUpload && (
+                    <div className="mt-6 rounded-2xl border border-dashed border-amber-300 bg-white p-5">
+                      <label className="mb-2 block text-sm font-medium text-slate-700">
+                        Upload Payment Slip
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => setSlipImage(e.target.files[0])}
+                        className="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-amber-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-amber-600"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={handleSlipSubmit}
+                        className="mt-4 inline-flex items-center justify-center rounded-xl bg-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+                      >
+                        Submit Slip
+                      </button>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {!showSlipUpload && (
                 <button
-                  type="button"
-                  className="btn-primary"
-                  style={{ marginTop: "15px" }}
-                  onClick={handleSlipSubmit}
+                  type="submit"
+                  className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:from-indigo-700 hover:to-indigo-800"
                 >
-                  Submit Slip
+                  {method === "CARD" ? "Pay Now" : "Continue"}
                 </button>
-              </div>
-            )}
+              )}
+
+              {message && (
+                <div
+                  className={`rounded-2xl border px-4 py-4 text-sm font-medium ${
+                    message.toLowerCase().includes("success")
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-rose-200 bg-rose-50 text-rose-700"
+                  }`}
+                >
+                  {message}
+                </div>
+              )}
+            </form>
           </div>
-        )}
 
-        {!showSlipUpload && (
-          <button type="submit" className="btn-primary">
-            Pay Now
-          </button>
-        )}
-      </form>
+          <div className="lg:col-span-5 space-y-6">
+            <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 shadow-2xl">
+              <div className="flex items-start justify-between">
+                <div className="h-10 w-14 rounded-lg bg-gradient-to-br from-yellow-200 to-yellow-500" />
+                <div className="text-sm font-medium text-white/70">
+                  Secure Card
+                </div>
+              </div>
 
-      {message && <p className="message">{message}</p>}
+              <div className="mt-10">
+                <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                  Card Number
+                </p>
+                <p className="mt-2 font-mono text-2xl tracking-[0.2em] text-white">
+                  {cardNumber || "•••• •••• •••• ••••"}
+                </p>
+              </div>
+
+              <div className="mt-10 flex items-end justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                    Card Holder
+                  </p>
+                  <p className="mt-2 text-sm font-semibold uppercase tracking-wider text-white">
+                    {cardName || "YOUR NAME"}
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                    Expires
+                  </p>
+                  <p className="mt-2 font-mono text-sm text-white">
+                    {expiry || "MM/YY"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
+              <div className="border-b border-slate-200 bg-slate-50 px-6 py-4">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Order Summary
+                </h3>
+              </div>
+
+              <div className="space-y-4 px-6 py-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">
+                      {selectedCourse ? selectedCourse.title : "No course selected"}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">Tuition Fee</p>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    Rs. {selectedCourse ? selectedCourse.price || selectedCourse.fee || 0 : 0}
+                  </p>
+                </div>
+
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">
+                      Payment Method
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {method === "CARD" ? "Card Payment" : "Bank Transfer"}
+                    </p>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {method === "CARD" ? "Instant" : "Manual Review"}
+                  </p>
+                </div>
+
+                <div className="border-t border-slate-200 pt-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-base font-semibold text-slate-900">Total</p>
+                    <p className="text-2xl font-bold text-indigo-600">
+                      Rs. {selectedCourse ? selectedCourse.price || selectedCourse.fee || 0 : 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 text-center text-xs font-medium text-slate-500">
+                Secure payment submission
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
