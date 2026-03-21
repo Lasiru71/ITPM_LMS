@@ -7,7 +7,6 @@ export const NAV_LINKS = [
     { label: "Contact", path: "/contact" },
 ];
 
-// 🔥 Required for CourseCreationForm
 export const LEVELS = [
     "Beginner",
     "Intermediate",
@@ -15,7 +14,6 @@ export const LEVELS = [
     "All Levels"
 ];
 
-// 🔥 (Optional but safe — future errors avoid karanna)
 export const CATEGORIES = [
     "Web Development",
     "Data Science",
