@@ -1,31 +1,48 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-    LayoutDashboard, 
-    BookOpen, 
-    PlusCircle, 
-    Star, 
-    Settings, 
-    LogOut, 
-    Bell, 
+import {
+    LayoutDashboard,
+    BookOpen,
+    PlusCircle,
+    Star,
+    Settings,
+    LogOut,
     ChevronRight,
-    Search,
-    User,
+    Users,
+    ChevronLeft,
     FilePlus,
     FileText
 } from "lucide-react";
+
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
+
+// Jeewani
+import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
+import { useCourseStore } from "../../stores/courseStore";
+
+// Sadeepa
 import CreateAssignment from "../../components/sadeepa/CreateAssignment.jsx";
 import CreateExam from "../../components/sadeepa/CreateExam.jsx";
 import Reports from "../../components/sadeepa/Reports.jsx";
+
 import "../../Styles/Lasiru/LecturerDashboard.css";
 
 const LecturerDashboard = () => {
     const [activeTab, setActiveTab] = useState("dashboard");
+    const [currentPage, setCurrentPage] = useState(1);
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { courses, fetchCourses, isLoading } = useCourseStore();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    React.useEffect(() => {
+        fetchCourses();
+    }, []);
+
+    const myCourses = courses.filter(
+        c => c.instructorId === user.id || c.instructor === user.name
+    );
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -46,17 +63,42 @@ const LecturerDashboard = () => {
     ];
 
     const renderContent = () => {
-        if (activeTab === 'create-assignment') return <CreateAssignment />;
-        if (activeTab === 'create-exam') return <CreateExam />;
-        if (activeTab === 'reports') return <Reports />;
+        if (isLoading) return <div>Loading...</div>;
+
+        // Jeewani
+        if (activeTab === "create-course") {
+            return <CourseCreationForm onSuccess={() => setActiveTab("dashboard")} />;
+        }
+
+        // Sadeepa
+        if (activeTab === "create-assignment") return <CreateAssignment />;
+        if (activeTab === "create-exam") return <CreateExam />;
+        if (activeTab === "reports") return <Reports />;
+
+        // Dashboard
+        if (activeTab === "dashboard") {
+            return (
+                <div>
+                    <h2>My Courses ({myCourses.length})</h2>
+                    {myCourses.length > 0 ? (
+                        myCourses.map(course => (
+                            <div key={course.id || course._id}>
+                                <p>{course.title}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No courses yet</p>
+                    )}
+                </div>
+            );
+        }
+
+        const activeItem = navItems.find(item => item.id === activeTab);
 
         return (
-            <div className="dashboard-placeholder">
-                <div className="placeholder-icon">
-                    {navItems.find(item => item.id === activeTab)?.icon}
-                </div>
-                <h2>{navItems.find(item => item.id === activeTab)?.label}</h2>
-                <p>This section is under development.</p>
+            <div>
+                <h2>{activeItem?.label}</h2>
+                <p>Section under development</p>
             </div>
         );
     };
@@ -65,58 +107,33 @@ const LecturerDashboard = () => {
         <div className="lecturer-dashboard-container">
             <aside className="lecturer-sidebar">
                 <div className="lecturer-logo">
-                    <div className="logo-icon">
-                        <BookOpen size={20} color="white" />
-                    </div>
+                    <BookOpen size={20} />
                     <span>EduVault</span>
                 </div>
-                
-                <nav className="lecturer-nav">
-                    <div className="nav-section-title">Menu</div>
-                    {navItems.map((item) => (
-                        <div 
+
+                <nav>
+                    {navItems.map(item => (
+                        <button
                             key={item.id}
-                            className={`nav-item ${activeTab === item.id ? "active" : ""}`} 
-                            onClick={() => setActiveTab(item.id)}
+                            className={activeTab === item.id ? "active" : ""}
+                            onClick={() => {
+                                setActiveTab(item.id);
+                                setCurrentPage(1);
+                            }}
                         >
-                            <div className="nav-item-content">
-                                {item.icon}
-                                <span>{item.label}</span>
-                            </div>
-                            {activeTab === item.id && <ChevronRight size={16} />}
-                        </div>
+                            {item.icon} {item.label}
+                        </button>
                     ))}
                 </nav>
 
-                <div className="sidebar-footer">
-                    <div className="user-profile-mini" onClick={() => navigate("/profile")}>
-                        <div className="user-avatar">
-                            {user.name ? user.name.charAt(0).toUpperCase() : "L"}
-                        </div>
-                        <div className="user-info">
-                            <span className="user-name">{user.name || "Lecturer"}</span>
-                            <span className="user-role">Lecturer</span>
-                        </div>
-                    </div>
-                    <div className="logout-btn" onClick={handleLogout}>
-                        <LogOut size={20} /> <span>Sign Out</span>
-                    </div>
-                </div>
+                <button onClick={handleLogout}>
+                    <LogOut size={18} /> Logout
+                </button>
             </aside>
 
-            <main className="lecturer-main-content">
-                <DashboardHeader 
-                    showSearch={true} 
-                    onSearchChange={(val) => console.log("Searching for:", val)} 
-                />
-
-                <div className="lecturer-content-area">
-                    <div className="content-header">
-                        <h1>{navItems.find(item => item.id === activeTab)?.label}</h1>
-                        <p>Welcome back, {user.name || "Professor"}! Here's what's happening today.</p>
-                    </div>
-                    {renderContent()}
-                </div>
+            <main>
+                <DashboardHeader title={navItems.find(i => i.id === activeTab)?.label} />
+                {renderContent()}
             </main>
         </div>
     );
