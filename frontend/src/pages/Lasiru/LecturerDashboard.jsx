@@ -63,59 +63,31 @@ const LecturerDashboard = () => {
     ];
 
     const renderContent = () => {
-        if (isLoading) return <div className="loading-state">Loading...</div>;
+        if (isLoading) return <div>Loading...</div>;
 
-        // Jeewani feature
+        // Jeewani
         if (activeTab === "create-course") {
             return <CourseCreationForm onSuccess={() => setActiveTab("dashboard")} />;
         }
 
-        // Sadeepa features
+        // Sadeepa
         if (activeTab === "create-assignment") return <CreateAssignment />;
         if (activeTab === "create-exam") return <CreateExam />;
         if (activeTab === "reports") return <Reports />;
 
         // Dashboard
         if (activeTab === "dashboard") {
-            const itemsPerPage = 3;
-            const totalPages = Math.ceil(myCourses.length / itemsPerPage);
-            const paginatedCourses = myCourses.slice(
-                (currentPage - 1) * itemsPerPage,
-                currentPage * itemsPerPage
-            );
-
             return (
                 <div>
                     <h2>My Courses ({myCourses.length})</h2>
-
-                    {paginatedCourses.length > 0 ? (
-                        paginatedCourses.map(course => (
+                    {myCourses.length > 0 ? (
+                        myCourses.map(course => (
                             <div key={course.id || course._id}>
                                 <p>{course.title}</p>
                             </div>
                         ))
                     ) : (
                         <p>No courses yet</p>
-                    )}
-
-                    {totalPages > 1 && (
-                        <div>
-                            <button
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(prev => prev - 1)}
-                            >
-                                <ChevronLeft size={16} /> Prev
-                            </button>
-
-                            <span> Page {currentPage} / {totalPages} </span>
-
-                            <button
-                                disabled={currentPage === totalPages}
-                                onClick={() => setCurrentPage(prev => prev + 1)}
-                            >
-                                Next <ChevronRight size={16} />
-                            </button>
-                        </div>
                     )}
                 </div>
             );

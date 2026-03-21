@@ -5,6 +5,9 @@ import { PORT, MONGO_URI } from "./config.js";
 import authRoutes from "./routes/Lasiru/authRoutes.js";
 import adminRoutes from "./routes/Lasiru/adminRoutes.js";
 import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
+import assignmentRoutes from "./routes/sadeepa/assignmentRoutes.js";
+import materialRoutes from "./routes/sadeepa/materialRoutes.js";
+import projectRoutes from "./routes/sadeepa/projectRoutes.js";
 
 // Jeewani routes
 import jeewaniCourseRoutes from "./routes/Jeewani/courseRoutes.js";
@@ -31,15 +34,19 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/announcements", announcementRoutes);
 
+
 // Jeewani routes
 app.use("/api/jeewani/courses", jeewaniCourseRoutes);
 
 // Sadeepa routes
+// Assignment routes (Sadeepa)
 app.use("/api/sadeepa/assignments", assignmentRoutes);
 app.use("/api/sadeepa/materials", materialRoutes);
 app.use("/api/sadeepa/projects", projectRoutes);
-
 // MongoDB connection
+
+// MongoDB connection (modern Mongoose 9+)
+
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("MongoDB Connected"))

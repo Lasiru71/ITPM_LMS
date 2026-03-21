@@ -15,7 +15,9 @@ import {
     FileText,
     Download,
     Eye,
-    Megaphone
+    Megaphone,
+    Upload,
+    Star
 } from "lucide-react";
 import {
     AreaChart,
@@ -36,6 +38,7 @@ import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
+import MaterialUpload from "../../components/sadeepa/MaterialUpload";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
 
@@ -304,6 +307,7 @@ const AdminDashboard = () => {
             case "reports": return renderReports();
             case "courses": return renderPlaceholder("All Courses", <BookOpen size={48} />);
             case "attendance": return renderPlaceholder("Student Attendance", <Activity size={48} />);
+            case "materials": return <MaterialUpload />;
             case "announcement": return <AnnouncementManagement />;
             default: return renderOverview();
         }
@@ -345,6 +349,10 @@ const AdminDashboard = () => {
                         <div className="nav-item-content"><Activity size={20} /> Attendance</div>
                         {activeTab === "attendance" && <ChevronRight size={16} />}
                     </div>
+                    <div className={`admin-nav-item ${activeTab === "materials" ? "active" : ""}`} onClick={() => setActiveTab("materials")}>
+                        <div className="nav-item-content"><Upload size={20} /> Materials</div>
+                        {activeTab === "materials" && <ChevronRight size={16} />}
+                    </div>
 
                     <div className="nav-section-title">Business</div>
                     <div className={`admin-nav-item ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>
@@ -380,9 +388,9 @@ const AdminDashboard = () => {
             </aside>
 
             <main className="admin-main-content">
-                <DashboardHeader 
-                    title="Admin Dashboard" 
-                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'} 
+                <DashboardHeader
+                    title="Admin Dashboard"
+                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'}
                     onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
