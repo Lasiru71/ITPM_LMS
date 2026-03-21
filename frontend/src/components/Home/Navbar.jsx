@@ -66,9 +66,9 @@ export default function Navbar() {
 
   /* ── EXTRA links shown right of left nav ─────── */
   const EXTRA_LINKS = [
-    { label: 'Exam Login',       href: '/exam-login',                  external: false },
-    { label: 'Books & Projects', href: '/project',                     external: false },
-    { label: 'Reviews & Ratings',href: '/reviews',                     external: false },
+    { label: 'Exam Login', href: '/exam-login', external: false },
+    { label: 'Books & Projects', href: '/project', external: false },
+    { label: 'Reviews & Ratings', href: '/reviews', external: false },
   ];
 
   return (
