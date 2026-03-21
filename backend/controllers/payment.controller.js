@@ -31,12 +31,25 @@ exports.createPayment = async (req, res) => {
       });
     }
 
+    let slipImage = '';
+
+    if (method === 'BANK_TRANSFER') {
+      if (!req.file) {
+        return res.status(400).json({
+          message: 'Bank payment slip is required for bank transfer',
+        });
+      }
+
+      slipImage = `/uploads/${req.file.filename}`;
+    }
+
     const payment = await Payment.create({
       studentId,
       course: courseId,
       amount: course.fee || 0,
       method,
       status: 'PENDING',
+      slipImage,
     });
 
     res.status(201).json({

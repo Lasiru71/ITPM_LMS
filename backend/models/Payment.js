@@ -24,6 +24,10 @@ const paymentSchema = new mongoose.Schema({
     enum: ['PENDING', 'APPROVED', 'REJECTED'],
     default: 'PENDING',
   },
+    slipImage: {
+    type: String,
+    default: '',
+  },
   adminRemark: {
     type: String,
     default: '',

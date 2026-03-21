@@ -14,6 +14,9 @@ export default function PaymentPage() {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
+  const [slipImage, setSlipImage] = useState(null);
+  const [showSlipUpload, setShowSlipUpload] = useState(false);
+
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -35,6 +38,19 @@ export default function PaymentPage() {
     setSelectedCourse(course || null);
   };
 
+  const resetForm = () => {
+    setStudentId("");
+    setCourseId("");
+    setMethod("CARD");
+    setSelectedCourse(null);
+    setCardName("");
+    setCardNumber("");
+    setExpiry("");
+    setCvv("");
+    setSlipImage(null);
+    setShowSlipUpload(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -49,6 +65,7 @@ export default function PaymentPage() {
       return;
     }
 
+    // CARD PAYMENT FLOW
     if (method === "CARD") {
       if (!cardName || !cardNumber || !expiry || !cvv) {
         setMessage("Please fill all card details");
@@ -64,39 +81,66 @@ export default function PaymentPage() {
         setMessage("CVV must be at least 3 digits");
         return;
       }
+
+      try {
+        const formData = new FormData();
+        formData.append("studentId", studentId);
+        formData.append("courseId", courseId);
+        formData.append("method", method);
+
+        const res = await api.post("/payments", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        setMessage(
+          `Payment created successfully. Status: ${
+            res.data.status || res.data.payment?.status || "PENDING"
+          }`
+        );
+
+        resetForm();
+      } catch (error) {
+        setMessage(error.response?.data?.message || "Payment failed");
+      }
+      return;
+    }
+
+    // BANK TRANSFER STEP 1 -> SHOW UPLOAD
+    if (method === "BANK_TRANSFER" && !showSlipUpload) {
+      setShowSlipUpload(true);
+      setMessage("Please upload your bank payment slip to continue");
+      return;
+    }
+  };
+
+  const handleSlipSubmit = async () => {
+    setMessage("");
+
+    if (!slipImage) {
+      setMessage("Please upload the bank payment slip");
+      return;
     }
 
     try {
-      const res = await api.post("/payments", {
-        studentId,
-        courseId,
-        method,
-        cardDetails:
-          method === "CARD"
-            ? {
-                cardName,
-                cardNumber,
-                expiry,
-              }
-            : null,
+      const formData = new FormData();
+      formData.append("studentId", studentId);
+      formData.append("courseId", courseId);
+      formData.append("method", method);
+      formData.append("slipImage", slipImage);
+
+      const res = await api.post("/payments", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       setMessage(
-        `Payment created successfully. Status: ${
+        `Bank transfer submitted successfully. Status: ${
           res.data.status || res.data.payment?.status || "PENDING"
         }`
       );
 
-      setStudentId("");
-      setCourseId("");
-      setMethod("CARD");
-      setSelectedCourse(null);
-      setCardName("");
-      setCardNumber("");
-      setExpiry("");
-      setCvv("");
+      resetForm();
     } catch (error) {
-      setMessage(error.response?.data?.message || "Payment failed");
+      setMessage(error.response?.data?.message || "Slip upload failed");
     }
   };
 
@@ -130,18 +174,21 @@ export default function PaymentPage() {
 
         {selectedCourse && (
           <div className="info-box">
-            <p>
-              <strong>Course:</strong> {selectedCourse.title}
-            </p>
-            <p>
-              <strong>Fee:</strong> Rs. {selectedCourse.fee}
-            </p>
+            <p><strong>Course:</strong> {selectedCourse.title}</p>
+            <p><strong>Fee:</strong> Rs. {selectedCourse.fee}</p>
           </div>
         )}
 
         <div>
           <label>Payment Method</label>
-          <select value={method} onChange={(e) => setMethod(e.target.value)}>
+          <select
+            value={method}
+            onChange={(e) => {
+              setMethod(e.target.value);
+              setShowSlipUpload(false);
+              setSlipImage(null);
+            }}
+          >
             <option value="CARD">Card</option>
             <option value="BANK_TRANSFER">Bank Transfer</option>
           </select>
@@ -227,13 +274,35 @@ export default function PaymentPage() {
             <p><strong>Account Name:</strong> University LMS</p>
             <p><strong>Account Number:</strong> 1234567890</p>
             <p><strong>Branch:</strong> Colombo Main Branch</p>
-            <p>Please complete the transfer and keep your receipt for verification.</p>
+            <p>Please complete the transfer and upload your payment slip for verification.</p>
+
+            {showSlipUpload && (
+              <div style={{ marginTop: "20px" }}>
+                <label>Upload Payment Slip</label>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => setSlipImage(e.target.files[0])}
+                />
+
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{ marginTop: "15px" }}
+                  onClick={handleSlipSubmit}
+                >
+                  Submit Slip
+                </button>
+              </div>
+            )}
           </div>
         )}
 
-        <button type="submit" className="btn-primary">
-          Pay Now
-        </button>
+        {!showSlipUpload && (
+          <button type="submit" className="btn-primary">
+            Pay Now
+          </button>
+        )}
       </form>
 
       {message && <p className="message">{message}</p>}
