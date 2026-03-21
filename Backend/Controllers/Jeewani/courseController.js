@@ -1,4 +1,4 @@
-import Course from '../../models/Jeewani/Course.js';
+import Course from '@/models/Jeewani/Course.js';
 
 // Create a new course
 export const createCourse = async (req, res) => {
