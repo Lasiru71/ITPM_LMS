@@ -15,13 +15,16 @@ export default function CreateCourse() {
     const existing = JSON.parse(localStorage.getItem("courses")) || [];
 
     const newCourse = {
+      id: Date.now(),
       title,
       price,
     };
 
     localStorage.setItem("courses", JSON.stringify([...existing, newCourse]));
 
+    // redirect + refresh
     navigate("/lecturer-dashboard");
+    setTimeout(() => window.location.reload(), 100);
   };
 
   return (
@@ -33,6 +36,7 @@ export default function CreateCourse() {
         placeholder="Course Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        style={{ padding: "8px", width: "300px" }}
       />
       <br /><br />
 
@@ -41,6 +45,7 @@ export default function CreateCourse() {
         placeholder="Price"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
+        style={{ padding: "8px", width: "300px" }}
       />
       <br /><br />
 
