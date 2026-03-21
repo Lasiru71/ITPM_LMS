@@ -5,6 +5,7 @@ import { PORT, MONGO_URI } from "./config.js";
 import authRoutes from "./routes/Lasiru/authRoutes.js";
 import adminRoutes from "./routes/Lasiru/adminRoutes.js";
 import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
+import jeewaniCourseRoutes from "./routes/Jeewani/courseRoutes.js";
 
 const app = express();
 
@@ -22,6 +23,9 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/announcements", announcementRoutes);
+
+// Jeewani routes
+app.use("/api/jeewani/courses", jeewaniCourseRoutes);
 
 // MongoDB connection (modern Mongoose 9+)
 mongoose
