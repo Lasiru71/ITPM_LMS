@@ -6,6 +6,8 @@ import authRoutes from "./routes/Lasiru/authRoutes.js";
 import adminRoutes from "./routes/Lasiru/adminRoutes.js";
 import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
 import assignmentRoutes from "./routes/sadeepa/assignmentRoutes.js";
+import materialRoutes from "./routes/sadeepa/materialRoutes.js";
+import projectRoutes from "./routes/sadeepa/projectRoutes.js";
 
 const app = express();
 
@@ -26,6 +28,8 @@ app.use("/api/announcements", announcementRoutes);
 
 // Assignment routes (Sadeepa)
 app.use("/api/sadeepa/assignments", assignmentRoutes);
+app.use("/api/sadeepa/materials", materialRoutes);
+app.use("/api/sadeepa/projects", projectRoutes);
 
 // MongoDB connection (modern Mongoose 9+)
 mongoose
