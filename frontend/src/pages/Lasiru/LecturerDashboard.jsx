@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
@@ -6,37 +6,25 @@ import {
     PlusCircle,
     Star,
     Settings,
-    LogOut,
-    ChevronRight,
-    Users,
-    ChevronLeft,
-    FilePlus,
-    FileText
+    LogOut
 } from "lucide-react";
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
-
-// Jeewani
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
-
-// Sadeepa
-import CreateAssignment from "../../components/sadeepa/CreateAssignment.jsx";
-import CreateExam from "../../components/sadeepa/CreateExam.jsx";
-import Reports from "../../components/sadeepa/Reports.jsx";
 
 import "../../Styles/Lasiru/LecturerDashboard.css";
 
 const LecturerDashboard = () => {
     const [activeTab, setActiveTab] = useState("dashboard");
-    const [currentPage, setCurrentPage] = useState(1);
     const navigate = useNavigate();
     const { showToast } = useToast();
     const { courses, fetchCourses, isLoading } = useCourseStore();
+
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-    React.useEffect(() => {
+    useEffect(() => {
         fetchCourses();
     }, []);
 
@@ -45,45 +33,47 @@ const LecturerDashboard = () => {
     );
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        localStorage.clear();
         showToast("success", "Logged out successfully");
         navigate("/login");
     };
 
+    // ✅ ONLY YOUR NAV ITEMS
     const navItems = [
         { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
-        { id: "my-courses", label: "MyCourse", icon: <BookOpen size={20} /> },
+        { id: "my-courses", label: "My Courses", icon: <BookOpen size={20} /> },
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
-        { id: "create-assignment", label: "Create Assignment", icon: <FilePlus size={20} /> },
-        { id: "create-exam", label: "Create Exam", icon: <FileText size={20} /> },
-        { id: "reports", label: "Reports", icon: <FileText size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
     const renderContent = () => {
         if (isLoading) return <div>Loading...</div>;
 
-        // Jeewani
+        // 👉 CREATE COURSE
         if (activeTab === "create-course") {
             return <CourseCreationForm onSuccess={() => setActiveTab("dashboard")} />;
         }
 
-        // Sadeepa
-        if (activeTab === "create-assignment") return <CreateAssignment />;
-        if (activeTab === "create-exam") return <CreateExam />;
-        if (activeTab === "reports") return <Reports />;
-
-        // Dashboard
-        if (activeTab === "dashboard") {
+        // 👉 DASHBOARD + MY COURSES
+        if (activeTab === "dashboard" || activeTab === "my-courses") {
             return (
-                <div>
+                <div style={{ padding: "20px" }}>
                     <h2>My Courses ({myCourses.length})</h2>
+
                     {myCourses.length > 0 ? (
                         myCourses.map(course => (
-                            <div key={course.id || course._id}>
-                                <p>{course.title}</p>
+                            <div
+                                key={course.id || course._id}
+                                style={{
+                                    padding: "10px",
+                                    marginTop: "10px",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px"
+                                }}
+                            >
+                                <h4>{course.title}</h4>
+                                <p>{course.shortDescription}</p>
                             </div>
                         ))
                     ) : (
@@ -93,11 +83,10 @@ const LecturerDashboard = () => {
             );
         }
 
-        const activeItem = navItems.find(item => item.id === activeTab);
-
+        // 👉 OTHER TABS
         return (
-            <div>
-                <h2>{activeItem?.label}</h2>
+            <div style={{ padding: "20px" }}>
+                <h2>{navItems.find(i => i.id === activeTab)?.label}</h2>
                 <p>Section under development</p>
             </div>
         );
@@ -105,6 +94,7 @@ const LecturerDashboard = () => {
 
     return (
         <div className="lecturer-dashboard-container">
+            {/* SIDEBAR */}
             <aside className="lecturer-sidebar">
                 <div className="lecturer-logo">
                     <BookOpen size={20} />
@@ -116,12 +106,10 @@ const LecturerDashboard = () => {
                         <button
                             key={item.id}
                             className={activeTab === item.id ? "active" : ""}
-                            onClick={() => {
-                                setActiveTab(item.id);
-                                setCurrentPage(1);
-                            }}
+                            onClick={() => setActiveTab(item.id)}
                         >
-                            {item.icon} {item.label}
+                            <span>{item.icon}</span>
+                            <span>{item.label}</span>
                         </button>
                     ))}
                 </nav>
@@ -131,8 +119,11 @@ const LecturerDashboard = () => {
                 </button>
             </aside>
 
+            {/* MAIN CONTENT */}
             <main>
-                <DashboardHeader title={navItems.find(i => i.id === activeTab)?.label} />
+                <DashboardHeader
+                    title={navItems.find(i => i.id === activeTab)?.label}
+                />
                 {renderContent()}
             </main>
         </div>
