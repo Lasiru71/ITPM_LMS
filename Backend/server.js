@@ -5,6 +5,7 @@ import { PORT, MONGO_URI } from "./config.js";
 import authRoutes from "./routes/Lasiru/authRoutes.js";
 import adminRoutes from "./routes/Lasiru/adminRoutes.js";
 import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
+import assignmentRoutes from "./routes/sadeepa/assignmentRoutes.js";
 
 const app = express();
 
@@ -22,6 +23,9 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/announcements", announcementRoutes);
+
+// Assignment routes (Sadeepa)
+app.use("/api/sadeepa/assignments", assignmentRoutes);
 
 // MongoDB connection (modern Mongoose 9+)
 mongoose

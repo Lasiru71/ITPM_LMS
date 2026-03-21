@@ -10,10 +10,15 @@ import {
     Bell, 
     ChevronRight,
     Search,
-    User
+    User,
+    FilePlus,
+    FileText
 } from "lucide-react";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
+import CreateAssignment from "../../components/sadeepa/CreateAssignment.jsx";
+import CreateExam from "../../components/sadeepa/CreateExam.jsx";
+import Reports from "../../components/sadeepa/Reports.jsx";
 import "../../Styles/Lasiru/LecturerDashboard.css";
 
 const LecturerDashboard = () => {
@@ -34,10 +39,17 @@ const LecturerDashboard = () => {
         { id: "my-courses", label: "MyCourse", icon: <BookOpen size={20} /> },
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
+        { id: "create-assignment", label: "Create Assignment", icon: <FilePlus size={20} /> },
+        { id: "create-exam", label: "Create Exam", icon: <FileText size={20} /> },
+        { id: "reports", label: "Reports", icon: <FileText size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
     const renderContent = () => {
+        if (activeTab === 'create-assignment') return <CreateAssignment />;
+        if (activeTab === 'create-exam') return <CreateExam />;
+        if (activeTab === 'reports') return <Reports />;
+
         return (
             <div className="dashboard-placeholder">
                 <div className="placeholder-icon">

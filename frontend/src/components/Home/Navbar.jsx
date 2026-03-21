@@ -57,17 +57,17 @@ export default function Navbar() {
   const getDashboardPath = () => {
     if (!user) return '/login';
     switch (user.role) {
-      case 'Admin':    return '/admin-dashboard';
+      case 'Admin': return '/admin-dashboard';
       case 'Lecturer': return '/lecturer-dashboard';
-      case 'Student':  return '/student-dashboard';
-      default:         return '/profile';
+      case 'Student': return '/student-dashboard';
+      default: return '/profile';
     }
   };
 
   /* ── EXTRA links shown right of left nav ─────── */
   const EXTRA_LINKS = [
-    { label: 'Exam Login',       href: 'http://localhost:8081/login', external: true },
-    { label: 'Books & Projects', href: 'http://localhost:8082/',       external: true },
+    { label: 'Exam Login',       href: '/exam-login',                  external: false },
+    { label: 'Books & Projects', href: '/project',                     external: false },
     { label: 'Reviews & Ratings',href: '/reviews',                     external: false },
   ];
 
@@ -97,11 +97,11 @@ export default function Navbar() {
           {EXTRA_LINKS.map(({ label, href, external }) =>
             external
               ? <a key={label} href={href} target="_blank" rel="noreferrer"
-                  style={{ padding: '0.4rem 0.75rem', fontSize: '0.8125rem', fontWeight: 500, color: '#475569', borderRadius: '0.5rem', textDecoration: 'none', whiteSpace: 'nowrap', transition: 'color 0.15s, background 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.color = '#059669'; e.currentTarget.style.background = '#f0fdf4'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; }}>
-                  {label}
-                </a>
+                style={{ padding: '0.4rem 0.75rem', fontSize: '0.8125rem', fontWeight: 500, color: '#475569', borderRadius: '0.5rem', textDecoration: 'none', whiteSpace: 'nowrap', transition: 'color 0.15s, background 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#059669'; e.currentTarget.style.background = '#f0fdf4'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; }}>
+                {label}
+              </a>
               : <NavLink key={label} to={href}>{label}</NavLink>
           )}
 
