@@ -64,7 +64,6 @@ export default function EditCourse() {
   const [price, setPrice] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [language, setLanguage] = useState('English');
-  const [tags, setTags] = useState('');
   const [modules, setModules] = useState([createEmptyModule()]);
   const [previewMode, setPreviewMode] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -84,7 +83,6 @@ export default function EditCourse() {
           setPrice(course.price?.toString() || '');
           setOriginalPrice(course.originalPrice?.toString() || '');
           setLanguage(course.language || 'English');
-          setTags((course.tags || []).join(', '));
           
           if (course.modules && course.modules.length > 0) {
             setModules(course.modules.map(m => ({ ...m, isExpanded: false })));
@@ -241,11 +239,6 @@ export default function EditCourse() {
       }))
     }));
 
-    const tagArray = tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
-
     const updatedCourseData = {
       _id: id,
       title: title.trim(),
@@ -259,7 +252,6 @@ export default function EditCourse() {
       duration: `${totalLessons * 10}m`,
       totalLessons,
       language,
-      tags: tagArray,
       modules: courseModules
     };
 
@@ -525,23 +517,9 @@ export default function EditCourse() {
                     )}
                   </div>
 
-                   {/* Tags */}
-                   <div className="space-y-2.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Tags (Comma separated)</label>
-                    <div className="relative group">
-                      <Tag className="absolute left-5 top-1/2 -translate-y-1/2 size-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-                      <input
-                        type="text"
-                        value={tags}
-                        onChange={(e) => setTags(e.target.value)}
-                        placeholder="react, web-dev, javascript"
-                        className="w-full pl-14 pr-6 py-4 rounded-[20px] border-2 border-slate-100 focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500/30 transition-all font-medium text-slate-600 placeholder:text-slate-300 bg-slate-50/50"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
-            </div>
           </TabsContent>
 
           <TabsContent value="curriculum" className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">

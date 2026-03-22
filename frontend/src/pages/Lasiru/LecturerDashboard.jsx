@@ -21,8 +21,12 @@ import {
     Clock,
     DollarSign,
     GraduationCap,
-    Globe
+    Globe,
+    FileText,
+    Download
 } from "lucide-react";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
@@ -67,7 +71,8 @@ const LecturerDashboard = () => {
                         ...c,
                         totalLessons: 12,
                         duration: '4h 30m',
-                        language: 'English'
+                        language: 'English',
+                        updatedAt: new Date(2024, 0, 1).toISOString() // Older date for mock
                     })), 
                     ...customCourses.map(c => ({
                         _id: c._id,
@@ -85,7 +90,8 @@ const LecturerDashboard = () => {
                         totalLessons: c.totalLessons || 0,
                         duration: c.duration || '0m',
                         language: c.language || 'English',
-                        updatedAt: c.updatedAt
+                        updatedAt: c.updatedAt || c.lastUpdated || new Date().toISOString(),
+                        modules: c.modules || []
                     }))
                 ];
                 setAllCourses(combined);
@@ -98,13 +104,117 @@ const LecturerDashboard = () => {
         fetchAllCourses();
     }, []);
 
-    const calcAvgRating = () => {
-        if (reviews.length === 0) return "0.0";
-        const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
-        return (sum / reviews.length).toFixed(1);
+    const handleRefresh = async () => {
+        showToast("info", "Refreshing dashboard data...");
+        try {
+            await fetchCourses();
+            const reviewData = await getAllReviews();
+            setReviews(reviewData);
+            
+            const customCourses = await getAllCourses();
+            const combined = [
+                ...MOCK_COURSES.map(c => ({
+                    ...c,
+                    totalLessons: 12,
+                    duration: '4h 30m',
+                    language: 'English',
+                    updatedAt: new Date(2024, 0, 1).toISOString()
+                })), 
+                ...customCourses.map(c => ({
+                    _id: c._id,
+                    id: c.id,
+                    title: c.title,
+                    instructor: c.instructorName || c.instructor || 'Lecturer',
+                    instructorId: c.instructorId,
+                    price: c.price,
+                    image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
+                    thumbnail: c.thumbnail,
+                    rating: 4.5,
+                    reviews: 10,
+                    category: c.category || 'General',
+                    level: c.level || 'Beginner',
+                    totalLessons: c.totalLessons || 0,
+                    duration: c.duration || '0m',
+                    language: c.language || 'English',
+                    updatedAt: c.updatedAt || c.lastUpdated || new Date().toISOString(),
+                    modules: c.modules || []
+                }))
+            ];
+            setAllCourses(combined);
+            showToast("success", "Dashboard updated");
+        } catch (error) {
+            showToast("error", "Refresh failed");
+        }
     };
 
-    const myCourses = allCourses.filter(c => c.instructorId === (user._id || user.id));
+    const generatePDFReport = () => {
+        try {
+            const doc = new jsPDF();
+            const timestamp = new Date().toLocaleString();
+
+            // Header
+            doc.setFontSize(22);
+            doc.setTextColor(16, 185, 129); // Emerald-500
+            doc.text("EduVault", 14, 20);
+
+            doc.setFontSize(18);
+            doc.setTextColor(30, 41, 59); // Slate-800
+            doc.text("My Courses Report", 14, 30);
+
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Generated on: ${timestamp}`, 14, 40);
+            doc.text(`Lecturer: ${user.name || "Lecturer"}`, 14, 46);
+            doc.line(14, 52, 196, 52);
+
+            // Table Data
+            const tableColumn = ["Course Name", "Category", "Level", "Price", "Modules", "Last Updated"];
+            const tableRows = myCourses.map(course => [
+                course.title,
+                course.category || "General",
+                course.level || "Beginner",
+                `Rs. ${course.price?.toLocaleString() || "0"}`,
+                course.modules?.length || course.totalLessons || 0,
+                course.updatedAt ? new Date(course.updatedAt).toLocaleDateString() : 'N/A'
+            ]);
+
+            doc.autoTable({
+                startY: 60,
+                head: [tableColumn],
+                body: tableRows,
+                theme: 'striped',
+                headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [241, 245, 249] },
+                margin: { top: 60 }
+            });
+
+            const fileName = `EduVault_Courses_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            showToast("success", "Report downloaded successfully");
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            showToast("error", "Failed to generate report");
+        }
+    };
+
+    const calcAvgRating = () => {
+        // Only include reviews for this lecturer's courses
+        const lecturerReviews = reviews.filter(review => 
+            myCourses.some(c => (c._id === review.courseId || c.id === review.courseId))
+        );
+
+        if (lecturerReviews.length === 0) return "0.0";
+        const sum = lecturerReviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+        return (sum / lecturerReviews.length).toFixed(1);
+    };
+
+    const myCourses = allCourses
+        .filter(c => c.instructorId === (user._id || user.id))
+        .sort((a, b) => {
+            const dateA = new Date(a.updatedAt || a.lastUpdated || 0);
+            const dateB = new Date(b.updatedAt || b.lastUpdated || 0);
+            return dateB - dateA; // Sort descending
+        });
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -130,7 +240,7 @@ const LecturerDashboard = () => {
 
     const navItems = [
         { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
-        { id: "my-courses", label: "My Modules", icon: <BookOpen size={20} /> },
+        { id: "my-courses", label: "My Courses", icon: <BookOpen size={20} /> },
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
@@ -169,9 +279,9 @@ const LecturerDashboard = () => {
                             </div>
                             <div className="stat-data">
                                 <div className="stat-value">
-                                    {myCourses.reduce((acc, c) => acc + (c.modules?.length || 0), 0)}
+                                    {myCourses.length}
                                 </div>
-                                <div className="stat-label">Total Modules</div>
+                                <div className="stat-label">Total Courses</div>
                             </div>
                         </div>
 
@@ -180,7 +290,7 @@ const LecturerDashboard = () => {
                                 <Clock className="stat-icon" />
                             </div>
                             <div className="stat-data">
-                                <div className="stat-value">
+                                <div className="stat-value text-ellipsis overflow-hidden whitespace-nowrap max-w-[150px]" title={myCourses.length > 0 ? myCourses[0].title : "No Course"}>
                                     {myCourses.length > 0 ? myCourses[0].title : "No Course"}
                                 </div>
                                 <div className="stat-label">Recently Updated</div>
@@ -211,11 +321,11 @@ const LecturerDashboard = () => {
                             />
                         </div>
                         <div className="action-buttons-v2">
-                            <Button className="btn-print">
+                            <Button className="btn-print" onClick={generatePDFReport}>
                                 <Printer size={18} />
                                 Print Report
                             </Button>
-                            <Button className="btn-refresh" onClick={() => fetchCourses()}>
+                            <Button className="btn-refresh" onClick={handleRefresh}>
                                 <RefreshCw size={18} />
                                 Refresh
                             </Button>
@@ -231,7 +341,7 @@ const LecturerDashboard = () => {
                                     <th>Category</th>
                                     <th>Level</th>
                                     <th>Price</th>
-                                    <th>Modules</th>
+                                    <th>Lessons</th>
                                     <th>Duration</th>
                                     <th>Last Updated</th>
                                     <th>Actions</th>
@@ -264,7 +374,7 @@ const LecturerDashboard = () => {
                                                 </td>
                                                 <td>
                                                     <span className="module-count font-bold text-slate-700">
-                                                        {course.modules?.length || course.totalLessons || 0}
+                                                        {course.totalLessons || course.modules?.length || 0}
                                                     </span>
                                                 </td>
                                                 <td>

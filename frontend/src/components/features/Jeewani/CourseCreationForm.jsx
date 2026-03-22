@@ -60,7 +60,6 @@ export default function CourseCreationForm({ onSuccess }) {
   const [price, setPrice] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [language, setLanguage] = useState('English');
-  const [tags, setTags] = useState('');
   const [modules, setModules] = useState([createEmptyModule()]);
   const [previewMode, setPreviewMode] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -183,8 +182,6 @@ export default function CourseCreationForm({ onSuccess }) {
       }
     }
 
-    if (!tags.trim()) newErrors.tags = 'At least one tag is required.';
-
     if (!price) newErrors.price = 'Price is required.';
     else if (isNaN(price) || Number(price) < 0) newErrors.price = 'Please enter a valid non-negative price.';
 
@@ -232,11 +229,6 @@ export default function CourseCreationForm({ onSuccess }) {
       }))
     }));
 
-    const tagArray = tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
-
     const newCourse = {
       id: `custom-${Date.now()}`,
       instructorId: user.id || user._id,
@@ -258,7 +250,6 @@ export default function CourseCreationForm({ onSuccess }) {
       totalLessons,
       language,
       lastUpdated: new Date().toISOString().split('T')[0],
-      tags: tagArray,
       isNew: true,
       modules: courseModules
     };
@@ -530,24 +521,9 @@ export default function CourseCreationForm({ onSuccess }) {
                     )}
                   </div>
 
-                   {/* Tags */}
-                   <div className="space-y-2.5">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Tags (Comma separated)</label>
-                    <div className="relative group">
-                      <Tag className="absolute left-5 top-1/2 -translate-y-1/2 size-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-                      <input
-                        type="text"
-                        value={tags}
-                        onChange={(e) => { setTags(e.target.value); if(errors.tags) setErrors({...errors, tags: ''}); }}
-                        placeholder="react, web-dev, javascript"
-                        className={`w-full pl-14 pr-6 py-4 rounded-[20px] border-2 ${errors.tags ? 'border-red-500 focus:ring-red-100/50' : 'border-slate-100 focus:border-emerald-500/30'} focus:outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-600 placeholder:text-slate-300 bg-slate-50/50`}
-                      />
-                    </div>
-                    {errors.tags && <p className="text-red-500 text-xs mt-1 ml-1">{errors.tags}</p>}
                   </div>
                 </div>
               </div>
-            </div>
           </TabsContent>
 
           <TabsContent value="curriculum" className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
