@@ -11,7 +11,17 @@ import {
     Users,
     ChevronLeft,
     Pencil,
-    Trash2
+    Trash2,
+    Search,
+    Printer,
+    RefreshCw,
+    MoreVertical,
+    CheckCircle2,
+    AlertCircle,
+    Clock,
+    DollarSign,
+    GraduationCap,
+    Globe
 } from "lucide-react";
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
@@ -32,8 +42,9 @@ import "../../Styles/Lasiru/LecturerDashboard.css";
 const LecturerDashboard = () => {
     const [activeTab, setActiveTab] = useState("dashboard");
     const [currentPage, setCurrentPage] = useState(1);
-    const [reviews, setReviews] = useState([]);
     const [allCourses, setAllCourses] = useState([]);
+    const [reviews, setReviews] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -51,19 +62,32 @@ const LecturerDashboard = () => {
         const fetchAllCourses = async () => {
             try {
                 const customCourses = await getAllCourses();
-                const combined = [...MOCK_COURSES, ...customCourses.map(c => ({
-                    _id: c._id,
-                    title: c.title,
-                    instructor: c.instructorName || c.instructor || 'Lecturer',
-                    instructorId: c.instructorId,
-                    price: c.price,
-                    image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
-                    thumbnail: c.thumbnail,
-                    rating: 4.5,
-                    reviews: 10,
-                    category: c.category || 'General',
-                    updatedAt: c.updatedAt
-                }))];
+                const combined = [
+                    ...MOCK_COURSES.map(c => ({
+                        ...c,
+                        totalLessons: 12,
+                        duration: '4h 30m',
+                        language: 'English'
+                    })), 
+                    ...customCourses.map(c => ({
+                        _id: c._id,
+                        id: c.id,
+                        title: c.title,
+                        instructor: c.instructorName || c.instructor || 'Lecturer',
+                        instructorId: c.instructorId,
+                        price: c.price,
+                        image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
+                        thumbnail: c.thumbnail,
+                        rating: 4.5,
+                        reviews: 10,
+                        category: c.category || 'General',
+                        level: c.level || 'Beginner',
+                        totalLessons: c.totalLessons || 0,
+                        duration: c.duration || '0m',
+                        language: c.language || 'English',
+                        updatedAt: c.updatedAt
+                    }))
+                ];
                 setAllCourses(combined);
             } catch (error) {
                 console.error("Error fetching all courses:", error);
@@ -80,7 +104,7 @@ const LecturerDashboard = () => {
         return (sum / reviews.length).toFixed(1);
     };
 
-    const myCourses = courses.filter(c => c.instructorId === (user._id || user.id));
+    const myCourses = allCourses.filter(c => c.instructorId === (user._id || user.id));
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -106,7 +130,7 @@ const LecturerDashboard = () => {
 
     const navItems = [
         { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
-        { id: "my-courses", label: "MyCourse", icon: <BookOpen size={20} /> },
+        { id: "my-courses", label: "My Modules", icon: <BookOpen size={20} /> },
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
@@ -129,126 +153,165 @@ const LecturerDashboard = () => {
         if (activeTab === "dashboard") {
             // Sort courses by lastUpdated (newest first) or simply use reverse of array
             // Now showing all courses from the system as requested
-            const displayCourses = allCourses;
-
+            const filteredCourses = myCourses.filter(course => 
+                course.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                (course.category && course.category.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
 
             return (
-                <div className="dashboard-grid">
+                <div className="dashboard-grid-v2">
 
-                    {/* STATS */}
-                    <div className="stat-cards">
-                        <Card>
-                            <CardHeader className="flex justify-between pb-2">
-                                <CardTitle className="text-sm text-gray-500">Total Courses</CardTitle>
-                                <BookOpen className="h-5 w-5 text-emerald-500" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-black">{myCourses.length}</div>
-                            </CardContent>
-                        </Card>
+                    {/* STATS ROW */}
+                    <div className="premium-stats-row">
+                        <div className="premium-stat-card blue">
+                            <div className="stat-icon-wrapper">
+                                <BookOpen className="stat-icon" />
+                            </div>
+                            <div className="stat-data">
+                                <div className="stat-value">
+                                    {myCourses.reduce((acc, c) => acc + (c.modules?.length || 0), 0)}
+                                </div>
+                                <div className="stat-label">Total Modules</div>
+                            </div>
+                        </div>
 
-                        <Card>
-                            <CardHeader className="flex justify-between pb-2">
-                                <CardTitle className="text-sm text-gray-500">Total Students</CardTitle>
-                                <Users className="h-5 w-5 text-blue-500" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-black">428</div>
-                            </CardContent>
-                        </Card>
+                        <div className="premium-stat-card orange">
+                            <div className="stat-icon-wrapper">
+                                <Clock className="stat-icon" />
+                            </div>
+                            <div className="stat-data">
+                                <div className="stat-value">
+                                    {myCourses.length > 0 ? myCourses[0].title : "No Course"}
+                                </div>
+                                <div className="stat-label">Recently Updated</div>
+                            </div>
+                        </div>
 
-                        <Card>
-                            <CardHeader className="flex justify-between pb-2">
-                                <CardTitle className="text-sm text-gray-500">Avg. Rating</CardTitle>
-                                <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-black">{calcAvgRating()}</div>
-                            </CardContent>
-                        </Card>
+                        <div className="premium-stat-card green">
+                            <div className="stat-icon-wrapper">
+                                <Star className="stat-icon" />
+                            </div>
+                            <div className="stat-data">
+                                <div className="stat-value">{calcAvgRating()}</div>
+                                <div className="stat-label">Avg. Rating</div>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* COURSES */}
-                    <div className="recent-activity mb-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold">All Available Courses</h2>
+                    {/* CONTROLS ROW */}
+                    <div className="dashboard-controls-row">
+                        <div className="search-container-v2">
+                            <Search className="search-icon-v2" size={18} />
+                            <input 
+                                type="text" 
+                                placeholder="Search courses..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="search-input-v2"
+                            />
                         </div>
+                        <div className="action-buttons-v2">
+                            <Button className="btn-print">
+                                <Printer size={18} />
+                                Print Report
+                            </Button>
+                            <Button className="btn-refresh" onClick={() => fetchCourses()}>
+                                <RefreshCw size={18} />
+                                Refresh
+                            </Button>
+                        </div>
+                    </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                            {displayCourses.length > 0 ? (
-                                displayCourses.map(course => (
-
-                                    <Card key={course._id || course.id}>
-                                        <div className="aspect-video relative">
-                                            <img
-                                                src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
-                                                alt={course.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                            <Badge className="absolute top-2 right-2">
-                                                {course.category || "General"}
-                                            </Badge>
-                                        </div>
-
-                                        <CardHeader>
-                                            <CardTitle>{course.title}</CardTitle>
-                                            <CardDescription>
-                                                {course.shortDescription || `By ${course.instructor}`}
-                                            </CardDescription>
-                                        </CardHeader>
-
-                                         <CardContent>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-green-600 font-bold">
-                                                    ${course.price}
-                                                </span>
-                                                
-                                                <div className="flex items-center gap-1 text-amber-500 text-sm font-bold">
-                                                    <Star size={14} className="fill-amber-500" />
-                                                    {course.rating || "4.5"}
+                    {/* COURSES TABLE */}
+                    <div className="premium-table-container">
+                        <table className="premium-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Level</th>
+                                    <th>Price</th>
+                                    <th>Modules</th>
+                                    <th>Duration</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredCourses.length > 0 ? (
+                                    filteredCourses.map(course => {
+                                        const isOwnCourse = course.instructorId === (user._id || user.id);
+                                        return (
+                                            <tr key={course._id || course.id}>
+                                                <td>
+                                                    <div className="table-course-info">
+                                                        <div className="course-mini-thumb">
+                                                            <img src={course.image || course.thumbnail} alt={course.title} />
+                                                        </div>
+                                                        <span className="course-name-text">{course.title}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <Badge className="category-badge">
+                                                        {course.category || "General"}
+                                                    </Badge>
+                                                </td>
+                                                <td>
+                                                    <span className="level-text font-medium text-slate-600">{course.level || "Beginner"}</span>
+                                                </td>
+                                                <td>
+                                                    <span className="price-text">Rs. {course.price?.toLocaleString() || "0"}</span>
+                                                </td>
+                                                <td>
+                                                    <span className="module-count font-bold text-slate-700">
+                                                        {course.modules?.length || course.totalLessons || 0}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <Badge className="duration-badge bg-blue-50 text-blue-600 border-none">
+                                                        {course.duration || '0m'}
+                                                    </Badge>
+                                                </td>
+                                                <td>
+                                                    <span className="date-text">
+                                                        {course.updatedAt ? new Date(course.updatedAt).toLocaleDateString() : 'N/A'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className="table-actions">
+                                                        <button 
+                                                            className="action-btn edit" 
+                                                            title="Edit"
+                                                            onClick={() => handleEditCourse(course._id || course.id)}
+                                                        >
+                                                            <Pencil size={16} />
+                                                        </button>
+                                                        <button 
+                                                            className="action-btn delete" 
+                                                            title="Delete"
+                                                            onClick={() => handleDeleteCourse(course._id || course.id, course.title)}
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan="7" className="empty-table-row">
+                                            <div className="empty-table-state">
+                                                <div className="empty-icon-v2">
+                                                    <BookOpen size={48} />
                                                 </div>
+                                                <p>No courses found. Try a different search term or add new courses.</p>
                                             </div>
-
-                                            {/* Show edit/delete if it's the lecturer's own course */}
-                                            {(course.instructorId === (user._id || user.id)) && (
-                                                <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50">
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        className="flex-1 h-8 text-xs font-bold gap-1 rounded-lg"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleEditCourse(course._id);
-                                                        }}
-                                                    >
-                                                        <Pencil size={12} /> Edit
-                                                    </Button>
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg border-red-50"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDeleteCourse(course._id, course.title);
-                                                        }}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                ))
-                            ) : (
-                                <div className="col-span-full text-center text-gray-400">
-                                    No courses available.
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Pagination removed from dashboard for recent view */}
-
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             );
@@ -378,21 +441,23 @@ const LecturerDashboard = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-2 mt-6">
-                                            <Button 
-                                                variant="outline" 
-                                                className="flex-1 border-slate-200 hover:bg-slate-50 text-slate-600 gap-2 h-11 rounded-xl font-bold"
-                                                onClick={() => handleEditCourse(course._id)}
-                                            >
-                                                <Pencil size={16} /> Edit
-                                            </Button>
-                                            <Button 
-                                                variant="outline" 
-                                                className="border-red-100 hover:bg-red-50 text-red-500 hover:text-red-600 h-11 w-11 p-0 rounded-xl"
-                                                onClick={() => handleDeleteCourse(course._id, course.title)}
-                                            >
-                                                <Trash2 size={18} />
-                                            </Button>
+                                        <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-slate-50">
+                                            <div className="flex items-center gap-2 text-slate-500">
+                                                <GraduationCap size={16} className="text-emerald-500" />
+                                                <span className="text-xs font-semibold">{course.level || 'Beginner'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-slate-500">
+                                                <BookOpen size={16} className="text-emerald-500" />
+                                                <span className="text-xs font-semibold">{course.totalLessons || '0'} Lessons</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-slate-500">
+                                                <Clock size={16} className="text-emerald-500" />
+                                                <span className="text-xs font-semibold">{course.duration || '0m'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-slate-500">
+                                                <Globe size={16} className="text-emerald-500" />
+                                                <span className="text-xs font-semibold">{course.language || 'English'}</span>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>

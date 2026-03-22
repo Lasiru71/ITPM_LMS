@@ -128,6 +128,40 @@ export default function CourseCreationForm({ onSuccess }) {
     );
   };
 
+  const handlePaste = (e) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setThumbnailUrl(event.target.result);
+          if (errors.thumbnailUrl) setErrors({ ...errors, thumbnailUrl: "" });
+          showToast("success", "Image pasted from clipboard!");
+        };
+        reader.readAsDataURL(blob);
+        break;
+      }
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('error', 'Please select an image file.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setThumbnailUrl(event.target.result);
+        if (errors.thumbnailUrl) setErrors({ ...errors, thumbnailUrl: "" });
+        showToast('success', 'Image uploaded successfully!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     if (!title.trim()) newErrors.title = 'Course title is required.';
@@ -143,7 +177,10 @@ export default function CourseCreationForm({ onSuccess }) {
 
     if (!thumbnailUrl.trim()) newErrors.thumbnailUrl = 'Thumbnail URL is required.';
     else {
+      const isBase64 = thumbnailUrl.startsWith('data:image/');
+      if (!isBase64) {
         try { new URL(thumbnailUrl); } catch { newErrors.thumbnailUrl = 'Please enter a valid URL.'; }
+      }
     }
 
     if (!tags.trim()) newErrors.tags = 'At least one tag is required.';
@@ -429,44 +466,81 @@ export default function CourseCreationForm({ onSuccess }) {
               </div>
 
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <ImageIcon size={18} className="text-emerald-500" />
-                    <h3 className="font-bold text-slate-800">Media & Tags</h3>
+                <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm space-y-8">
+                  {/* Header */}
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm border border-emerald-100/50">
+                      <ImageIcon size={22} />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800">Media & Tags</h3>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Thumbnail URL</label>
-                    <div className="flex gap-2">
+
+                  {/* Thumbnail Input */}
+                  <div className="space-y-5">
+                    <div className="space-y-2.5">
+                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Thumbnail Media</label>
                       <input
                         type="text"
                         value={thumbnailUrl}
                         onChange={(e) => { setThumbnailUrl(e.target.value); if(errors.thumbnailUrl) setErrors({...errors, thumbnailUrl: ''}); }}
-                        placeholder="Paste image URL here"
-                        className={`flex-1 px-4 py-3 rounded-xl border ${errors.thumbnailUrl ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium`}
+                        onPaste={handlePaste}
+                        placeholder="Paste image URL or paste image here"
+                        className={`w-full px-6 py-4 rounded-[20px] border-2 ${errors.thumbnailUrl ? 'border-red-200 focus:ring-red-100/50' : 'border-slate-100 focus:border-emerald-500/30'} focus:outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-600 placeholder:text-slate-300 bg-slate-50/30`}
                       />
                     </div>
+
+                    <div className="flex items-center gap-4 px-2">
+                      <div className="h-[0.5px] flex-1 bg-slate-100"></div>
+                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">OR</span>
+                      <div className="h-[0.5px] flex-1 bg-slate-100"></div>
+                    </div>
+
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      onClick={() => document.getElementById('thumbnail-upload-create').click()}
+                      className="w-full h-24 border-2 border-dashed border-slate-200 hover:border-emerald-500/50 hover:bg-emerald-50/20 text-slate-500 hover:text-emerald-600 rounded-[24px] transition-all gap-4 bg-slate-50/30 group"
+                    >
+                      <div className="size-11 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Upload size={22} className="text-slate-400 group-hover:text-emerald-500" />
+                      </div>
+                      <span className="font-bold text-lg">Choose Local Image</span>
+                    </Button>
+                    
+                    <input 
+                      id="thumbnail-upload-create"
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileChange} 
+                      className="hidden" 
+                    />
+                    
                     {errors.thumbnailUrl && <p className="text-red-500 text-xs mt-1 ml-1">{errors.thumbnailUrl}</p>}
                   </div>
-                  <div className="aspect-video rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden">
+
+                  {/* Preview */}
+                  <div className="aspect-video rounded-[24px] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
                     {thumbnailUrl ? (
                       <img src={thumbnailUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center p-4">
-                        <ImageIcon size={32} className="mx-auto text-slate-300 mb-2" />
-                        <p className="text-xs text-slate-400 font-medium">Image preview will appear here</p>
+                        <ImageIcon size={40} className="mx-auto text-slate-300 mb-2 opacity-50" />
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Image preview</p>
                       </div>
                     )}
                   </div>
-                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Tags (Comma separated)</label>
-                    <div className="relative">
-                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+
+                   {/* Tags */}
+                   <div className="space-y-2.5">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Tags (Comma separated)</label>
+                    <div className="relative group">
+                      <Tag className="absolute left-5 top-1/2 -translate-y-1/2 size-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
                       <input
                         type="text"
                         value={tags}
                         onChange={(e) => { setTags(e.target.value); if(errors.tags) setErrors({...errors, tags: ''}); }}
                         placeholder="react, web-dev, javascript"
-                        className={`w-full pl-11 pr-4 py-3 rounded-xl border ${errors.tags ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium`}
+                        className={`w-full pl-14 pr-6 py-4 rounded-[20px] border-2 ${errors.tags ? 'border-red-500 focus:ring-red-100/50' : 'border-slate-100 focus:border-emerald-500/30'} focus:outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-600 placeholder:text-slate-300 bg-slate-50/50`}
                       />
                     </div>
                     {errors.tags && <p className="text-red-500 text-xs mt-1 ml-1">{errors.tags}</p>}
