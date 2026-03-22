@@ -24,7 +24,7 @@ export default function App() {
           <Link to="/attendance-report">Attendance Report</Link>
         </nav>
 
-        <main className="content">
+        <main className="content full-width-content">
           <Routes>
             <Route path="/" element={<Navigate to="/payment" />} />
             <Route path="/payment" element={<PaymentPage />} />

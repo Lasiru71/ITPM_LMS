@@ -65,20 +65,26 @@ export default function PaymentPage() {
       return;
     }
 
+    // ✅ ADD YOUR CARD VALIDATION HERE
     if (method === "CARD") {
-      if (!cardName || !cardNumber || !expiry || !cvv) {
-        setMessage("Please fill all card details");
+      if (!/^[a-zA-Z\s]+$/.test(cardName)) {
+        setMessage("Card holder name must contain only letters");
         return;
       }
 
-      const cleanedCard = cardNumber.replace(/\s/g, "");
-      if (cleanedCard.length < 16) {
-        setMessage("Card number must be 16 digits");
+      const cleanCard = cardNumber.replace(/\s/g, "");
+      if (!/^\d{16}$/.test(cleanCard)) {
+        setMessage("Card number must be exactly 16 digits");
         return;
       }
 
-      if (cvv.length < 3) {
-        setMessage("CVV must be at least 3 digits");
+      if (!/^\d{3}$/.test(cvv)) {
+        setMessage("CVV must be exactly 3 digits");
+        return;
+      }
+
+      if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+        setMessage("Expiry must be in MM/YY format");
         return;
       }
 
@@ -100,7 +106,7 @@ export default function PaymentPage() {
         setMessage(
           `Payment created successfully. Status: ${
             res.data.status || res.data.payment?.status || "PENDING"
-          }`
+          }`,
         );
 
         resetForm();
@@ -152,7 +158,7 @@ export default function PaymentPage() {
       setMessage(
         `Bank transfer submitted successfully. Status: ${
           res.data.status || res.data.payment?.status || "PENDING"
-        }`
+        }`,
       );
 
       resetForm();
@@ -306,7 +312,12 @@ export default function PaymentPage() {
                       <input
                         type="text"
                         value={cardName}
-                        onChange={(e) => setCardName(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^[a-zA-Z\s]*$/.test(value)) {
+                            setCardName(value);
+                          }
+                        }}
                         placeholder="Enter card holder name"
                         className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
                       />
@@ -319,7 +330,14 @@ export default function PaymentPage() {
                       <input
                         type="text"
                         value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/\D/g, "");
+                          if (value.length > 16) value = value.slice(0, 16);
+                          const formatted = value
+                            .replace(/(.{4})/g, "$1 ")
+                            .trim();
+                          setCardNumber(formatted);
+                        }}
                         placeholder="1234 5678 9012 3456"
                         maxLength="19"
                         className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
@@ -334,7 +352,14 @@ export default function PaymentPage() {
                         <input
                           type="text"
                           value={expiry}
-                          onChange={(e) => setExpiry(e.target.value)}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, "");
+                            if (value.length > 4) value = value.slice(0, 4);
+                            if (value.length >= 3) {
+                              value = value.slice(0, 2) + "/" + value.slice(2);
+                            }
+                            setExpiry(value);
+                          }}
                           placeholder="MM/YY"
                           maxLength="5"
                           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
@@ -348,7 +373,11 @@ export default function PaymentPage() {
                         <input
                           type="password"
                           value={cvv}
-                          onChange={(e) => setCvv(e.target.value)}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, "");
+                            if (value.length > 3) value = value.slice(0, 3);
+                            setCvv(value);
+                          }}
                           placeholder="123"
                           maxLength="4"
                           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
@@ -505,12 +534,17 @@ export default function PaymentPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-medium text-slate-900">
-                      {selectedCourse ? selectedCourse.title : "No course selected"}
+                      {selectedCourse
+                        ? selectedCourse.title
+                        : "No course selected"}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">Tuition Fee</p>
                   </div>
                   <p className="text-sm font-semibold text-slate-900">
-                    Rs. {selectedCourse ? selectedCourse.price || selectedCourse.fee || 0 : 0}
+                    Rs.{" "}
+                    {selectedCourse
+                      ? selectedCourse.price || selectedCourse.fee || 0
+                      : 0}
                   </p>
                 </div>
 
@@ -530,9 +564,14 @@ export default function PaymentPage() {
 
                 <div className="border-t border-slate-200 pt-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-base font-semibold text-slate-900">Total</p>
+                    <p className="text-base font-semibold text-slate-900">
+                      Total
+                    </p>
                     <p className="text-2xl font-bold text-indigo-600">
-                      Rs. {selectedCourse ? selectedCourse.price || selectedCourse.fee || 0 : 0}
+                      Rs.{" "}
+                      {selectedCourse
+                        ? selectedCourse.price || selectedCourse.fee || 0
+                        : 0}
                     </p>
                   </div>
                 </div>

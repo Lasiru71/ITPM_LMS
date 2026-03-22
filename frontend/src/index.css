@@ -320,3 +320,10 @@ table tr:last-child td {
     margin-bottom: 10px;
   }
 }
+
+.full-width-content {
+  display: block !important;
+  justify-content: unset !important;
+  padding: 0 !important;
+  width: 100% !important;
+}

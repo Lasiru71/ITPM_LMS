@@ -100,9 +100,10 @@ export default function AdminPayments() {
 
   const stats = useMemo(() => {
     const totalRevenue = payments.reduce(
-      (sum, payment) => sum + Number(payment.amount || 0),
-      0
-    );
+  (sum, payment) =>
+    sum + Number(payment.amount || payment.course?.price || payment.course?.fee || 0),
+  0
+);
     const approved = payments.filter((p) => p.status === "APPROVED").length;
     const pending = payments.filter((p) => p.status === "PENDING").length;
     const rejected = payments.filter((p) => p.status === "REJECTED").length;
@@ -383,7 +384,7 @@ export default function AdminPayments() {
                         </td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-900">
-                          Rs. {Number(payment.amount || 0).toLocaleString()}
+                        Rs. {Number(payment.amount || payment.course?.price || payment.course?.fee || 0).toLocaleString()}
                         </td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
