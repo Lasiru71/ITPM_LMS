@@ -225,10 +225,10 @@ const UserProfile = () => {
                                         <label>Role</label>
                                         <p>{profile?.role}</p>
                                     </div>
-                                    {profile?.studentId && (
+                                    {profile?.nicNumber && (
                                         <div className="up-info-item">
-                                            <label>Student ID</label>
-                                            <p>{profile.studentId}</p>
+                                            <label>NIC Number</label>
+                                            <p>{profile.nicNumber}</p>
                                         </div>
                                     )}
                                 </div>

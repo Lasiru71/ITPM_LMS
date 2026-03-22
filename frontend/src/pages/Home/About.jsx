@@ -5,10 +5,10 @@ import heroImg from '../../assets/hero-illustration.jpg';
 import '../../Styles/Home/Home.css';
 
 const team = [
-  { name: 'Dr. Sarah Mitchell', role: 'CEO & Founder', bio: 'Former VP of Education at Coursera with 15+ years of EdTech experience.' },
-  { name: 'Prof. James Chen', role: 'Head of Curriculum', bio: 'Ex-Google engineering lead who built scalable learning platforms.' },
-  { name: 'Dr. Emily Rodriguez', role: 'Chief Learning Officer', bio: 'Published AI researcher and dedicated educator across 3 universities.' },
-  { name: 'Marcus Williams', role: 'VP of Product & Design', bio: 'Former UX lead at Figma, passionate about intuitive educational tools.' },
+  { name: 'Sadeepa', role: 'Lead Developer', bio: 'Expert in system architecture and project management.' },
+  { name: 'Lasiru', role: 'Full Stack Developer', bio: 'Specialist in modern web technologies and user interfaces.' },
+  { name: 'Jeewani', role: 'Full Stack Developer', bio: 'Passionate about building scalable backends and clean code.' },
+  { name: 'Hirushi', role: 'Full Stack Developer', bio: 'Creative developer focused on intuitive design and functionality.' },
 ];
 
 const values = [
@@ -73,7 +73,7 @@ export default function About() {
             </h1>
             <h2 style={{ display: 'none' }}>About Section</h2>
             <p style={{ margin: '0 0 2.5rem', fontSize: '1.125rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.8, maxWidth: 620 }}>
-              Founded in 2020, EduVault has grown from a small startup to a global learning platform serving 45,000+ learners across 120 countries.
+              Founded in 2026, EduVault has grown from a small startup to a global learning platform serving 45,000+ learners across 120 countries.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
               <PrimaryBtn to="/register">Join EduVault <ArrowRight style={{ width: 18, height: 18 }} /></PrimaryBtn>

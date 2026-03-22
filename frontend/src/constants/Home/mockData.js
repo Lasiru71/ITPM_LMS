@@ -84,3 +84,16 @@ export const MOCK_COURSES = [
         level: "Beginner"
     }
 ];
+
+export const CATEGORIES = [
+  "Web Development",
+  "Data Science",
+  "Mobile Development",
+  "Design",
+  "Business",
+  "Marketing",
+  "Music",
+  "Lifestyle",
+  "Photography",
+  "Health & Fitness"
+];

@@ -6,3 +6,10 @@ export const NAV_LINKS = [
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
 ];
+
+export const LEVELS = [
+  "Beginner",
+  "Intermediate",
+  "Advanced",
+  "All Levels"
+];

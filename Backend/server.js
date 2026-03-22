@@ -23,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/announcements", announcementRoutes);
 
+
 // MongoDB connection (modern Mongoose 9+)
 mongoose
   .connect(MONGO_URI)

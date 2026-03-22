@@ -156,9 +156,6 @@ function LoginPage() {
           {loading ? "Signing in..." : "Sign In"}
         </button>
 
-        <div className="lasiru-login-extra">
-          <h4>QUICK DEMO ACCESS</h4>
-        </div>
 
         <p className="lasiru-switch-link">
           Don&apos;t have an account?{" "}
