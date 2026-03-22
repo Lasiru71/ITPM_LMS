@@ -9,6 +9,7 @@ import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
 
 // Jeewani
 import jeewaniCourseRoutes from "./routes/Jeewani/courseRoutes.js";
+import jeewaniReviewRoutes from "./routes/Jeewani/reviewRoutes.js";
 
 // Sadeepa
 import assignmentRoutes from "./routes/sadeepa/assignmentRoutes.js";
@@ -34,6 +35,7 @@ app.use("/api/announcements", announcementRoutes);
 
 // Jeewani routes
 app.use("/api/jeewani/courses", jeewaniCourseRoutes);
+app.use("/api/jeewani/reviews", jeewaniReviewRoutes);
 
 // Sadeepa routes
 app.use("/api/sadeepa/assignments", assignmentRoutes);

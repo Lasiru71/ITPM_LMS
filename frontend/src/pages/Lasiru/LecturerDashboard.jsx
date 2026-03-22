@@ -14,8 +14,10 @@ import {
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
+import LecturerSettings from "../../components/Lasiru/LecturerSettings";
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
+import { getAllReviews } from "../../api/Jeewani/reviewApi";
 
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card";
@@ -26,17 +28,29 @@ import "../../Styles/Lasiru/LecturerDashboard.css";
 const LecturerDashboard = () => {
     const [activeTab, setActiveTab] = useState("dashboard");
     const [currentPage, setCurrentPage] = useState(1);
+    const [reviews, setReviews] = useState([]);
 
     const navigate = useNavigate();
     const { showToast } = useToast();
 
     const { courses, fetchCourses, isLoading, deleteCourse } = useCourseStore();
 
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user") || "{}"));
 
     useEffect(() => {
         fetchCourses();
+        const loadReviews = async () => {
+            const data = await getAllReviews();
+            setReviews(data);
+        };
+        loadReviews();
     }, []);
+
+    const calcAvgRating = () => {
+        if (reviews.length === 0) return "0.0";
+        const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+        return (sum / reviews.length).toFixed(1);
+    };
 
     const myCourses = courses;
 
@@ -121,7 +135,7 @@ const LecturerDashboard = () => {
                                 <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-3xl font-black">4.8</div>
+                                <div className="text-3xl font-black">{calcAvgRating()}</div>
                             </CardContent>
                         </Card>
                     </div>
@@ -211,6 +225,65 @@ const LecturerDashboard = () => {
             );
         }
 
+        if (activeTab === "reviews") {
+            return (
+                <div className="reviews-section animate-in fade-in duration-500">
+                    <h2 className="text-2xl font-bold mb-6">Student Reviews</h2>
+                    
+                    {reviews.length === 0 ? (
+                        <div className="empty-state text-center py-12">
+                            <Star className="mx-auto mb-4 text-gray-300" size={48} />
+                            <h3 className="text-lg font-medium text-gray-500">No reviews yet</h3>
+                            <p className="text-sm text-gray-400">When students review your courses, they will appear here.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {reviews.map(review => {
+                                const matchedCourse = myCourses.find(c => c._id === review.courseId || c.id === review.courseId);
+                                const courseName = matchedCourse ? matchedCourse.title : "Unknown Course";
+                                
+                                return (
+                                    <Card key={review._id} className="relative overflow-hidden">
+                                        <CardHeader className="pb-2">
+                                            <div className="flex gap-4 justify-between items-start">
+                                                <div>
+                                                    <CardTitle className="text-lg">{review.studentName}</CardTitle>
+                                                    <CardDescription className="text-xs">{courseName}</CardDescription>
+                                                </div>
+                                                <div className="flex gap-1 text-amber-500 shrink-0">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star 
+                                                            key={i} 
+                                                            size={14} 
+                                                            className={i < review.rating ? "fill-amber-500" : "fill-transparent text-gray-300"} 
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-gray-600 mt-2 italic">"{review.comment}"</p>
+                                            <p className="text-xs text-gray-400 mt-4 text-right">
+                                                {new Date(review.createdAt).toLocaleDateString()}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        if (activeTab === "settings") {
+            return (
+                <div className="settings-section animate-in fade-in duration-500">
+                    <LecturerSettings onProfileUpdate={setUser} />
+                </div>
+            );
+        }
+
         // ✅ NEW EMPTY STATE UI
         const activeItem = navItems.find(item => item.id === activeTab);
 
@@ -275,8 +348,12 @@ const LecturerDashboard = () => {
                 {/* ✅ NEW FOOTER */}
                 <div className="sidebar-footer mt-auto p-4">
                     <div className="user-profile-mini flex items-center gap-3 mb-3">
-                        <div className="user-avatar">
-                            {user.name?.charAt(0) || "L"}
+                        <div className="user-avatar rounded-full overflow-hidden flex items-center justify-center bg-gray-200" style={{ width: '40px', height: '40px' }}>
+                            {user?.profileImage ? (
+                                <img src={user.profileImage} alt="avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <span>{user?.name?.charAt(0) || "L"}</span>
+                            )}
                         </div>
                         <div>
                             <div className="font-semibold">{user.name || "Lecturer"}</div>
