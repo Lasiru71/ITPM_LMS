@@ -112,7 +112,7 @@ export default function Navbar() {
               onClick={() => setMoreOpen(!moreOpen)}
               style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.4rem 0.75rem', fontSize: '0.8125rem', fontWeight: 500, color: '#475569', background: 'transparent', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', transition: 'color 0.15s, background 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.color = '#059669'; e.currentTarget.style.background = '#f0fdf4'; }}
-              onMouseLeave={e => { if(!moreOpen) { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; } }}
+              onMouseLeave={e => { if (!moreOpen) { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; } }}
             >
               More <ChevronDown style={{ width: 14, height: 14 }} />
             </button>
@@ -120,6 +120,7 @@ export default function Navbar() {
               <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 8, width: 180, background: '#fff', borderRadius: '0.75rem', boxShadow: '0 10px 25px rgba(15,23,42,0.1)', border: '1px solid #f1f5f9', padding: '0.375rem', zIndex: 100 }}>
                 {[
                   { to: '/create-free-exam', label: 'Free exam' },
+                  { to: '/gpt-helper', label: 'GTP helper' },
                   { to: '/news', label: 'News' },
                 ].map(({ to, label }) => (
                   <Link key={label} to={to} onClick={() => setMoreOpen(false)}
@@ -231,6 +232,7 @@ export default function Navbar() {
             )}
             <div style={{ height: 1, background: '#f1f5f9', margin: '0.5rem 0' }} />
             <Link to="/create-free-exam" onClick={() => setMobileOpen(false)} style={{ padding: '0.625rem 0.75rem', fontSize: '0.9375rem', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Free exam</Link>
+            <Link to="/gpt-helper" onClick={() => setMobileOpen(false)} style={{ padding: '0.625rem 0.75rem', fontSize: '0.9375rem', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>GTP helper</Link>
             <Link to="/news" onClick={() => setMobileOpen(false)} style={{ padding: '0.625rem 0.75rem', fontSize: '0.9375rem', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>News</Link>
             <div style={{ height: 1, background: '#f1f5f9', margin: '0.5rem 0' }} />
             {!isAuthenticated ? (
