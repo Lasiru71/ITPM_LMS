@@ -8,8 +8,15 @@ export const NAV_LINKS = [
 ];
 
 export const LEVELS = [
-  "Beginner",
-  "Intermediate",
-  "Advanced",
-  "All Levels"
+    "Beginner",
+    "Intermediate",
+    "Advanced",
+    "All Levels"
+];
+
+export const CATEGORIES = [
+    "Web Development",
+    "Data Science",
+    "Design",
+    "Business"
 ];

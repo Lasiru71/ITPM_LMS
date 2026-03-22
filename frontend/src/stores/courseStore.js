@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-// API imports removed (Jeewani module removal)
+import * as courseApi from '../api/Jeewani/courseApi';
 
 export const useCourseStore = create((set, get) => ({
   courses: [],
@@ -9,19 +9,22 @@ export const useCourseStore = create((set, get) => ({
   fetchCourses: async () => {
     set({ isLoading: true });
     try {
-      // Mocked data for now, since Jeewani's API was removed
-      const mockCourses = []; 
-      set({ courses: mockCourses, isLoading: false });
+      const courses = await courseApi.getAllCourses();
+      set({ courses, isLoading: false });
     } catch (error) {
-      set({ error: "Failed to fetch courses", isLoading: false });
+      set({ error: error.message, isLoading: false });
     }
   },
 
   addCourse: async (courseData) => {
     set({ isLoading: true });
     try {
-      // Feature disabled (Jeewani module removal)
-      throw new Error("Course creation is temporarily disabled.");
+      const newCourse = await courseApi.createCourse(courseData);
+      set((state) => ({
+        courses: [...state.courses, newCourse],
+        isLoading: false
+      }));
+      return newCourse;
     } catch (error) {
       set({ error: error.message, isLoading: false });
       throw error;

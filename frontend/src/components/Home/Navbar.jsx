@@ -35,6 +35,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -57,18 +58,18 @@ export default function Navbar() {
   const getDashboardPath = () => {
     if (!user) return '/login';
     switch (user.role) {
-      case 'Admin':    return '/admin-dashboard';
+      case 'Admin': return '/admin-dashboard';
       case 'Lecturer': return '/lecturer-dashboard';
-      case 'Student':  return '/student-dashboard';
-      default:         return '/profile';
+      case 'Student': return '/student-dashboard';
+      default: return '/profile';
     }
   };
 
   /* ── EXTRA links shown right of left nav ─────── */
   const EXTRA_LINKS = [
-    { label: 'Exam Login',       href: 'http://localhost:8081/login', external: true },
-    { label: 'Books & Projects', href: 'http://localhost:8082/',       external: true },
-    { label: 'Reviews & Ratings',href: '/reviews',                     external: false },
+    { label: 'Exam Login', href: '/exam-login', external: false },
+    { label: 'Books & Projects', href: '/project', external: false },
+    { label: 'Reviews & Ratings', href: '/reviews', external: false },
   ];
 
   return (
@@ -97,13 +98,41 @@ export default function Navbar() {
           {EXTRA_LINKS.map(({ label, href, external }) =>
             external
               ? <a key={label} href={href} target="_blank" rel="noreferrer"
-                  style={{ padding: '0.4rem 0.75rem', fontSize: '0.8125rem', fontWeight: 500, color: '#475569', borderRadius: '0.5rem', textDecoration: 'none', whiteSpace: 'nowrap', transition: 'color 0.15s, background 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.color = '#059669'; e.currentTarget.style.background = '#f0fdf4'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; }}>
-                  {label}
-                </a>
+                style={{ padding: '0.4rem 0.75rem', fontSize: '0.8125rem', fontWeight: 500, color: '#475569', borderRadius: '0.5rem', textDecoration: 'none', whiteSpace: 'nowrap', transition: 'color 0.15s, background 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#059669'; e.currentTarget.style.background = '#f0fdf4'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; }}>
+                {label}
+              </a>
               : <NavLink key={label} to={href}>{label}</NavLink>
           )}
+
+          {/* More Dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setMoreOpen(!moreOpen)}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.4rem 0.75rem', fontSize: '0.8125rem', fontWeight: 500, color: '#475569', background: 'transparent', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', transition: 'color 0.15s, background 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#059669'; e.currentTarget.style.background = '#f0fdf4'; }}
+              onMouseLeave={e => { if (!moreOpen) { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent'; } }}
+            >
+              More <ChevronDown style={{ width: 14, height: 14 }} />
+            </button>
+            {moreOpen && (
+              <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 8, width: 180, background: '#fff', borderRadius: '0.75rem', boxShadow: '0 10px 25px rgba(15,23,42,0.1)', border: '1px solid #f1f5f9', padding: '0.375rem', zIndex: 100 }}>
+                {[
+                  { to: '/create-free-exam', label: 'Free exam' },
+                  { to: '/gpt-helper', label: 'GTP helper' },
+                  { to: '/news', label: 'News' },
+                ].map(({ to, label }) => (
+                  <Link key={label} to={to} onClick={() => setMoreOpen(false)}
+                    style={{ display: 'block', padding: '0.5rem 0.75rem', fontSize: '0.875rem', color: '#475569', borderRadius: '0.5rem', textDecoration: 'none', transition: 'background 0.12s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Separator */}
           <div style={{ width: 1, height: 24, background: '#e2e8f0', margin: '0 0.5rem' }} />
@@ -201,6 +230,10 @@ export default function Navbar() {
                 ? <a key={label} href={href} target="_blank" rel="noreferrer" onClick={() => setMobileOpen(false)} style={{ padding: '0.625rem 0.75rem', fontSize: '0.9375rem', fontWeight: 500, color: '#374151', borderRadius: '0.5rem', textDecoration: 'none' }}>{label}</a>
                 : <Link key={label} to={href} onClick={() => setMobileOpen(false)} style={{ padding: '0.625rem 0.75rem', fontSize: '0.9375rem', fontWeight: 500, color: '#374151', borderRadius: '0.5rem', textDecoration: 'none' }}>{label}</Link>
             )}
+            <div style={{ height: 1, background: '#f1f5f9', margin: '0.5rem 0' }} />
+            <Link to="/create-free-exam" onClick={() => setMobileOpen(false)} style={{ padding: '0.625rem 0.75rem', fontSize: '0.9375rem', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>Free exam</Link>
+            <Link to="/gpt-helper" onClick={() => setMobileOpen(false)} style={{ padding: '0.625rem 0.75rem', fontSize: '0.9375rem', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>GTP helper</Link>
+            <Link to="/news" onClick={() => setMobileOpen(false)} style={{ padding: '0.625rem 0.75rem', fontSize: '0.9375rem', fontWeight: 500, color: '#374151', textDecoration: 'none' }}>News</Link>
             <div style={{ height: 1, background: '#f1f5f9', margin: '0.5rem 0' }} />
             {!isAuthenticated ? (
               <>

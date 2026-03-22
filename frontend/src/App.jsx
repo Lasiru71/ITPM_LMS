@@ -5,23 +5,30 @@ import AdminDashboard from "./pages/Lasiru/AdminDashboard.jsx";
 import UserProfile from "./pages/Lasiru/UserProfile.jsx";
 import LecturerDashboard from "./pages/Lasiru/LecturerDashboard.jsx";
 import StudentDashboard from "./pages/Lasiru/StudentDashboard.jsx";
+import ExamLogin from "./pages/sadeepa/ExamLogin.jsx";
+import AttendExam from "./pages/sadeepa/AttendExam.jsx";
+import Project from "./pages/sadeepa/Project.jsx";
 
 // Home imports
 import MainLayout from "./layouts/Home/MainLayout.jsx";
 import Home from "./pages/Home/Home.jsx";
 import About from "./pages/Home/About.jsx";
 import Contact from "./pages/Home/Contact.jsx";
-import ReviewManagement from "./components/Home/ReviewManagement.jsx";
+import News from "./pages/Home/News.jsx";
+import FreeExam from "./pages/Home/FreeExam.jsx";
+import GptHelper from "./pages/Home/GptHelper.jsx";
 
 function App() {
   return (
     <Routes>
       {/* Home Routes */}
-      <Route element={<MainLayout />}>
+      <Route path="/" element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/reviews" element={<ReviewManagement />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/create-free-exam" element={<FreeExam />} />
+        <Route path="/gpt-helper" element={<GptHelper />} />
       </Route>
 
       {/* Auth Routes */}
@@ -32,6 +39,9 @@ function App() {
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
       <Route path="/lecturer-dashboard" element={<LecturerDashboard />} />
       <Route path="/student-dashboard" element={<StudentDashboard />} />
+      <Route path="/exam-login" element={<ExamLogin />} />
+      <Route path="/exam-login/:id" element={<AttendExam />} />
+      <Route path="/project" element={<Project />} />
       <Route path="/profile" element={<UserProfile />} />
     </Routes>
   );
