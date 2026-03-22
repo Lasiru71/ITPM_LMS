@@ -36,7 +36,77 @@ const StudentDashboard = () => {
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
+    const [courses, setCourses] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    React.useEffect(() => {
+        const fetchCourses = async () => {
+            const { MOCK_COURSES } = await import("../../constants/Home/mockData");
+            const { getAllCourses } = await import("../../api/Jeewani/courseApi");
+            const customCourses = await getAllCourses();
+            const combined = [...MOCK_COURSES, ...customCourses.map(c => ({
+                id: c._id,
+                title: c.title,
+                instructor: c.instructorName || 'Lecturer',
+                price: c.price,
+                image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
+                thumbnail: c.thumbnail,
+                rating: 4.5,
+                category: c.category || 'General'
+            }))];
+            setCourses(combined);
+        };
+        fetchCourses();
+    }, []);
+
+    const filteredCourses = courses.filter(c => 
+        c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     const renderContent = () => {
+        if (activeTab === "browse") {
+            return (
+                <div className="browse-courses-section animate-in fade-in duration-500">
+                    <div className="search-bar-container mb-8">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            <input 
+                                type="text"
+                                placeholder="Search for courses, categories..."
+                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {filteredCourses.map(course => (
+                            <div key={course.id} className="course-card bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="aspect-video relative">
+                                    <img src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"} alt={course.title} className="w-full h-full object-cover" />
+                                    <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+                                        {course.category}
+                                    </div>
+                                </div>
+                                <div className="p-4">
+                                    <h3 className="font-bold text-gray-800 line-clamp-1">{course.title}</h3>
+                                    <p className="text-sm text-gray-500 mt-1">{course.instructor}</p>
+                                    <div className="flex justify-between items-center mt-4">
+                                        <span className="font-bold text-blue-600">${course.price}</span>
+                                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                                            Enroll Now
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="dashboard-placeholder">
                 <div className="placeholder-icon">

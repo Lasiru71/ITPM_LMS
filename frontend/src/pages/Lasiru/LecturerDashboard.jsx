@@ -155,7 +155,7 @@ const LecturerDashboard = () => {
                                     <Card key={course._id}>
                                         <div className="aspect-video relative">
                                             <img
-                                                src={course.thumbnail || "https://via.placeholder.com/300"}
+                                                src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
                                                 alt={course.title}
                                                 className="w-full h-full object-cover"
                                             />
@@ -284,6 +284,76 @@ const LecturerDashboard = () => {
             );
         }
 
+        if (activeTab === "my-courses") {
+            return (
+                <div className="my-courses-section animate-in fade-in duration-500">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold">My Published Courses</h2>
+                        <Button 
+                            className="bg-emerald-500 text-white flex items-center gap-2"
+                            onClick={() => setActiveTab("create-course")}
+                        >
+                            <PlusCircle size={18} /> Create New Course
+                        </Button>
+                    </div>
+
+                    {myCourses.length === 0 ? (
+                        <div className="empty-state text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
+                            <BookOpen className="mx-auto mb-4 text-gray-300" size={48} />
+                            <h3 className="text-xl font-bold text-gray-700">No courses yet</h3>
+                            <p className="text-gray-500 mt-2">You haven't published any courses yet. Start by creating your first one!</p>
+                            <Button
+                                className="mt-8 bg-emerald-500 text-white"
+                                onClick={() => setActiveTab("create-course")}
+                            >
+                                Create Your First Course
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {myCourses.map(course => (
+                                <Card key={course._id} className="overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                                    <div className="aspect-video relative group">
+                                        <img
+                                            src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
+                                            alt={course.title}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        <Badge className="absolute top-3 right-3 bg-emerald-500/90 backdrop-blur-md">
+                                            {course.category || "General"}
+                                        </Badge>
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                                            <Button size="sm" variant="secondary" onClick={() => handleEdit(course)}>Edit</Button>
+                                            <Button size="sm" variant="destructive" onClick={() => handleDelete(course._id)}>Delete</Button>
+                                        </div>
+                                    </div>
+
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="leading-tight">{course.title}</CardTitle>
+                                        <CardDescription className="line-clamp-2 mt-1">
+                                            {course.shortDescription || "No description provided."}
+                                        </CardDescription>
+                                    </CardHeader>
+
+                                    <CardContent className="pt-0">
+                                        <div className="flex justify-between items-center mt-4">
+                                            <span className="text-xl font-black text-emerald-600">
+                                                ${course.price || "Free"}
+                                            </span>
+                                            <div className="flex items-center gap-1 text-amber-500 text-sm font-bold">
+                                                <Star size={14} className="fill-amber-500" />
+                                                4.5
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
         // ✅ NEW EMPTY STATE UI
         const activeItem = navItems.find(item => item.id === activeTab);
 
@@ -298,15 +368,6 @@ const LecturerDashboard = () => {
                     <p className="text-gray-500 mt-2">
                         This section is currently under development. Stay tuned!
                     </p>
-
-                    {activeTab === "my-courses" && (
-                        <Button
-                            className="mt-6 bg-emerald-500 text-white"
-                            onClick={() => setActiveTab("create-course")}
-                        >
-                            Create Your First Course
-                        </Button>
-                    )}
                 </div>
             </div>
         );
