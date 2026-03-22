@@ -16,9 +16,6 @@ import {
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
-
-// Jeewani
-import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
 
 // Sadeepa
@@ -53,7 +50,7 @@ const LecturerDashboard = () => {
 
     const navItems = [
         { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
-        { id: "my-courses", label: "MyCourse", icon: <BookOpen size={20} /> },
+        { id: "my-courses", label: "My Courses", icon: <BookOpen size={20} /> },
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
         { id: "create-assignment", label: "Create Assignment", icon: <FilePlus size={20} /> },
@@ -63,11 +60,20 @@ const LecturerDashboard = () => {
     ];
 
     const renderContent = () => {
-        if (isLoading) return <div>Loading...</div>;
+        if (isLoading) return <div className="loading-state">Loading your dashboard...</div>;
 
-        // Jeewani
         if (activeTab === "create-course") {
-            return <CourseCreationForm onSuccess={() => setActiveTab("dashboard")} />;
+            return (
+                <div className="empty-state-container">
+                    <div className="empty-state">
+                        <div className="empty-icon">
+                            <PlusCircle size={40} />
+                        </div>
+                        <h2>Create Course</h2>
+                        <p>This feature is currently being updated. Please check back later.</p>
+                    </div>
+                </div>
+            );
         }
 
         // Sadeepa
@@ -75,30 +81,51 @@ const LecturerDashboard = () => {
         if (activeTab === "create-exam") return <CreateExam />;
         if (activeTab === "reports") return <Reports />;
 
-        // Dashboard
         if (activeTab === "dashboard") {
             return (
-                <div>
-                    <h2>My Courses ({myCourses.length})</h2>
-                    {myCourses.length > 0 ? (
-                        myCourses.map(course => (
-                            <div key={course.id || course._id}>
-                                <p>{course.title}</p>
+                <div className="dashboard-grid">
+                    <div className="stat-cards">
+                        <div className="stat-card">
+                            <h3>Total Courses</h3>
+                            <p>{myCourses.length}</p>
+                        </div>
+                    </div>
+                    <div className="recent-activity">
+                        <h2>My Courses</h2>
+                        {myCourses.length > 0 ? (
+                            <div className="course-compact-list">
+                                {myCourses.map(course => (
+                                    <div key={course.id || course._id} className="course-compact-item">
+                                        <div className="course-thumb">
+                                            <img src={course.thumbnail} alt={course.title} />
+                                        </div>
+                                        <div className="course-meta">
+                                            <span className="font-bold">{course.title}</span>
+                                            <span className="text-xs text-slate-500">{course.category}</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))
-                    ) : (
-                        <p>No courses yet</p>
-                    )}
+                        ) : (
+                            <div className="empty-dashboard-state">
+                                <p>No courses published yet.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }
 
         const activeItem = navItems.find(item => item.id === activeTab);
-
         return (
-            <div>
-                <h2>{activeItem?.label}</h2>
-                <p>Section under development</p>
+            <div className="empty-state-container">
+                <div className="empty-state">
+                    <div className="empty-icon">
+                        {activeItem?.icon && React.cloneElement(activeItem.icon, { size: 40 })}
+                    </div>
+                    <h2>{activeItem?.label}</h2>
+                    <p>This section is currently under development. Stay tuned for updates!</p>
+                </div>
             </div>
         );
     };
@@ -107,33 +134,86 @@ const LecturerDashboard = () => {
         <div className="lecturer-dashboard-container">
             <aside className="lecturer-sidebar">
                 <div className="lecturer-logo">
-                    <BookOpen size={20} />
+                    <div className="logo-icon">
+                        <BookOpen size={20} color="white" />
+                    </div>
                     <span>EduVault</span>
                 </div>
 
-                <nav>
-                    {navItems.map(item => (
-                        <button
+                <nav className="lecturer-nav">
+                    <div className="nav-section-title">Main</div>
+                    <div 
+                        className={`nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+                        onClick={() => setActiveTab("dashboard")}
+                    >
+                        <div className="nav-item-content">
+                            <LayoutDashboard size={20} />
+                            <span>Dashboard</span>
+                        </div>
+                        {activeTab === "dashboard" && <ChevronRight size={14} opacity={0.5} />}
+                    </div>
+
+                    <div className="nav-section-title">Academic</div>
+                    {navItems.filter(item => ["my-courses", "create-course", "reviews", "create-assignment", "create-exam", "reports"].includes(item.id)).map((item) => (
+                        <div
                             key={item.id}
-                            className={activeTab === item.id ? "active" : ""}
+                            className={`nav-item ${activeTab === item.id ? "active" : ""}`}
                             onClick={() => {
                                 setActiveTab(item.id);
                                 setCurrentPage(1);
                             }}
                         >
-                            {item.icon} {item.label}
-                        </button>
+                            <div className="nav-item-content">
+                                {item.icon}
+                                <span>{item.label}</span>
+                            </div>
+                            {activeTab === item.id && <ChevronRight size={14} />}
+                        </div>
                     ))}
+
+                    <div className="nav-section-title">System</div>
+                    <div 
+                        className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
+                        onClick={() => setActiveTab("settings")}
+                    >
+                        <div className="nav-item-content">
+                            <Settings size={20} />
+                            <span>Settings</span>
+                        </div>
+                        {activeTab === "settings" && <ChevronRight size={14} />}
+                    </div>
                 </nav>
 
-                <button onClick={handleLogout}>
-                    <LogOut size={18} /> Logout
-                </button>
+                <div className="sidebar-footer">
+                    <div className="user-profile-mini" onClick={() => navigate("/profile")}>
+                        <div className="user-avatar">
+                            {user.name ? user.name.charAt(0).toUpperCase() : "L"}
+                        </div>
+                        <div className="user-info">
+                            <span className="user-name">{user.name || "Lecturer"}</span>
+                            <span className="user-role">Lecturer</span>
+                        </div>
+                    </div>
+                    <div className="logout-btn" onClick={handleLogout}>
+                        <LogOut size={20} />
+                        <span>Sign Out</span>
+                    </div>
+                </div>
             </aside>
 
-            <main>
-                <DashboardHeader title={navItems.find(i => i.id === activeTab)?.label} />
-                {renderContent()}
+            <main className="lecturer-main-content">
+                <DashboardHeader title="Lecturer Dashboard" />
+                
+                <div className="lecturer-content-area">
+                    <div className="content-header">
+                        <h1>{navItems.find(i => i.id === activeTab)?.label}</h1>
+                        <p>Welcome back, {user.name || "Educator"}! Continue managing your courses and materials.</p>
+                    </div>
+                    
+                    <div className="lecturer-content-wrapper">
+                        {renderContent()}
+                    </div>
+                </div>
             </main>
         </div>
     );

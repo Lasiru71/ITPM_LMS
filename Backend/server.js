@@ -5,9 +5,7 @@ import { PORT, MONGO_URI } from "./config.js";
 import authRoutes from "./routes/Lasiru/authRoutes.js";
 import adminRoutes from "./routes/Lasiru/adminRoutes.js";
 import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
-import assignmentRoutes from "./routes/sadeepa/assignmentRoutes.js";
-import materialRoutes from "./routes/sadeepa/materialRoutes.js";
-import projectRoutes from "./routes/sadeepa/projectRoutes.js";
+
 
 // Jeewani routes
 import jeewaniCourseRoutes from "./routes/Jeewani/courseRoutes.js";
