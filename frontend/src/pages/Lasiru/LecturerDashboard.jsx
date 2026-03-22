@@ -9,7 +9,9 @@ import {
     LogOut,
     ChevronRight,
     Users,
-    ChevronLeft
+    ChevronLeft,
+    Pencil,
+    Trash2
 } from "lucide-react";
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
@@ -18,6 +20,8 @@ import LecturerSettings from "../../components/Lasiru/LecturerSettings";
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
 import { getAllReviews } from "../../api/Jeewani/reviewApi";
+import { getAllCourses } from "../../api/Jeewani/courseApi";
+import { MOCK_COURSES } from "../../constants/Home/mockData";
 
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card";
@@ -29,11 +33,12 @@ const LecturerDashboard = () => {
     const [activeTab, setActiveTab] = useState("dashboard");
     const [currentPage, setCurrentPage] = useState(1);
     const [reviews, setReviews] = useState([]);
+    const [allCourses, setAllCourses] = useState([]);
 
     const navigate = useNavigate();
     const { showToast } = useToast();
 
-    const { courses, fetchCourses, isLoading, deleteCourse } = useCourseStore();
+    const { courses, fetchCourses, deleteCourse, isLoading } = useCourseStore();
 
     const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user") || "{}"));
 
@@ -43,7 +48,30 @@ const LecturerDashboard = () => {
             const data = await getAllReviews();
             setReviews(data);
         };
+        const fetchAllCourses = async () => {
+            try {
+                const customCourses = await getAllCourses();
+                const combined = [...MOCK_COURSES, ...customCourses.map(c => ({
+                    _id: c._id,
+                    title: c.title,
+                    instructor: c.instructorName || c.instructor || 'Lecturer',
+                    instructorId: c.instructorId,
+                    price: c.price,
+                    image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
+                    thumbnail: c.thumbnail,
+                    rating: 4.5,
+                    reviews: 10,
+                    category: c.category || 'General',
+                    updatedAt: c.updatedAt
+                }))];
+                setAllCourses(combined);
+            } catch (error) {
+                console.error("Error fetching all courses:", error);
+                setAllCourses(MOCK_COURSES);
+            }
+        };
         loadReviews();
+        fetchAllCourses();
     }, []);
 
     const calcAvgRating = () => {
@@ -52,7 +80,7 @@ const LecturerDashboard = () => {
         return (sum / reviews.length).toFixed(1);
     };
 
-    const myCourses = courses;
+    const myCourses = courses.filter(c => c.instructorId === (user._id || user.id));
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -61,16 +89,19 @@ const LecturerDashboard = () => {
         navigate("/login");
     };
 
-    const handleEdit = (course) => {
-        navigate(`/edit-course/${course._id}`);
+    const handleEditCourse = (courseId) => {
+        navigate(`/edit-course/${courseId}`);
     };
 
-    const handleDelete = async (id) => {
-        const confirm = window.confirm("Are you sure you want to delete?");
-        if (!confirm) return;
-
-        await deleteCourse(id);
-        showToast("success", "Course deleted");
+    const handleDeleteCourse = async (courseId, courseTitle) => {
+        if (window.confirm(`Are you sure you want to delete "${courseTitle}"?`)) {
+            try {
+                await deleteCourse(courseId);
+                showToast("success", `Course "${courseTitle}" deleted successfully`);
+            } catch (error) {
+                showToast("error", "Failed to delete course");
+            }
+        }
     };
 
     const navItems = [
@@ -96,13 +127,10 @@ const LecturerDashboard = () => {
         }
 
         if (activeTab === "dashboard") {
-            const itemsPerPage = 3;
-            const totalPages = Math.ceil(myCourses.length / itemsPerPage);
+            // Sort courses by lastUpdated (newest first) or simply use reverse of array
+            // Now showing all courses from the system as requested
+            const displayCourses = allCourses;
 
-            const paginatedCourses = myCourses.slice(
-                (currentPage - 1) * itemsPerPage,
-                currentPage * itemsPerPage
-            );
 
             return (
                 <div className="dashboard-grid">
@@ -143,16 +171,15 @@ const LecturerDashboard = () => {
                     {/* COURSES */}
                     <div className="recent-activity mb-8">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold">Recent Courses</h2>
-                            <span className="text-xs text-gray-400">
-                                Page {currentPage} / {Math.max(1, totalPages)}
-                            </span>
+                            <h2 className="text-xl font-bold">All Available Courses</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {paginatedCourses.length > 0 ? (
-                                paginatedCourses.map(course => (
-                                    <Card key={course._id}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                            {displayCourses.length > 0 ? (
+                                displayCourses.map(course => (
+
+                                    <Card key={course._id || course.id}>
                                         <div className="aspect-video relative">
                                             <img
                                                 src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
@@ -167,59 +194,61 @@ const LecturerDashboard = () => {
                                         <CardHeader>
                                             <CardTitle>{course.title}</CardTitle>
                                             <CardDescription>
-                                                {course.shortDescription}
+                                                {course.shortDescription || `By ${course.instructor}`}
                                             </CardDescription>
                                         </CardHeader>
 
-                                        <CardContent className="flex justify-between items-center">
-                                            <span className="text-green-600 font-bold">
-                                                ${course.price}
-                                            </span>
-
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    className="bg-blue-500 text-white"
-                                                    onClick={() => handleEdit(course)}
-                                                >
-                                                    Edit
-                                                </Button>
-
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    onClick={() => handleDelete(course._id)}
-                                                >
-                                                    Delete
-                                                </Button>
+                                         <CardContent>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-green-600 font-bold">
+                                                    ${course.price}
+                                                </span>
+                                                
+                                                <div className="flex items-center gap-1 text-amber-500 text-sm font-bold">
+                                                    <Star size={14} className="fill-amber-500" />
+                                                    {course.rating || "4.5"}
+                                                </div>
                                             </div>
+
+                                            {/* Show edit/delete if it's the lecturer's own course */}
+                                            {(course.instructorId === (user._id || user.id)) && (
+                                                <div className="flex gap-2 mt-4 pt-4 border-t border-slate-50">
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm"
+                                                        className="flex-1 h-8 text-xs font-bold gap-1 rounded-lg"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEditCourse(course._id);
+                                                        }}
+                                                    >
+                                                        <Pencil size={12} /> Edit
+                                                    </Button>
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg border-red-50"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteCourse(course._id, course.title);
+                                                        }}
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 ))
                             ) : (
                                 <div className="col-span-full text-center text-gray-400">
-                                    No courses published yet.
+                                    No courses available.
                                 </div>
                             )}
                         </div>
 
-                        {totalPages > 1 && (
-                            <div className="flex justify-center gap-4 mt-6">
-                                <Button
-                                    disabled={currentPage === 1}
-                                    onClick={() => setCurrentPage(prev => prev - 1)}
-                                >
-                                    <ChevronLeft size={16} /> Prev
-                                </Button>
+                        {/* Pagination removed from dashboard for recent view */}
 
-                                <Button
-                                    disabled={currentPage === totalPages}
-                                    onClick={() => setCurrentPage(prev => prev + 1)}
-                                >
-                                    Next <ChevronRight size={16} />
-                                </Button>
-                            </div>
-                        )}
                     </div>
                 </div>
             );
@@ -322,10 +351,6 @@ const LecturerDashboard = () => {
                                         <Badge className="absolute top-3 right-3 bg-emerald-500/90 backdrop-blur-md">
                                             {course.category || "General"}
                                         </Badge>
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-                                            <Button size="sm" variant="secondary" onClick={() => handleEdit(course)}>Edit</Button>
-                                            <Button size="sm" variant="destructive" onClick={() => handleDelete(course._id)}>Delete</Button>
-                                        </div>
                                     </div>
 
                                     <CardHeader className="pb-2">
@@ -336,14 +361,38 @@ const LecturerDashboard = () => {
                                     </CardHeader>
 
                                     <CardContent className="pt-0">
-                                        <div className="flex justify-between items-center mt-4">
+                                         <div className="flex justify-between items-center mt-4">
                                             <span className="text-xl font-black text-emerald-600">
                                                 ${course.price || "Free"}
                                             </span>
-                                            <div className="flex items-center gap-1 text-amber-500 text-sm font-bold">
-                                                <Star size={14} className="fill-amber-500" />
-                                                4.5
+                                            <div className="flex flex-col items-end">
+                                                <div className="flex items-center gap-1 text-amber-500 text-sm font-bold">
+                                                    <Star size={14} className="fill-amber-500" />
+                                                    4.5
+                                                </div>
+                                                {course.updatedAt && (
+                                                    <span className="text-[10px] text-slate-400 mt-1">
+                                                        Updated: {new Date(course.updatedAt).toLocaleDateString()}
+                                                    </span>
+                                                )}
                                             </div>
+                                        </div>
+
+                                        <div className="flex gap-2 mt-6">
+                                            <Button 
+                                                variant="outline" 
+                                                className="flex-1 border-slate-200 hover:bg-slate-50 text-slate-600 gap-2 h-11 rounded-xl font-bold"
+                                                onClick={() => handleEditCourse(course._id)}
+                                            >
+                                                <Pencil size={16} /> Edit
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                className="border-red-100 hover:bg-red-50 text-red-500 hover:text-red-600 h-11 w-11 p-0 rounded-xl"
+                                                onClick={() => handleDeleteCourse(course._id, course.title)}
+                                            >
+                                                <Trash2 size={18} />
+                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
