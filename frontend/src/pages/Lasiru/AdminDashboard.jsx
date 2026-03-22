@@ -122,7 +122,7 @@ const AdminDashboard = () => {
                 const data = await getAllStudents();
                 const tableData = data.map((s, index) => [
                     index + 1,
-                    s.studentId || "N/A",
+                    s.nicNumber || "N/A",
                     s.name,
                     s.email,
                     s.isActive ? "Active" : "Inactive"
@@ -130,7 +130,7 @@ const AdminDashboard = () => {
 
                 doc.autoTable({
                     startY: 60,
-                    head: [['#', 'Student ID', 'Full Name', 'Email Address', 'Status']],
+                    head: [['#', 'NIC Number', 'Full Name', 'Email Address', 'Status']],
                     body: tableData,
                     theme: 'grid',
                     headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },

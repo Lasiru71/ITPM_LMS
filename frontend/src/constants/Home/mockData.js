@@ -85,10 +85,15 @@ export const MOCK_COURSES = [
     }
 ];
 
-// 🔥 ADD THIS PART (IMPORTANT)
 export const CATEGORIES = [
-    "Web Development",
-    "Data Science",
-    "Design",
-    "Business"
+  "Web Development",
+  "Data Science",
+  "Mobile Development",
+  "Design",
+  "Business",
+  "Marketing",
+  "Music",
+  "Lifestyle",
+  "Photography",
+  "Health & Fitness"
 ];
