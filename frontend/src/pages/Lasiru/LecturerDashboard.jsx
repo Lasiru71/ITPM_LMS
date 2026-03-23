@@ -13,7 +13,6 @@ import {
     Pencil,
     Trash2,
     Search,
-    Printer,
     RefreshCw,
     MoreVertical,
     CheckCircle2,
@@ -21,12 +20,9 @@ import {
     Clock,
     DollarSign,
     GraduationCap,
-    Globe,
-    FileText,
-    Download
+    Globe
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
@@ -147,74 +143,36 @@ const LecturerDashboard = () => {
         }
     };
 
-    const generatePDFReport = () => {
-        try {
-            const doc = new jsPDF();
-            const timestamp = new Date().toLocaleString();
-
-            // Header
-            doc.setFontSize(22);
-            doc.setTextColor(16, 185, 129); // Emerald-500
-            doc.text("EduVault", 14, 20);
-
-            doc.setFontSize(18);
-            doc.setTextColor(30, 41, 59); // Slate-800
-            doc.text("My Courses Report", 14, 30);
-
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.text(`Generated on: ${timestamp}`, 14, 40);
-            doc.text(`Lecturer: ${user.name || "Lecturer"}`, 14, 46);
-            doc.line(14, 52, 196, 52);
-
-            // Table Data
-            const tableColumn = ["Course Name", "Category", "Level", "Price", "Modules", "Last Updated"];
-            const tableRows = myCourses.map(course => [
-                course.title,
-                course.category || "General",
-                course.level || "Beginner",
-                `Rs. ${course.price?.toLocaleString() || "0"}`,
-                course.modules?.length || course.totalLessons || 0,
-                course.updatedAt ? new Date(course.updatedAt).toLocaleDateString() : 'N/A'
-            ]);
-
-            doc.autoTable({
-                startY: 60,
-                head: [tableColumn],
-                body: tableRows,
-                theme: 'striped',
-                headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255] },
-                alternateRowStyles: { fillColor: [241, 245, 249] },
-                margin: { top: 60 }
-            });
-
-            const fileName = `EduVault_Courses_${new Date().toISOString().split('T')[0]}.pdf`;
-            doc.save(fileName);
-            showToast("success", "Report downloaded successfully");
-        } catch (error) {
-            console.error("PDF Export Error:", error);
-            showToast("error", "Failed to generate report");
-        }
-    };
-
-    const calcAvgRating = () => {
-        // Only include reviews for this lecturer's courses
-        const lecturerReviews = reviews.filter(review => 
-            myCourses.some(c => (c._id === review.courseId || c.id === review.courseId))
-        );
-
-        if (lecturerReviews.length === 0) return "0.0";
-        const sum = lecturerReviews.reduce((acc, r) => acc + (r.rating || 0), 0);
-        return (sum / lecturerReviews.length).toFixed(1);
-    };
-
     const myCourses = allCourses
         .filter(c => c.instructorId === (user._id || user.id))
         .sort((a, b) => {
             const dateA = new Date(a.updatedAt || a.lastUpdated || 0);
             const dateB = new Date(b.updatedAt || b.lastUpdated || 0);
-            return dateB - dateA; // Sort descending
+            return dateB - dateA;
         });
+
+
+
+    const calcAvgRating = () => {
+        if (!myCourses || myCourses.length === 0 || !reviews || reviews.length === 0) return "0.0";
+
+        // Only include reviews that belong to this lecturer's courses
+        const lecturerCourseIds = new Set(
+            myCourses.flatMap(c => [String(c._id), String(c.id)].filter(Boolean))
+        );
+
+        const lecturerReviews = reviews.filter(review => {
+            const reviewCourseId = String(review.courseId);
+            return lecturerCourseIds.has(reviewCourseId);
+        });
+
+        if (lecturerReviews.length === 0) return "0.0";
+
+        const sum = lecturerReviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
+        return (sum / lecturerReviews.length).toFixed(1);
+    };
+
+
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -321,10 +279,6 @@ const LecturerDashboard = () => {
                             />
                         </div>
                         <div className="action-buttons-v2">
-                            <Button className="btn-print" onClick={generatePDFReport}>
-                                <Printer size={18} />
-                                Print Report
-                            </Button>
                             <Button className="btn-refresh" onClick={handleRefresh}>
                                 <RefreshCw size={18} />
                                 Refresh
@@ -657,6 +611,7 @@ const LecturerDashboard = () => {
             <main className="lecturer-main-content">
                 <DashboardHeader
                     title={navItems.find(i => i.id === activeTab)?.label}
+                    user={user}
                 />
 
                 <div className="lecturer-content-area">
