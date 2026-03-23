@@ -32,7 +32,7 @@ import {
     Cell
 } from "recharts";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
@@ -110,7 +110,7 @@ const AdminDashboard = () => {
                     new Date(l.createdAt).toLocaleDateString()
                 ]);
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['#', 'Name', 'Email Address', 'Status', 'Joined Date']],
                     body: tableData,
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
                     s.isActive ? "Active" : "Inactive"
                 ]);
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['#', 'NIC Number', 'Full Name', 'Email Address', 'Status']],
                     body: tableData,
@@ -146,7 +146,7 @@ const AdminDashboard = () => {
                     ["Revenue Analysis", "$2.8M (Platform Growth Estimate)"]
                 ];
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['Metric', 'Value']],
                     body: tableData,
