@@ -6,6 +6,7 @@ import UserProfile from "./pages/Lasiru/UserProfile.jsx";
 import LecturerDashboard from "./pages/Lasiru/LecturerDashboard.jsx";
 import StudentDashboard from "./pages/Lasiru/StudentDashboard.jsx";
 import EditCourse from "./pages/Lasiru/EditCourse.jsx";
+import CourseDetailPage from "./pages/Lasiru/CourseDetailPage.jsx";
 import ExamLogin from "./pages/sadeepa/ExamLogin.jsx";
 import AttendExam from "./pages/sadeepa/AttendExam.jsx";
 import Project from "./pages/sadeepa/Project.jsx";
@@ -37,6 +38,7 @@ function App() {
       <Route path="/lecturer-dashboard" element={<LecturerDashboard />} />
       <Route path="/student-dashboard" element={<StudentDashboard />} />
       <Route path="/edit-course/:id" element={<EditCourse />} />
+      <Route path="/lecturer/courses/:courseId" element={<CourseDetailPage />} />
       <Route path="/exam-login" element={<ExamLogin />} />
       <Route path="/exam-login/:id" element={<AttendExam />} />
       <Route path="/project" element={<Project />} />

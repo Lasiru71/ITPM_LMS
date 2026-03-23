@@ -35,6 +35,7 @@ app.use("/api/announcements", announcementRoutes);
 
 // Jeewani routes
 app.use("/api/jeewani/courses", jeewaniCourseRoutes);
+app.use("/api/courses", jeewaniCourseRoutes); // alias for easier access
 app.use("/api/jeewani/reviews", jeewaniReviewRoutes);
 
 // Sadeepa routes

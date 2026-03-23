@@ -20,7 +20,8 @@ import {
     Clock,
     DollarSign,
     GraduationCap,
-    Globe
+    Globe,
+    Eye
 } from "lucide-react";
 
 
@@ -74,6 +75,8 @@ const LecturerDashboard = () => {
                         _id: c._id,
                         id: c.id,
                         title: c.title,
+                        description: c.description,
+                        shortDescription: c.shortDescription,
                         instructor: c.instructorName || c.instructor || 'Lecturer',
                         instructorId: c.instructorId,
                         price: c.price,
@@ -120,6 +123,8 @@ const LecturerDashboard = () => {
                     _id: c._id,
                     id: c.id,
                     title: c.title,
+                    description: c.description,
+                    shortDescription: c.shortDescription,
                     instructor: c.instructorName || c.instructor || 'Lecturer',
                     instructorId: c.instructorId,
                     price: c.price,
@@ -344,6 +349,13 @@ const LecturerDashboard = () => {
                                                 <td>
                                                     <div className="table-actions">
                                                         <button 
+                                                            className="action-btn view" 
+                                                            title="View & Manage Content"
+                                                            onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}
+                                                        >
+                                                            <Eye size={16} />
+                                                        </button>
+                                                        <button 
                                                             className="action-btn edit" 
                                                             title="Edit"
                                                             onClick={() => handleEditCourse(course._id || course.id)}
@@ -468,7 +480,11 @@ const LecturerDashboard = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {myCourses.map(course => (
-                                <Card key={course._id} className="overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                                <Card 
+                                    key={course._id} 
+                                    className="overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                                    onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}
+                                >
                                     <div className="aspect-video relative group">
                                         <img
                                             src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
@@ -483,7 +499,7 @@ const LecturerDashboard = () => {
                                     <CardHeader className="pb-2">
                                         <CardTitle className="leading-tight">{course.title}</CardTitle>
                                         <CardDescription className="line-clamp-2 mt-1">
-                                            {course.shortDescription || "No description provided."}
+                                            {course.shortDescription || course.description || "No description provided."}
                                         </CardDescription>
                                     </CardHeader>
 
