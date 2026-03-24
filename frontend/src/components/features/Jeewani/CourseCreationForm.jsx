@@ -163,14 +163,25 @@ export default function CourseCreationForm({ onSuccess }) {
 
   const validate = () => {
     const newErrors = {};
-    if (!title.trim()) newErrors.title = 'Course title is required.';
-    else if (title.trim().length < 5) newErrors.title = 'Course title must be at least 5 characters.';
+    if (!title.trim()) {
+      newErrors.title = 'Course title is required.';
+    } else if (title.trim().length < 5 || title.trim().length > 50) {
+      newErrors.title = 'Course title must be between 5 and 50 characters.';
+    } else if (/[@$#%]/.test(title)) {
+      newErrors.title = 'Course title cannot contain symbols like @, $, #, or %.';
+    }
 
-    if (!shortDescription.trim()) newErrors.shortDescription = 'Short description is required.';
-    else if (shortDescription.trim().length < 10) newErrors.shortDescription = 'Short description must be at least 10 characters.';
+    if (!shortDescription.trim()) {
+      newErrors.shortDescription = 'Short description is required.';
+    } else if (shortDescription.trim().length < 20 || shortDescription.trim().length > 200) {
+      newErrors.shortDescription = 'Short description must be between 20 and 200 characters.';
+    }
 
-    if (!description.trim()) newErrors.description = 'Long description is required.';
-    else if (description.trim().length < 20) newErrors.description = 'Long description must be at least 20 characters.';
+    if (!description.trim()) {
+      newErrors.description = 'Long description is required.';
+    } else if (description.trim().length < 100) {
+      newErrors.description = 'Long description must be at least 100 characters.';
+    }
 
     if (!category) newErrors.category = 'Please select a category.';
 
@@ -411,7 +422,11 @@ export default function CourseCreationForm({ onSuccess }) {
                     <input
                       type="text"
                       value={title}
-                      onChange={(e) => { setTitle(e.target.value); if(errors.title) setErrors({...errors, title: ''}); }}
+                      onChange={(e) => { 
+                        const val = e.target.value.replace(/[@$#%]/g, '');
+                        setTitle(val); 
+                        if(errors.title) setErrors({...errors, title: ''}); 
+                      }}
                       placeholder="e.g., Master Advanced React Hooks"
                       className={`w-full px-4 py-3 rounded-xl border ${errors.title ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium`}
                     />
