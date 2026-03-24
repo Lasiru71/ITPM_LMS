@@ -108,7 +108,7 @@ const StudentDashboard = () => {
         }
     };
 
-    const filteredCourses = courses.filter(c => 
+    const filteredCourses = courses.filter(c =>
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -120,7 +120,7 @@ const StudentDashboard = () => {
                     <div className="search-bar-container mb-8">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Search for courses, categories..."
                                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
@@ -144,7 +144,7 @@ const StudentDashboard = () => {
                                     <p className="text-sm text-gray-500 mt-1">{course.instructor}</p>
                                     <div className="flex justify-between items-center mt-4">
                                         <span className="font-bold text-blue-600">${course.price}</span>
-                                        <button 
+                                        <button
                                             className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
                                             onClick={() => handleEnroll(course.id, course.price)}
                                         >
@@ -207,7 +207,7 @@ const StudentDashboard = () => {
                             </div>
                             <h3>Start your learning journey</h3>
                             <p>You haven't enrolled in any courses yet. Explore our library to find something that interests you.</p>
-                            <button 
+                            <button
                                 onClick={() => setActiveTab("browse")}
                                 className="browse-btn"
                             >
@@ -233,7 +233,7 @@ const StudentDashboard = () => {
                                             <h3 title={course.title}>{course.title}</h3>
                                             <p>{course.instructor || 'EduVault Instructor'}</p>
                                         </div>
-                                        
+
                                         <div className="progress-section">
                                             <div className="progress-info">
                                                 <span>Overall Progress</span>
@@ -245,7 +245,7 @@ const StudentDashboard = () => {
                                         </div>
 
                                         <div className="card-footer">
-                                            <button 
+                                            <button
                                                 onClick={() => navigate(`/lecturer/courses/${course._id}`)}
                                                 className="continue-btn"
                                             >
@@ -316,9 +316,9 @@ const StudentDashboard = () => {
             </aside>
 
             <main className="student-main-content">
-                <DashboardHeader 
-                    showSearch={true} 
-                    onSearchChange={(val) => console.log("Searching for:", val)} 
+                <DashboardHeader
+                    showSearch={true}
+                    onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
                 <div className="student-content-area">

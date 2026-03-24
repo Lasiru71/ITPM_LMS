@@ -70,7 +70,7 @@ const LecturerDashboard = () => {
                         duration: '4h 30m',
                         language: 'English',
                         updatedAt: new Date(2024, 0, 1).toISOString() // Older date for mock
-                    })), 
+                    })),
                     ...customCourses.map(c => ({
                         _id: c._id,
                         id: c.id,
@@ -109,7 +109,7 @@ const LecturerDashboard = () => {
             await fetchCourses();
             const reviewData = await getAllReviews();
             setReviews(reviewData);
-            
+
             const customCourses = await getAllCourses();
             const combined = [
                 ...MOCK_COURSES.map(c => ({
@@ -118,7 +118,7 @@ const LecturerDashboard = () => {
                     duration: '4h 30m',
                     language: 'English',
                     updatedAt: new Date(2024, 0, 1).toISOString()
-                })), 
+                })),
                 ...customCourses.map(c => ({
                     _id: c._id,
                     id: c.id,
@@ -226,8 +226,8 @@ const LecturerDashboard = () => {
         if (activeTab === "dashboard") {
             // Sort courses by lastUpdated (newest first) or simply use reverse of array
             // Now showing all courses from the system as requested
-            const filteredCourses = myCourses.filter(course => 
-                course.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            const filteredCourses = myCourses.filter(course =>
+                course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (course.category && course.category.toLowerCase().includes(searchQuery.toLowerCase()))
             );
 
@@ -275,9 +275,9 @@ const LecturerDashboard = () => {
                     <div className="dashboard-controls-row">
                         <div className="search-container-v2">
                             <Search className="search-icon-v2" size={18} />
-                            <input 
-                                type="text" 
-                                placeholder="Search courses..." 
+                            <input
+                                type="text"
+                                placeholder="Search courses..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="search-input-v2"
@@ -348,22 +348,22 @@ const LecturerDashboard = () => {
                                                 </td>
                                                 <td>
                                                     <div className="table-actions">
-                                                        <button 
-                                                            className="action-btn view" 
+                                                        <button
+                                                            className="action-btn view"
                                                             title="View & Manage Content"
                                                             onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}
                                                         >
                                                             <Eye size={16} />
                                                         </button>
-                                                        <button 
-                                                            className="action-btn edit" 
+                                                        <button
+                                                            className="action-btn edit"
                                                             title="Edit"
                                                             onClick={() => handleEditCourse(course._id || course.id)}
                                                         >
                                                             <Pencil size={16} />
                                                         </button>
-                                                        <button 
-                                                            className="action-btn delete" 
+                                                        <button
+                                                            className="action-btn delete"
                                                             title="Delete"
                                                             onClick={() => handleDeleteCourse(course._id || course.id, course.title)}
                                                         >
@@ -397,7 +397,7 @@ const LecturerDashboard = () => {
             return (
                 <div className="reviews-section animate-in fade-in duration-500">
                     <h2 className="text-2xl font-bold mb-6">Student Reviews</h2>
-                    
+
                     {reviews.length === 0 ? (
                         <div className="empty-state text-center py-12">
                             <Star className="mx-auto mb-4 text-gray-300" size={48} />
@@ -409,7 +409,7 @@ const LecturerDashboard = () => {
                             {reviews.map(review => {
                                 const matchedCourse = myCourses.find(c => c._id === review.courseId || c.id === review.courseId);
                                 const courseName = matchedCourse ? matchedCourse.title : "Unknown Course";
-                                
+
                                 return (
                                     <Card key={review._id} className="relative overflow-hidden">
                                         <CardHeader className="pb-2">
@@ -420,10 +420,10 @@ const LecturerDashboard = () => {
                                                 </div>
                                                 <div className="flex gap-1 text-amber-500 shrink-0">
                                                     {[...Array(5)].map((_, i) => (
-                                                        <Star 
-                                                            key={i} 
-                                                            size={14} 
-                                                            className={i < review.rating ? "fill-amber-500" : "fill-transparent text-gray-300"} 
+                                                        <Star
+                                                            key={i}
+                                                            size={14}
+                                                            className={i < review.rating ? "fill-amber-500" : "fill-transparent text-gray-300"}
                                                         />
                                                     ))}
                                                 </div>
@@ -457,7 +457,7 @@ const LecturerDashboard = () => {
                 <div className="my-courses-section animate-in fade-in duration-500">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-bold">My Published Courses</h2>
-                        <Button 
+                        <Button
                             className="bg-emerald-500 text-white flex items-center gap-2"
                             onClick={() => setActiveTab("create-course")}
                         >
@@ -480,8 +480,8 @@ const LecturerDashboard = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {myCourses.map(course => (
-                                <Card 
-                                    key={course._id} 
+                                <Card
+                                    key={course._id}
                                     className="overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
                                     onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}
                                 >
@@ -504,7 +504,7 @@ const LecturerDashboard = () => {
                                     </CardHeader>
 
                                     <CardContent className="pt-0">
-                                         <div className="flex justify-between items-center mt-4">
+                                        <div className="flex justify-between items-center mt-4">
                                             <span className="text-xl font-black text-emerald-600">
                                                 ${course.price || "Free"}
                                             </span>

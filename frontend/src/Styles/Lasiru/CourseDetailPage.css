@@ -781,6 +781,102 @@
   font-size: 0.925rem;
 }
 
+/* ─── Assignment Fields ─── */
+.assignment-extra-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  margin: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.assignment-header-ui {
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1rem;
+}
+
+.assignment-header-ui h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.assignment-header-ui p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.assignment-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.assignment-form-group label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #334155;
+  display: block;
+}
+
+.assignment-form-group input[type="text"],
+.assignment-form-group input[type="datetime-local"],
+.assignment-form-group textarea {
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  background: #fcfdfe;
+  box-sizing: border-box;
+}
+
+.assignment-form-group input:focus,
+.assignment-form-group textarea:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16,185,129,0.08);
+  background: white;
+}
+
+.assignment-form-row-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .assignment-form-row-dates {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Enhancing existing upload zone for assignments */
+.assignment-extra-fields + .file-upload-area .file-upload-zone {
+  background: #ffffff;
+  border: 2px dashed #e2e8f0;
+}
+
+.assignment-extra-fields + .file-upload-area .file-upload-placeholder span {
+  font-weight: 700;
+  color: #1e293b;
+}
+
 /* ─── Reviews Section ─── */
 .reviews-placeholder {
   background: white;

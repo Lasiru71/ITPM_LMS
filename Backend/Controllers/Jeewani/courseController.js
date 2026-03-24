@@ -132,7 +132,10 @@ export const addLesson = async (req, res) => {
       type: req.body.type || 'video',
       duration: req.body.duration || '10m',
       content: req.body.content || '',
-      isPreview: req.body.isPreview || false
+      isPreview: req.body.isPreview || false,
+      description: req.body.description || '',
+      deadline: req.body.deadline || null,
+      lateSubmissionDeadline: req.body.lateSubmissionDeadline || null
     };
 
     if (req.body.fileUrl) {
@@ -200,6 +203,9 @@ export const updateLesson = async (req, res) => {
     if (req.body.duration) lesson.duration = req.body.duration;
     if (req.body.content !== undefined) lesson.content = req.body.content;
     if (req.body.isPreview !== undefined) lesson.isPreview = req.body.isPreview;
+    if (req.body.description !== undefined) lesson.description = req.body.description;
+    if (req.body.deadline !== undefined) lesson.deadline = req.body.deadline;
+    if (req.body.lateSubmissionDeadline !== undefined) lesson.lateSubmissionDeadline = req.body.lateSubmissionDeadline;
 
     if (req.body.fileUrl) {
       lesson.fileUrl = req.body.fileUrl;

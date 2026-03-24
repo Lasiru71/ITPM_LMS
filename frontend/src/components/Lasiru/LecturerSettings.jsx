@@ -34,34 +34,34 @@ const LecturerSettings = ({ onProfileUpdate }) => {
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
+
         const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!validTypes.includes(file.type)) {
             showToast("error", "Please upload a valid image (JPEG, PNG, or WebP)");
             return;
         }
-        
-        if (file.size > 5 * 1024 * 1024) { 
-            showToast("error", "Image size must be under 5MB"); 
-            return; 
+
+        if (file.size > 5 * 1024 * 1024) {
+            showToast("error", "Image size must be under 5MB");
+            return;
         }
 
         setUploading(true);
         const reader = new FileReader();
-        
+
         reader.onload = async () => {
             try {
                 const base64Image = reader.result;
                 await updateMyProfile({ profileImage: base64Image });
-                
+
                 setProfile(prev => ({ ...prev, profileImage: base64Image }));
-                
+
                 const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
                 const updatedUser = { ...currentUser, profileImage: base64Image };
                 localStorage.setItem("user", JSON.stringify(updatedUser));
-                
+
                 if (onProfileUpdate) onProfileUpdate(updatedUser);
-                
+
                 showToast("success", "Profile photo updated successfully!");
             } catch (err) {
                 console.error("Upload error:", err);
@@ -84,13 +84,13 @@ const LecturerSettings = ({ onProfileUpdate }) => {
         try {
             await updateMyProfile(formData);
             setProfile(prev => ({ ...prev, ...formData }));
-            
+
             const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
             const updatedUser = { ...currentUser, name: formData.name };
             localStorage.setItem("user", JSON.stringify(updatedUser));
-            
+
             if (onProfileUpdate) onProfileUpdate(updatedUser);
-            
+
             setEditMode(false);
             showToast("success", "Profile details updated successfully!");
         } catch (err) {
@@ -122,10 +122,10 @@ const LecturerSettings = ({ onProfileUpdate }) => {
     return (
         <div className="animate-in fade-in duration-500 max-w-4xl mx-auto space-y-6 pb-12 text-left">
             <div className="flex flex-col md:flex-row gap-6">
-                
+
                 {/* Profile Card Summary */}
                 <div className="w-full md:w-1/3">
-                    <div className="up-avatar-card" style={{padding: "2rem"}}>
+                    <div className="up-avatar-card" style={{ padding: "2rem" }}>
                         <div className="up-avatar-wrap" onClick={() => fileInputRef.current?.click()}>
                             {profile?.profileImage ? (
                                 <img src={profile.profileImage} alt="avatar" className="up-avatar-img" />

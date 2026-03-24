@@ -49,17 +49,53 @@ const CourseDetailPage = () => {
 
   // State for Add Lesson
   const [addingLessonTo, setAddingLessonTo] = useState(null);
-  const [newLesson, setNewLesson] = useState({ title: "", type: "video", duration: "10m", fileUrl: "" });
+  const [newLesson, setNewLesson] = useState({ 
+    title: "", 
+    type: "video", 
+    duration: "10m", 
+    fileUrl: "",
+    description: "",
+    deadline: "",
+    lateSubmissionDeadline: ""
+  });
   const [newLessonFile, setNewLessonFile] = useState(null);
 
   // State for editing lesson
   const [editingLesson, setEditingLesson] = useState(null);
-  const [editLessonData, setEditLessonData] = useState({ title: "", type: "video", duration: "10m", fileUrl: "" });
+  const [editLessonData, setEditLessonData] = useState({ 
+    title: "", 
+    type: "video", 
+    duration: "10m", 
+    fileUrl: "",
+    description: "",
+    deadline: "",
+    lateSubmissionDeadline: ""
+  });
   const [editLessonFile, setEditLessonFile] = useState(null);
 
   // File input refs
   const addFileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
+
+  const handleFileChange = (e, isEdit = false) => {
+    const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      showToast("error", "File size exceeds 5MB limit.");
+      if (isEdit) {
+        if (editFileInputRef.current) editFileInputRef.current.value = "";
+        setEditLessonFile(null);
+      } else {
+        if (addFileInputRef.current) addFileInputRef.current.value = "";
+        setNewLessonFile(null);
+      }
+      return;
+    }
+    if (isEdit) {
+      setEditLessonFile(file);
+    } else {
+      setNewLessonFile(file);
+    }
+  };
 
   // Upload progress
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -178,7 +214,15 @@ const CourseDetailPage = () => {
         localStorage.setItem("courses", JSON.stringify(localCourses));
         setCourse(updatedCourse);
 
-        setNewLesson({ title: "", type: "video", duration: "10m", fileUrl: "" });
+        setNewLesson({ 
+          title: "", 
+          type: "video", 
+          duration: "10m", 
+          fileUrl: "",
+          description: "",
+          deadline: "",
+          lateSubmissionDeadline: ""
+        });
         setNewLessonFile(null);
         setAddingLessonTo(null);
         setUploadProgress(0);
@@ -187,10 +231,15 @@ const CourseDetailPage = () => {
         return;
       }
 
-      const formData = new FormData();
       formData.append("title", newLesson.title);
       formData.append("type", newLesson.type);
       formData.append("duration", newLesson.duration);
+      
+      if (newLesson.type === 'assignment') {
+        formData.append("description", newLesson.description || "");
+        formData.append("deadline", newLesson.deadline || "");
+        formData.append("lateSubmissionDeadline", newLesson.lateSubmissionDeadline || "");
+      }
 
       if (newLesson.fileUrl) {
         formData.append("fileUrl", newLesson.fileUrl);
@@ -213,7 +262,15 @@ const CourseDetailPage = () => {
       );
 
       setCourse(response.data);
-      setNewLesson({ title: "", type: "video", duration: "10m", fileUrl: "" });
+      setNewLesson({ 
+        title: "", 
+        type: "video", 
+        duration: "10m", 
+        fileUrl: "",
+        description: "",
+        deadline: "",
+        lateSubmissionDeadline: ""
+      });
       setNewLessonFile(null);
       setAddingLessonTo(null);
       setUploadProgress(0);
@@ -238,7 +295,15 @@ const CourseDetailPage = () => {
   const handleEditLesson = (moduleIndex, lessonIndex) => {
     const lesson = course.modules[moduleIndex].lessons[lessonIndex];
     setEditingLesson({ moduleIndex, lessonIndex });
-    setEditLessonData({ title: lesson.title, type: lesson.type, duration: lesson.duration || "10m", fileUrl: lesson.fileUrl || "" });
+    setEditLessonData({ 
+      title: lesson.title, 
+      type: lesson.type, 
+      duration: lesson.duration || "10m", 
+      fileUrl: lesson.fileUrl || "",
+      description: lesson.description || "",
+      deadline: lesson.deadline ? new Date(lesson.deadline).toISOString().slice(0, 16) : "",
+      lateSubmissionDeadline: lesson.lateSubmissionDeadline ? new Date(lesson.lateSubmissionDeadline).toISOString().slice(0, 16) : ""
+    });
     setEditLessonFile(null);
   };
 
@@ -277,10 +342,15 @@ const CourseDetailPage = () => {
         return;
       }
 
-      const formData = new FormData();
       formData.append("title", editLessonData.title);
       formData.append("type", editLessonData.type);
       formData.append("duration", editLessonData.duration);
+      
+      if (editLessonData.type === 'assignment') {
+        formData.append("description", editLessonData.description || "");
+        formData.append("deadline", editLessonData.deadline || "");
+        formData.append("lateSubmissionDeadline", editLessonData.lateSubmissionDeadline || "");
+      }
 
       if (editLessonData.fileUrl) {
         formData.append("fileUrl", editLessonData.fileUrl);
@@ -548,7 +618,7 @@ const CourseDetailPage = () => {
                                   type="text"
                                   value={editLessonData.title}
                                   onChange={(e) => setEditLessonData({ ...editLessonData, title: e.target.value })}
-                                  placeholder="Lesson Title"
+                                  placeholder={editLessonData.type === 'assignment' ? "Assignment Title" : "Lesson Title"}
                                   autoFocus
                                 />
                                 <select
@@ -573,6 +643,45 @@ const CourseDetailPage = () => {
                                 />
                               </div>
 
+                              {/* Assignment Specific Fields */}
+                              {editLessonData.type === 'assignment' && (
+                                <div className="assignment-extra-fields">
+                                  <div className="assignment-section-title" style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', marginBottom: '0.25rem' }}>
+                                    Upload Assignment
+                                  </div>
+                                  <div className="assignment-form-group">
+                                    <label>Description / Instructions</label>
+                                    <textarea
+                                      placeholder="Enter assignment instructions, guidelines, and expectations..."
+                                      value={editLessonData.description}
+                                      onChange={(e) => setEditLessonData({ ...editLessonData, description: e.target.value })}
+                                      rows={4}
+                                    />
+                                  </div>
+                                  <div className="assignment-form-row-dates">
+                                    <div className="assignment-form-group">
+                                      <label>Deadline</label>
+                                      <input
+                                        type="datetime-local"
+                                        value={editLessonData.deadline}
+                                        onChange={(e) => setEditLessonData({ ...editLessonData, deadline: e.target.value })}
+                                      />
+                                    </div>
+                                    <div className="assignment-form-group">
+                                      <label>End of Time (Late Submission)</label>
+                                      <input
+                                        type="datetime-local"
+                                        value={editLessonData.lateSubmissionDeadline}
+                                        onChange={(e) => setEditLessonData({ ...editLessonData, lateSubmissionDeadline: e.target.value })}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="assignment-upload-label" style={{ fontWeight: 700, fontSize: '0.9rem', color: '#334155', marginTop: '0.5rem' }}>
+                                    Upload Reference File (Optional, max 5MB)
+                                  </div>
+                                </div>
+                              )}
+
                               {/* File Upload for Edit */}
                               {shouldShowFileUpload(editLessonData.type) && (
                                 <div className="file-upload-area">
@@ -593,7 +702,7 @@ const CourseDetailPage = () => {
                                       ref={editFileInputRef}
                                       type="file"
                                       accept={getAcceptedFileTypes(editLessonData.type)}
-                                      onChange={(e) => setEditLessonFile(e.target.files[0])}
+                                      onChange={(e) => handleFileChange(e, true)}
                                       style={{ display: 'none' }}
                                     />
                                     {editLessonFile ? (
@@ -737,7 +846,7 @@ const CourseDetailPage = () => {
                           </select>
                           <input
                             type="text"
-                            placeholder="Lesson Title"
+                            placeholder={newLesson.type === 'assignment' ? "Assignment Title" : "Lesson Title"}
                             value={newLesson.title}
                             onChange={(e) => setNewLesson({ ...newLesson, title: e.target.value })}
                             onKeyDown={(e) => e.key === "Enter" && handleAddLesson(mIndex)}
@@ -750,6 +859,49 @@ const CourseDetailPage = () => {
                             style={{ maxWidth: '120px' }}
                           />
                         </div>
+
+                        {/* Assignment Specific Fields */}
+                        {newLesson.type === 'assignment' && (
+                          <div className="assignment-extra-fields">
+                            <div className="assignment-header-ui">
+                              <h2>Create Assignment</h2>
+                              <p>Welcome back, {user?.name || 'Lecturer'}! Continue managing your courses and materials.</p>
+                            </div>
+                            <div className="assignment-section-title" style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', marginBottom: '0.25rem', marginTop: '1rem' }}>
+                              Upload Assignment
+                            </div>
+                            <div className="assignment-form-group">
+                              <label>Description / Instructions</label>
+                              <textarea
+                                placeholder="Enter assignment instructions, guidelines, and expectations..."
+                                value={newLesson.description}
+                                onChange={(e) => setNewLesson({ ...newLesson, description: e.target.value })}
+                                rows={4}
+                              />
+                            </div>
+                            <div className="assignment-form-row-dates">
+                              <div className="assignment-form-group">
+                                <label>Deadline</label>
+                                <input
+                                  type="datetime-local"
+                                  value={newLesson.deadline}
+                                  onChange={(e) => setNewLesson({ ...newLesson, deadline: e.target.value })}
+                                />
+                              </div>
+                              <div className="assignment-form-group">
+                                <label>End of Time (Late Submission)</label>
+                                <input
+                                  type="datetime-local"
+                                  value={newLesson.lateSubmissionDeadline}
+                                  onChange={(e) => setNewLesson({ ...newLesson, lateSubmissionDeadline: e.target.value })}
+                                />
+                              </div>
+                            </div>
+                            <div className="assignment-upload-label" style={{ fontWeight: 700, fontSize: '0.9rem', color: '#334155', marginTop: '0.5rem' }}>
+                              Upload Reference File (Optional, max 5MB)
+                            </div>
+                          </div>
+                        )}
 
                         {/* File Upload */}
                         {shouldShowFileUpload(newLesson.type) && (
@@ -771,7 +923,7 @@ const CourseDetailPage = () => {
                                 ref={addFileInputRef}
                                 type="file"
                                 accept={getAcceptedFileTypes(newLesson.type)}
-                                onChange={(e) => setNewLessonFile(e.target.files[0])}
+                                onChange={(e) => handleFileChange(e, false)}
                                 style={{ display: 'none' }}
                               />
                               {newLessonFile ? (

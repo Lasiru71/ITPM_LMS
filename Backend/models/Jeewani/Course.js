@@ -6,7 +6,10 @@ const LessonSchema = new mongoose.Schema({
   duration: { type: String, default: '10m' },
   isPreview: { type: Boolean, default: false },
   content: { type: String },
-  fileUrl: { type: String }
+  fileUrl: { type: String },
+  description: { type: String },
+  deadline: { type: Date },
+  lateSubmissionDeadline: { type: Date }
 });
 
 const ModuleSchema = new mongoose.Schema({
