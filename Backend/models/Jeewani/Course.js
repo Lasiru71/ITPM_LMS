@@ -2,10 +2,11 @@ import mongoose from 'mongoose';
 
 const LessonSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  type: { type: String, enum: ['video', 'text', 'quiz', 'assignment'], default: 'video' },
+  type: { type: String, enum: ['video', 'pdf', 'ppt', 'assignment'], default: 'video' },
   duration: { type: String, default: '10m' },
   isPreview: { type: Boolean, default: false },
-  content: { type: String }
+  content: { type: String },
+  fileUrl: { type: String }
 });
 
 const ModuleSchema = new mongoose.Schema({

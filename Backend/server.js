@@ -15,6 +15,7 @@ import jeewaniReviewRoutes from "./routes/Jeewani/reviewRoutes.js";
 import assignmentRoutes from "./routes/sadeepa/assignmentRoutes.js";
 import materialRoutes from "./routes/sadeepa/materialRoutes.js";
 import projectRoutes from "./routes/sadeepa/projectRoutes.js";
+import enrollmentRoutes from "./routes/Lasiru/enrollmentRoutes.js";
 
 const app = express();
 
@@ -22,6 +23,9 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// Serve uploaded files
+app.use("/uploads", express.static("uploads"));
 
 // Health check
 app.get("/", (req, res) => {
@@ -42,6 +46,7 @@ app.use("/api/jeewani/reviews", jeewaniReviewRoutes);
 app.use("/api/sadeepa/assignments", assignmentRoutes);
 app.use("/api/sadeepa/materials", materialRoutes);
 app.use("/api/sadeepa/projects", projectRoutes);
+app.use("/api/enrollments", enrollmentRoutes);
 
 // MongoDB connection
 mongoose

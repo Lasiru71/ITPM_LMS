@@ -1,4 +1,6 @@
 import Course from "../../models/Jeewani/Course.js";
+import fs from 'fs';
+import path from 'path';
 
 // Create a new course
 export const createCourse = async (req, res) => {
@@ -65,9 +67,9 @@ export const addModule = async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     
-    course.modules.push({ title: req.body.title, lessons: [] });
-    course.updatedAt = new Date();
-    await course.save();
+    const newModule = { title: req.body.title, lessons: [] };
+    course.modules.push(newModule);
+    await Course.updateOne({ _id: course._id }, { $push: { modules: newModule }, $set: { updatedAt: new Date() } });
     res.status(200).json(course);
   } catch (error) {
     res.status(500).json({ message: 'Error adding module', error: error.message });
@@ -85,9 +87,10 @@ export const deleteModule = async (req, res) => {
       return res.status(400).json({ message: 'Invalid module index' });
     }
     
-    course.modules.splice(moduleIndex, 1);
-    course.updatedAt = new Date();
-    await course.save();
+    const modules = course.modules.toObject();
+    modules.splice(moduleIndex, 1);
+    course.modules = modules;
+    await Course.updateOne({ _id: course._id }, { $set: { modules, updatedAt: new Date() } });
     res.status(200).json(course);
   } catch (error) {
     res.status(500).json({ message: 'Error deleting module', error: error.message });
@@ -106,8 +109,7 @@ export const updateModule = async (req, res) => {
     }
     
     course.modules[moduleIndex].title = req.body.title;
-    course.updatedAt = new Date();
-    await course.save();
+    await Course.updateOne({ _id: course._id }, { $set: { [`modules.${moduleIndex}.title`]: req.body.title, updatedAt: new Date() } });
     res.status(200).json(course);
   } catch (error) {
     res.status(500).json({ message: 'Error updating module', error: error.message });
@@ -125,15 +127,25 @@ export const addLesson = async (req, res) => {
       return res.status(400).json({ message: 'Invalid module index' });
     }
     
-    course.modules[moduleIndex].lessons.push({
+    const lessonData = {
       title: req.body.title,
       type: req.body.type || 'video',
       duration: req.body.duration || '10m',
       content: req.body.content || '',
       isPreview: req.body.isPreview || false
-    });
-    course.updatedAt = new Date();
-    await course.save();
+    };
+
+    if (req.body.fileUrl) {
+      lessonData.fileUrl = req.body.fileUrl;
+    }
+
+    // If file was uploaded via multer
+    if (req.file) {
+      lessonData.fileUrl = `/uploads/lessons/${req.file.filename}`;
+    }
+
+    course.modules[moduleIndex].lessons.push(lessonData);
+    await Course.updateOne({ _id: course._id }, { $push: { [`modules.${moduleIndex}.lessons`]: lessonData }, $set: { updatedAt: new Date() } });
     res.status(200).json(course);
   } catch (error) {
     res.status(500).json({ message: 'Error adding lesson', error: error.message });
@@ -156,9 +168,10 @@ export const deleteLesson = async (req, res) => {
       return res.status(400).json({ message: 'Invalid lesson index' });
     }
     
-    course.modules[moduleIndex].lessons.splice(lessonIndex, 1);
-    course.updatedAt = new Date();
-    await course.save();
+    const lessons = course.modules[moduleIndex].lessons.toObject();
+    lessons.splice(lessonIndex, 1);
+    course.modules[moduleIndex].lessons = lessons;
+    await Course.updateOne({ _id: course._id }, { $set: { [`modules.${moduleIndex}.lessons`]: lessons, updatedAt: new Date() } });
     res.status(200).json(course);
   } catch (error) {
     res.status(500).json({ message: 'Error deleting lesson', error: error.message });
@@ -187,11 +200,32 @@ export const updateLesson = async (req, res) => {
     if (req.body.duration) lesson.duration = req.body.duration;
     if (req.body.content !== undefined) lesson.content = req.body.content;
     if (req.body.isPreview !== undefined) lesson.isPreview = req.body.isPreview;
+
+    if (req.body.fileUrl) {
+      lesson.fileUrl = req.body.fileUrl;
+    }
+
+    // If a new file was uploaded, delete the old one and update
+    if (req.file) {
+      // Remove old file if it exists and wasn't a remote URL
+      if (lesson.fileUrl && !lesson.fileUrl.startsWith('http')) {
+        const relativePath = lesson.fileUrl.startsWith('/') ? lesson.fileUrl.substring(1) : lesson.fileUrl;
+        const oldPath = path.join(process.cwd(), relativePath);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+      lesson.fileUrl = `/uploads/lessons/${req.file.filename}`;
+    }
     
-    course.updatedAt = new Date();
-    await course.save();
+    const updatedLesson = lesson.toObject ? lesson.toObject() : lesson;
+    await Course.updateOne(
+      { _id: course._id },
+      { $set: { [`modules.${moduleIndex}.lessons.${lessonIndex}`]: updatedLesson, updatedAt: new Date() } }
+    );
     res.status(200).json(course);
   } catch (error) {
+    console.error('UpdateLesson Error:', error);
     res.status(500).json({ message: 'Error updating lesson', error: error.message });
   }
 };

@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 const LESSON_TYPES = [
   { value: 'video', label: 'Video' },
   { value: 'text', label: 'Text' },
-  { value: 'quiz', label: 'Quiz' },
+  { value: 'ppt', label: 'PPT' },
   { value: 'assignment', label: 'Assignment' }
 ];
 

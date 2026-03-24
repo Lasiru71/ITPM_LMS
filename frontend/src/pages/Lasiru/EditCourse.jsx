@@ -17,7 +17,7 @@ import * as courseApi from '../../api/Jeewani/courseApi';
 const LESSON_TYPES = [
   { value: 'video', label: 'Video' },
   { value: 'text', label: 'Text' },
-  { value: 'quiz', label: 'Quiz' },
+  { value: 'ppt', label: 'PPT' },
   { value: 'assignment', label: 'Assignment' }
 ];
 

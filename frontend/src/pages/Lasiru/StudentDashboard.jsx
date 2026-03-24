@@ -37,7 +37,22 @@ const StudentDashboard = () => {
     ];
 
     const [courses, setCourses] = useState([]);
+    const [myCourses, setMyCourses] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+
+    const fetchMyCourses = async () => {
+        try {
+            const studentId = user._id; // Assuming user contains the MongoDB _id
+            if (!studentId) return;
+            const response = await fetch(`http://localhost:5000/api/enrollments/student/${studentId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setMyCourses(data);
+            }
+        } catch (error) {
+            console.error("Error fetching my courses:", error);
+        }
+    };
 
     React.useEffect(() => {
         const fetchCourses = async () => {
@@ -57,7 +72,41 @@ const StudentDashboard = () => {
             setCourses(combined);
         };
         fetchCourses();
-    }, []);
+        fetchMyCourses();
+    }, [user._id]);
+
+    const handleEnroll = async (courseId, price) => {
+        try {
+            const studentId = user._id;
+            if (!studentId) {
+                showToast("error", "Please login to enroll");
+                return;
+            }
+
+            const response = await fetch("http://localhost:5000/api/enrollments/enroll", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    studentId,
+                    courseId,
+                    paymentAmount: price,
+                }),
+            });
+
+            if (response.ok) {
+                showToast("success", "Enrolled successfully!");
+                fetchMyCourses(); // Refresh my-learning
+                setActiveTab("my-learning");
+            } else {
+                const data = await response.json();
+                showToast("error", data.message || "Failed to enroll");
+            }
+        } catch (error) {
+            showToast("error", "Error enrolling in course");
+        }
+    };
 
     const filteredCourses = courses.filter(c => 
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,7 +144,10 @@ const StudentDashboard = () => {
                                     <p className="text-sm text-gray-500 mt-1">{course.instructor}</p>
                                     <div className="flex justify-between items-center mt-4">
                                         <span className="font-bold text-blue-600">${course.price}</span>
-                                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                                        <button 
+                                            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                                            onClick={() => handleEnroll(course.id, course.price)}
+                                        >
                                             Enroll Now
                                         </button>
                                     </div>
@@ -103,6 +155,108 @@ const StudentDashboard = () => {
                             </div>
                         ))}
                     </div>
+                </div>
+            );
+        }
+
+        if (activeTab === "my-learning") {
+            return (
+                <div className="my-learning-container animate-in fade-in duration-500">
+                    {/* Learning Stats Bar */}
+                    <div className="learning-stats-grid mb-8">
+                        <div className="stat-card">
+                            <div className="stat-icon bg-blue-50 text-blue-600">
+                                <PlayCircle size={20} />
+                            </div>
+                            <div className="stat-info">
+                                <span className="stat-value">{myCourses.length}</span>
+                                <span className="stat-label">Enrolled Courses</span>
+                            </div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-icon bg-green-50 text-green-600">
+                                <Award size={20} />
+                            </div>
+                            <div className="stat-info">
+                                <span className="stat-value">0</span>
+                                <span className="stat-label">Certificates Earned</span>
+                            </div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-icon bg-purple-50 text-purple-600">
+                                <BookOpen size={20} />
+                            </div>
+                            <div className="stat-info">
+                                <span className="stat-value">0</span>
+                                <span className="stat-label">Hours Learned</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="section-header flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-gray-800">Your Courses</h2>
+                        <div className="flex gap-2">
+                            <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">All Courses</span>
+                        </div>
+                    </div>
+
+                    {myCourses.length === 0 ? (
+                        <div className="empty-state-modern">
+                            <div className="empty-illustration">
+                                <Search size={64} className="text-blue-100" />
+                            </div>
+                            <h3>Start your learning journey</h3>
+                            <p>You haven't enrolled in any courses yet. Explore our library to find something that interests you.</p>
+                            <button 
+                                onClick={() => setActiveTab("browse")}
+                                className="browse-btn"
+                            >
+                                Browse All Courses
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="my-courses-grid">
+                            {myCourses.map(course => (
+                                <div key={course._id} className="modern-course-card">
+                                    <div className="card-media">
+                                        <img src={course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"} alt={course.title} />
+                                        <div className="media-overlay">
+                                            <button className="play-btn" onClick={() => navigate(`/lecturer/courses/${course._id}`)}>
+                                                <PlayCircle size={32} />
+                                            </button>
+                                        </div>
+                                        <div className="category-tag">{course.category || 'General'}</div>
+                                    </div>
+                                    <div className="card-content">
+                                        <div className="card-header">
+                                            <h3 title={course.title}>{course.title}</h3>
+                                            <p>{course.instructor || 'EduVault Instructor'}</p>
+                                        </div>
+                                        
+                                        <div className="progress-section">
+                                            <div className="progress-info">
+                                                <span>Overall Progress</span>
+                                                <span className="percent">0%</span>
+                                            </div>
+                                            <div className="progress-track">
+                                                <div className="progress-fill" style={{ width: '0%' }}></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="card-footer">
+                                            <button 
+                                                onClick={() => navigate(`/lecturer/courses/${course._id}`)}
+                                                className="continue-btn"
+                                            >
+                                                Continue Learning
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             );
         }
