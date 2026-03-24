@@ -206,26 +206,54 @@ export default function EditCourse() {
   };
 
   const validate = () => {
-    if (!title.trim()) return 'Course title is required.';
-    if (!description.trim()) return 'Course description is required.';
-    if (!shortDescription.trim()) return 'Short description is required.';
-    if (!category) return 'Please select a category.';
-    if (!price || Number(price) < 0) return 'Please enter a valid price.';
+    const newErrors = {};
+    if (!title.trim()) {
+      newErrors.title = 'Course title is required.';
+    } else if (title.trim().length < 5 || title.trim().length > 50) {
+      newErrors.title = 'Course title must be between 5 and 50 characters.';
+    } else if (/[@$#%]/.test(title)) {
+      newErrors.title = 'Course title cannot contain symbols like @, $, #, or %.';
+    }
+
+    if (!shortDescription.trim()) {
+      newErrors.shortDescription = 'Short description is required.';
+    } else if (shortDescription.trim().length < 20 || shortDescription.trim().length > 200) {
+      newErrors.shortDescription = 'Short description must be between 20 and 200 characters.';
+    }
+
+    if (!description.trim()) {
+      newErrors.description = 'Long description is required.';
+    } else if (description.trim().length < 100) {
+      newErrors.description = 'Long description must be at least 100 characters.';
+    }
+
+    if (!category) newErrors.category = 'Please select a category.';
+    if (!price || Number(price) < 0) newErrors.price = 'Please enter a valid price.';
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      showToast('error', Object.values(newErrors)[0]);
+      return false;
+    }
+
     for (const mod of modules) {
-      if (!mod.title.trim()) return `Module "${mod.id}" needs a title.`;
+      if (!mod.title.trim()) {
+        showToast('error', `Module "${mod.id}" needs a title.`);
+        return false;
+      }
       for (const lesson of mod.lessons) {
-        if (!lesson.title.trim()) return `All lessons in "${mod.title || 'Untitled Module'}" must have a title.`;
+        if (!lesson.title.trim()) {
+          showToast('error', `All lessons in "${mod.title || 'Untitled Module'}" must have a title.`);
+          return false;
+        }
       }
     }
-    return null;
+    return true;
   };
 
   const handleSubmit = async () => {
-    const error = validate();
-    if (error) {
-      showToast('error', error);
-      return;
-    }
+    if (!validate()) return;
 
     const courseModules = modules.map((m) => ({
       id: m.id,
@@ -411,10 +439,15 @@ export default function EditCourse() {
                     <input
                       type="text"
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[@$#%]/g, '');
+                        setTitle(val);
+                        if(errors.title) setErrors({...errors, title: ''});
+                      }}
                       placeholder="e.g., Master Advanced React Hooks"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.title ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium`}
                     />
+                    {errors.title && <p className="text-red-500 text-xs mt-1 ml-1">{errors.title}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Category</label>
@@ -434,20 +467,28 @@ export default function EditCourse() {
                     <input
                       type="text"
                       value={shortDescription}
-                      onChange={(e) => setShortDescription(e.target.value)}
+                      onChange={(e) => {
+                        setShortDescription(e.target.value);
+                        if(errors.shortDescription) setErrors({...errors, shortDescription: ''});
+                      }}
                       placeholder="A brief summary for potential students"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.shortDescription ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium`}
                     />
+                    {errors.shortDescription && <p className="text-red-500 text-xs mt-1 ml-1">{errors.shortDescription}</p>}
                   </div>
                    <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Long Description</label>
                     <textarea
                       rows={6}
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                        if(errors.description) setErrors({...errors, description: ''});
+                      }}
                       placeholder="Detailed explanation of what students will learn..."
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium resize-none"
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.description ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium resize-none`}
                     />
+                    {errors.description && <p className="text-red-500 text-xs mt-1 ml-1">{errors.description}</p>}
                   </div>
                 </div>
               </div>
