@@ -17,7 +17,13 @@ export default function ExamLogin() {
   const studentName = user?.name;
   let studentId = user?.studentId;
   if (!studentId) {
-    studentId = studentName === 'TestStudent' ? 'IT231112' : 'IT238370';
+    if (studentName === 'TestStudent') {
+      studentId = 'IT231112';
+    } else if (studentName === 'Lakshitha Prasad') {
+      studentId = 'IT235560';
+    } else {
+      studentId = 'IT238370';
+    }
   }
 
   useEffect(() => {

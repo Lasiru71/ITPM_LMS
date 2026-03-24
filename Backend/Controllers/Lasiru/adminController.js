@@ -31,7 +31,7 @@ export const createLecturer = async (req, res) => {
             address,
             phone,
             role: "Lecturer",
-            studentId: undefined, // Explicitly undefined to avoid indexing null/empty strings
+            nicNumber: undefined, // Explicitly undefined to avoid indexing null/empty strings
         });
 
         await newLecturer.save();

@@ -550,7 +550,6 @@ const LecturerDashboard = () => {
 
         // ✅ NEW EMPTY STATE UI
         const activeItem = navItems.find(item => item.id === activeTab);
-
         return (
             <div className="empty-state-container animate-in fade-in duration-500">
                 <div className="empty-state text-center">
@@ -598,6 +597,18 @@ const LecturerDashboard = () => {
                             )}
                         </button>
                     ))}
+
+                    <div className="nav-section-title">System</div>
+                    <div 
+                        className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
+                        onClick={() => setActiveTab("settings")}
+                    >
+                        <div className="nav-item-content">
+                            <Settings size={20} />
+                            <span>Settings</span>
+                        </div>
+                        {activeTab === "settings" && <ChevronRight size={14} />}
+                    </div>
                 </nav>
 
                 {/* ✅ NEW FOOTER */}

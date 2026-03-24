@@ -17,6 +17,9 @@ import Home from "./pages/Home/Home.jsx";
 import About from "./pages/Home/About.jsx";
 import Contact from "./pages/Home/Contact.jsx";
 import Courses from "./pages/Home/Courses.jsx";
+import News from "./pages/Home/News.jsx";
+import FreeExam from "./pages/Home/FreeExam.jsx";
+import GptHelper from "./pages/Home/GptHelper.jsx";
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/courses" element={<Courses />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/create-free-exam" element={<FreeExam />} />
+        <Route path="/gpt-helper" element={<GptHelper />} />
       </Route>
 
       {/* Auth Routes */}
