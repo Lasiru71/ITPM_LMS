@@ -305,8 +305,6 @@ const AdminDashboard = () => {
             case "lecturers": return <LectureManagement onUpdate={fetchStats} />;
             case "students": return <StudentManagement onUpdate={fetchStats} />;
             case "reports": return renderReports();
-            case "courses": return renderPlaceholder("All Courses", <BookOpen size={48} />);
-            case "attendance": return renderPlaceholder("Student Attendance", <Activity size={48} />);
             case "materials": return <MaterialUpload />;
             case "announcement": return <AnnouncementManagement />;
             default: return renderOverview();
@@ -341,14 +339,6 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="nav-section-title">Academic</div>
-                    <div className={`admin-nav-item ${activeTab === "courses" ? "active" : ""}`} onClick={() => setActiveTab("courses")}>
-                        <div className="nav-item-content"><BookOpen size={20} /> All Courses</div>
-                        {activeTab === "courses" && <ChevronRight size={16} />}
-                    </div>
-                    <div className={`admin-nav-item ${activeTab === "attendance" ? "active" : ""}`} onClick={() => setActiveTab("attendance")}>
-                        <div className="nav-item-content"><Activity size={20} /> Attendance</div>
-                        {activeTab === "attendance" && <ChevronRight size={16} />}
-                    </div>
                     <div className={`admin-nav-item ${activeTab === "materials" ? "active" : ""}`} onClick={() => setActiveTab("materials")}>
                         <div className="nav-item-content"><Upload size={20} /> Materials</div>
                         {activeTab === "materials" && <ChevronRight size={16} />}
