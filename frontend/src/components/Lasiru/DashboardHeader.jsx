@@ -19,7 +19,7 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
             case 'Admin': return '/admin-dashboard';
             case 'Lecturer': return '/lecturer-dashboard';
             case 'Student': return '/student-dashboard';
-            default: return '/profile';
+            default: return '/';
         }
     };
 
