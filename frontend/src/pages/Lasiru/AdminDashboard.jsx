@@ -17,7 +17,8 @@ import {
     Eye,
     Megaphone,
     Upload,
-    Star
+    Star,
+    Settings
 } from "lucide-react";
 import {
     AreaChart,
@@ -173,71 +174,151 @@ const AdminDashboard = () => {
         ];
 
         return (
-            <div className="admin-overview">
+            <div className="admin-overview" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+                <div style={{ 
+                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
+                    padding: '2.5rem', 
+                    borderRadius: '2rem', 
+                    color: 'white', 
+                    marginBottom: '2.5rem',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+                }}>
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                        <h1 style={{ fontSize: '2.5rem', margin: 0, fontWeight: 800 }}>Welcome back, {user.name || "Admin"}! 👋</h1>
+                        <p style={{ opacity: 0.8, fontSize: '1.1rem', marginTop: '0.5rem', maxWidth: '600px' }}>
+                            Here's what's happening with the platform today. You have {stats.totals.active} users active right now.
+                        </p>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                            <button className="admin-btn admin-btn-primary" onClick={() => setActiveTab('reports')}>
+                                <FileText size={18} /> View Reports
+                            </button>
+                            <button className="admin-btn admin-btn-ghost" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none' }} onClick={() => navigate("/")}>
+                                <Eye size={18} /> Preview Site
+                            </button>
+                        </div>
+                    </div>
+                    {/* Decorative element */}
+                    <div style={{ 
+                        position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', 
+                        background: 'rgba(16, 185, 129, 0.2)', borderRadius: '50%', filter: 'blur(40px)' 
+                    }} />
+                </div>
+
                 <div className="stats-grid">
-                    <div className="stat-card">
-                        <div style={{ color: '#12b981', marginBottom: '1rem' }}><Users size={24} /></div>
+                    <div className="stat-card" style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                            <Users size={24} />
+                        </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2rem' }}>{stats.totals.total}</h3>
-                            <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Total Users</p>
+                            <h3 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.total}</h3>
+                            <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontWeight: 500, fontSize: '0.95rem' }}>Total Users</p>
+                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#10b981' }}>
+                                <TrendingUp size={16} /> <span>12% growth</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="stat-card">
-                        <div style={{ color: '#3b82f6', marginBottom: '1rem' }}><BookOpen size={24} /></div>
+                    <div className="stat-card" style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                            <BookOpen size={24} />
+                        </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2rem' }}>{stats.totals.lecturers + stats.totals.students}</h3>
-                            <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Total Enrollments</p>
+                            <h3 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.lecturers + stats.totals.students}</h3>
+                            <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontWeight: 500, fontSize: '0.95rem' }}>Total Enrollments</p>
+                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6' }}>
+                                <GraduationCap size={16} /> <span>New courses active</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="stat-card">
-                        <div style={{ color: '#8b5cf6', marginBottom: '1rem' }}><DollarSign size={24} /></div>
+                    <div className="stat-card" style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#f5f3ff', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                            <DollarSign size={24} />
+                        </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2rem' }}>$2.8M</h3>
-                            <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Revenue</p>
+                            <h3 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 800, color: '#1e293b' }}>$2.8M</h3>
+                            <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontWeight: 500, fontSize: '0.95rem' }}>Revenue</p>
+                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6' }}>
+                                <Activity size={16} /> <span>8.2% vs last month</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="stat-card">
-                        <div style={{ color: '#f59e0b', marginBottom: '1rem' }}><Activity size={24} /></div>
+                    <div className="stat-card" style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#fff7ed', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                            <Activity size={24} />
+                        </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2rem' }}>{stats.totals.active}</h3>
-                            <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Active Now</p>
+                            <h3 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.active}</h3>
+                            <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontWeight: 500, fontSize: '0.95rem' }}>Active Now</p>
+                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#f59e0b' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', animation: 'pulse 2s infinite' }}></div>
+                                <span>Real-time tracking</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="charts-container">
-                    <div className="chart-card">
-                        <h3>User Growth Trend</h3>
-                        <div style={{ width: '100%', height: 300, marginTop: '1.5rem' }}>
+                    <div className="chart-card" style={{ borderRadius: '1.5rem', padding: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>User Growth Trend</h3>
+                            <select style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0', fontSize: '0.85rem' }}>
+                                <option>Last 30 Days</option>
+                                <option>Last 6 Months</option>
+                            </select>
+                        </div>
+                        <div style={{ width: '100%', height: 300, marginTop: '2rem' }}>
                             <ResponsiveContainer>
                                 <AreaChart data={stats.growth}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                                    <Tooltip />
-                                    <Area type="monotone" dataKey="users" stroke="#12b981" fill="#12b981" fillOpacity={0.1} strokeWidth={3} />
+                                    <defs>
+                                        <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                                    <Area type="monotone" dataKey="users" stroke="#10b981" fill="url(#colorUsers)" strokeWidth={4} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
-                    <div className="chart-card">
-                        <h3>Distribution</h3>
-                        <div style={{ width: '100%', height: 250, marginTop: '1.5rem' }}>
+                    <div className="chart-card" style={{ borderRadius: '1.5rem', padding: '2rem' }}>
+                        <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Enrollment Distribution</h3>
+                        <div style={{ width: '100%', height: 250, marginTop: '2rem', position: 'relative' }}>
                             <ResponsiveContainer>
                                 <PieChart>
-                                    <Pie data={donutData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                                    <Pie data={donutData} innerRadius={70} outerRadius={90} paddingAngle={8} dataKey="value" stroke="none">
                                         {donutData.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
                                 </PieChart>
                             </ResponsiveContainer>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.total}</span>
+                                <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Total</span>
+                            </div>
+                        </div>
+                        <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+                            {donutData.map((d, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: COLORS[i % COLORS.length] }}></div>
+                                    <span style={{ color: '#64748b' }}>{d.name}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
+                <style>{`
+                    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                    @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+                `}</style>
             </div>
         );
     };
@@ -306,8 +387,10 @@ const AdminDashboard = () => {
             case "students": return <StudentManagement onUpdate={fetchStats} />;
             case "reports": return renderReports();
             case "materials": return <MaterialUpload />;
-            case "announcement": return <AnnouncementManagement />;
-            default: return renderOverview();
+            case 'announcement':
+                return <AnnouncementManagement />;
+            default:
+                return renderOverview();
         }
     };
 
