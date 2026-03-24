@@ -6,8 +6,8 @@ export default function CourseCard({ course }) {
   return (
     <div className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300">
       <div className="relative aspect-video overflow-hidden">
-        <img 
-          src={course.image} 
+        <img
+          src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=450&fit=crop"}
           alt={course.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />

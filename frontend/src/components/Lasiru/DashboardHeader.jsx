@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Bell, Search, User, LogOut, LayoutDashboard, Settings, Globe } from "lucide-react";
+import { useAuthStore } from "../../stores/authStore";
 import "../../Styles/Lasiru/DashboardHeader.css";
 
-const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = "light" }) => {
+const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = "light", user: userProp }) => {
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const { user: storeUser } = useAuthStore();
+    const user = userProp || storeUser || JSON.parse(localStorage.getItem("user") || "{}");
     const [profileOpen, setProfileOpen] = useState(false);
 
     const handleLogout = () => {
@@ -29,9 +31,9 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
                 {showSearch ? (
                     <div className="dash-search-box">
                         <Search size={18} className="dash-search-icon" />
-                        <input 
-                            type="text" 
-                            placeholder="Search everything..." 
+                        <input
+                            type="text"
+                            placeholder="Search everything..."
                             onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
                         />
                     </div>
@@ -54,12 +56,16 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
                 </div>
 
                 <div className="dash-profile-dropdown-container">
-                    <button 
-                        className="dash-profile-trigger" 
+                    <button
+                        className="dash-profile-trigger"
                         onClick={() => setProfileOpen(!profileOpen)}
                     >
                         <div className="dash-user-avatar">
-                            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                            {user.profileImage ? (
+                                <img src={user.profileImage} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                            ) : (
+                                user.name ? user.name.charAt(0).toUpperCase() : "U"
+                            )}
                         </div>
                         <span className="dash-user-name">{user.name?.split(' ')[0] || "User"}</span>
                     </button>

@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 const LESSON_TYPES = [
   { value: 'video', label: 'Video' },
   { value: 'text', label: 'Text' },
-  { value: 'quiz', label: 'Quiz' },
+  { value: 'ppt', label: 'PPT' },
   { value: 'assignment', label: 'Assignment' }
 ];
 
@@ -48,7 +48,7 @@ function createEmptyModule() {
 export default function CourseCreationForm({ onSuccess }) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { addCourse, isLoading } = useCourseStore();
+  const { addCourse, fetchCourses, isLoading } = useCourseStore();
   const { showToast } = useToast();
 
   const [title, setTitle] = useState('');
@@ -60,10 +60,10 @@ export default function CourseCreationForm({ onSuccess }) {
   const [price, setPrice] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [language, setLanguage] = useState('English');
-  const [tags, setTags] = useState('');
   const [modules, setModules] = useState([createEmptyModule()]);
   const [previewMode, setPreviewMode] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errors, setErrors] = useState({});
 
   if (!user) {
     return (
@@ -127,27 +127,95 @@ export default function CourseCreationForm({ onSuccess }) {
     );
   };
 
-  const validate = () => {
-    if (!title.trim()) return 'Course title is required.';
-    if (!description.trim()) return 'Course description is required.';
-    if (!shortDescription.trim()) return 'Short description is required.';
-    if (!category) return 'Please select a category.';
-    if (!price || Number(price) < 0) return 'Please enter a valid price.';
-    for (const mod of modules) {
-      if (!mod.title.trim()) return `Module "${mod.id}" needs a title.`;
-      for (const lesson of mod.lessons) {
-        if (!lesson.title.trim()) return `All lessons in "${mod.title || 'Untitled Module'}" must have a title.`;
+  const handlePaste = (e) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setThumbnailUrl(event.target.result);
+          if (errors.thumbnailUrl) setErrors({ ...errors, thumbnailUrl: "" });
+          showToast("success", "Image pasted from clipboard!");
+        };
+        reader.readAsDataURL(blob);
+        break;
       }
     }
-    return null;
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('error', 'Please select an image file.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setThumbnailUrl(event.target.result);
+        if (errors.thumbnailUrl) setErrors({ ...errors, thumbnailUrl: "" });
+        showToast('success', 'Image uploaded successfully!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!title.trim()) newErrors.title = 'Course title is required.';
+    else if (title.trim().length < 5) newErrors.title = 'Course title must be at least 5 characters.';
+
+    if (!shortDescription.trim()) newErrors.shortDescription = 'Short description is required.';
+    else if (shortDescription.trim().length < 10) newErrors.shortDescription = 'Short description must be at least 10 characters.';
+
+    if (!description.trim()) newErrors.description = 'Long description is required.';
+    else if (description.trim().length < 20) newErrors.description = 'Long description must be at least 20 characters.';
+
+    if (!category) newErrors.category = 'Please select a category.';
+
+    if (!thumbnailUrl.trim()) newErrors.thumbnailUrl = 'Thumbnail URL is required.';
+    else {
+      const isBase64 = thumbnailUrl.startsWith('data:image/');
+      if (!isBase64) {
+        try { new URL(thumbnailUrl); } catch { newErrors.thumbnailUrl = 'Please enter a valid URL.'; }
+      }
+    }
+
+    if (!price) newErrors.price = 'Price is required.';
+    else if (isNaN(price) || Number(price) < 0) newErrors.price = 'Please enter a valid non-negative price.';
+
+    if (originalPrice && isNaN(originalPrice) || Number(originalPrice) < 0) newErrors.originalPrice = 'Please enter a valid non-negative original price.';
+    else if (originalPrice && Number(originalPrice) < Number(price)) newErrors.originalPrice = 'Original price cannot be less than current price.';
+
+    setErrors(newErrors);
+
+    let hasModuleErrors = false;
+    for (const mod of modules) {
+      if (!mod.title.trim()) {
+        showToast('error', `Module "${mod.id}" needs a title.`);
+        hasModuleErrors = true;
+      }
+      for (const lesson of mod.lessons) {
+        if (!lesson.title.trim()) {
+          showToast('error', `All lessons in "${mod.title || 'Untitled Module'}" must have a title.`);
+          hasModuleErrors = true;
+        }
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      showToast('error', Object.values(newErrors)[0]);
+      return false;
+    }
+
+    if (hasModuleErrors) return false;
+
+    return true;
   };
 
   const handleSubmit = async () => {
-    const error = validate();
-    if (error) {
-      showToast('error', error);
-      return;
-    }
+    if (!validate()) return;
 
     const courseModules = modules.map((m) => ({
       id: m.id,
@@ -160,11 +228,6 @@ export default function CourseCreationForm({ onSuccess }) {
         isPreview: l.isPreview
       }))
     }));
-
-    const tagArray = tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
 
     const newCourse = {
       id: `custom-${Date.now()}`,
@@ -187,7 +250,6 @@ export default function CourseCreationForm({ onSuccess }) {
       totalLessons,
       language,
       lastUpdated: new Date().toISOString().split('T')[0],
-      tags: tagArray,
       isNew: true,
       modules: courseModules
     };
@@ -349,91 +411,119 @@ export default function CourseCreationForm({ onSuccess }) {
                     <input
                       type="text"
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={(e) => { setTitle(e.target.value); if(errors.title) setErrors({...errors, title: ''}); }}
                       placeholder="e.g., Master Advanced React Hooks"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.title ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium`}
                     />
+                    {errors.title && <p className="text-red-500 text-xs mt-1 ml-1">{errors.title}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Category</label>
                     <select
                       value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium bg-white"
+                      onChange={(e) => { setCategory(e.target.value); if(errors.category) setErrors({...errors, category: ''}); }}
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.category ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium bg-white`}
                     >
                       <option value="">Select a category</option>
                       {CATEGORIES.map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
+                    {errors.category && <p className="text-red-500 text-xs mt-1 ml-1">{errors.category}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Short Description</label>
                     <input
                       type="text"
                       value={shortDescription}
-                      onChange={(e) => setShortDescription(e.target.value)}
+                      onChange={(e) => { setShortDescription(e.target.value); if(errors.shortDescription) setErrors({...errors, shortDescription: ''}); }}
                       placeholder="A brief summary for potential students"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.shortDescription ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium`}
                     />
+                    {errors.shortDescription && <p className="text-red-500 text-xs mt-1 ml-1">{errors.shortDescription}</p>}
                   </div>
                    <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Long Description</label>
                     <textarea
                       rows={6}
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) => { setDescription(e.target.value); if(errors.description) setErrors({...errors, description: ''}); }}
                       placeholder="Detailed explanation of what students will learn..."
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium resize-none"
+                      className={`w-full px-4 py-3 rounded-xl border ${errors.description ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-medium resize-none`}
                     />
+                    {errors.description && <p className="text-red-500 text-xs mt-1 ml-1">{errors.description}</p>}
                   </div>
                 </div>
               </div>
 
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <ImageIcon size={18} className="text-emerald-500" />
-                    <h3 className="font-bold text-slate-800">Media & Tags</h3>
+                <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm space-y-8">
+                  {/* Header */}
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm border border-emerald-100/50">
+                      <ImageIcon size={22} />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800">Media & Tags</h3>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Thumbnail URL</label>
-                    <div className="flex gap-2">
+
+                  {/* Thumbnail Input */}
+                  <div className="space-y-5">
+                    <div className="space-y-2.5">
+                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Thumbnail Media</label>
                       <input
                         type="text"
                         value={thumbnailUrl}
-                        onChange={(e) => setThumbnailUrl(e.target.value)}
-                        placeholder="Paste image URL here"
-                        className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
+                        onChange={(e) => { setThumbnailUrl(e.target.value); if(errors.thumbnailUrl) setErrors({...errors, thumbnailUrl: ''}); }}
+                        onPaste={handlePaste}
+                        placeholder="Paste image URL or paste image here"
+                        className={`w-full px-6 py-4 rounded-[20px] border-2 ${errors.thumbnailUrl ? 'border-red-200 focus:ring-red-100/50' : 'border-slate-100 focus:border-emerald-500/30'} focus:outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-600 placeholder:text-slate-300 bg-slate-50/30`}
                       />
                     </div>
+
+                    <div className="flex items-center gap-4 px-2">
+                      <div className="h-[0.5px] flex-1 bg-slate-100"></div>
+                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">OR</span>
+                      <div className="h-[0.5px] flex-1 bg-slate-100"></div>
+                    </div>
+
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      onClick={() => document.getElementById('thumbnail-upload-create').click()}
+                      className="w-full h-24 border-2 border-dashed border-slate-200 hover:border-emerald-500/50 hover:bg-emerald-50/20 text-slate-500 hover:text-emerald-600 rounded-[24px] transition-all gap-4 bg-slate-50/30 group"
+                    >
+                      <div className="size-11 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Upload size={22} className="text-slate-400 group-hover:text-emerald-500" />
+                      </div>
+                      <span className="font-bold text-lg">Choose Local Image</span>
+                    </Button>
+                    
+                    <input 
+                      id="thumbnail-upload-create"
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileChange} 
+                      className="hidden" 
+                    />
+                    
+                    {errors.thumbnailUrl && <p className="text-red-500 text-xs mt-1 ml-1">{errors.thumbnailUrl}</p>}
                   </div>
-                  <div className="aspect-video rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden">
+
+                  {/* Preview */}
+                  <div className="aspect-video rounded-[24px] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
                     {thumbnailUrl ? (
                       <img src={thumbnailUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center p-4">
-                        <ImageIcon size={32} className="mx-auto text-slate-300 mb-2" />
-                        <p className="text-xs text-slate-400 font-medium">Image preview will appear here</p>
+                        <ImageIcon size={40} className="mx-auto text-slate-300 mb-2 opacity-50" />
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Image preview</p>
                       </div>
                     )}
                   </div>
-                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Tags (Comma separated)</label>
-                    <div className="relative">
-                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                      <input
-                        type="text"
-                        value={tags}
-                        onChange={(e) => setTags(e.target.value)}
-                        placeholder="react, web-dev, javascript"
-                        className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
-                      />
-                    </div>
+
                   </div>
                 </div>
               </div>
-            </div>
           </TabsContent>
 
           <TabsContent value="curriculum" className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
@@ -562,25 +652,27 @@ export default function CourseCreationForm({ onSuccess }) {
                     <h3 className="font-bold text-slate-800">Pricing Setting</h3>
                   </div>
                   <div className="space-y-4">
-                     <div className="space-y-1.5">
+                      <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Current Price ($)</label>
                         <input
                           type="number"
                           value={price}
-                          onChange={(e) => setPrice(e.target.value)}
+                          onChange={(e) => { setPrice(e.target.value); if(errors.price) setErrors({...errors, price: ''}); }}
                           placeholder="49.99"
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-black text-xl"
+                          className={`w-full px-4 py-3 rounded-xl border ${errors.price ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all font-black text-xl`}
                         />
+                        {errors.price && <p className="text-red-500 text-xs mt-1 ml-1">{errors.price}</p>}
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Original Price ($) - Optional</label>
                         <input
                           type="number"
                           value={originalPrice}
-                          onChange={(e) => setOriginalPrice(e.target.value)}
+                          onChange={(e) => { setOriginalPrice(e.target.value); if(errors.originalPrice) setErrors({...errors, originalPrice: ''}); }}
                           placeholder="99.99"
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-400 font-bold"
+                          className={`w-full px-4 py-3 rounded-xl border ${errors.originalPrice ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:ring-emerald-500/20 focus:border-emerald-500'} focus:outline-none focus:ring-2 transition-all text-slate-400 font-bold`}
                         />
+                        {errors.originalPrice && <p className="text-red-500 text-xs mt-1 ml-1">{errors.originalPrice}</p>}
                       </div>
                   </div>
               </div>
