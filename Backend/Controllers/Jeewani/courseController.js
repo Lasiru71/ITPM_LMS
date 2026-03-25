@@ -130,12 +130,12 @@ export const addLesson = async (req, res) => {
     const lessonData = {
       title: req.body.title,
       type: req.body.type || 'video',
-      duration: req.body.duration || '10m',
+      duration: (req.body.type || 'video') === 'video' ? (req.body.duration || '10m') : '',
       content: req.body.content || '',
       isPreview: req.body.isPreview || false,
       description: req.body.description || '',
       deadline: req.body.deadline || null,
-      lateSubmissionDeadline: req.body.lateSubmissionDeadline || null
+      publishDate: req.body.publishDate || null
     };
 
     if (req.body.fileUrl) {
@@ -199,13 +199,20 @@ export const updateLesson = async (req, res) => {
     
     const lesson = course.modules[moduleIndex].lessons[lessonIndex];
     if (req.body.title) lesson.title = req.body.title;
-    if (req.body.type) lesson.type = req.body.type;
-    if (req.body.duration) lesson.duration = req.body.duration;
+    if (req.body.type) {
+      lesson.type = req.body.type;
+      if (lesson.type !== 'video') {
+        lesson.duration = '';
+      }
+    }
+    if (req.body.duration && (req.body.type === 'video' || lesson.type === 'video')) {
+      lesson.duration = req.body.duration;
+    }
     if (req.body.content !== undefined) lesson.content = req.body.content;
     if (req.body.isPreview !== undefined) lesson.isPreview = req.body.isPreview;
     if (req.body.description !== undefined) lesson.description = req.body.description;
     if (req.body.deadline !== undefined) lesson.deadline = req.body.deadline;
-    if (req.body.lateSubmissionDeadline !== undefined) lesson.lateSubmissionDeadline = req.body.lateSubmissionDeadline;
+    if (req.body.publishDate !== undefined) lesson.publishDate = req.body.publishDate;
 
     if (req.body.fileUrl) {
       lesson.fileUrl = req.body.fileUrl;

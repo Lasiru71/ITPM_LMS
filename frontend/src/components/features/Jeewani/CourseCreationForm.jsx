@@ -119,7 +119,16 @@ export default function CourseCreationForm({ onSuccess }) {
         if (m.id === moduleId) {
           return {
             ...m,
-            lessons: m.lessons.map((l) => l.id === lessonId ? { ...l, [field]: value } : l)
+            lessons: m.lessons.map((l) => {
+              if (l.id === lessonId) {
+                const updatedLesson = { ...l, [field]: value };
+                if (field === 'type' && value !== 'video') {
+                  updatedLesson.duration = '';
+                }
+                return updatedLesson;
+              }
+              return l;
+            })
           };
         }
         return m;
@@ -613,13 +622,15 @@ export default function CourseCreationForm({ onSuccess }) {
                                   >
                                     {LESSON_TYPES.map(type => <option key={type.value} value={type.value}>{type.label}</option>)}
                                   </select>
-                                  <input
-                                    type="text"
-                                    value={lesson.duration}
-                                    onChange={(e) => updateLesson(mod.id, lesson.id, 'duration', e.target.value)}
-                                    placeholder="10m"
-                                    className="w-16 text-xs text-center font-bold bg-slate-100 border-none rounded-lg py-1.5 focus:ring-emerald-500"
-                                  />
+                                  {lesson.type === 'video' && (
+                                    <input
+                                      type="text"
+                                      value={lesson.duration}
+                                      onChange={(e) => updateLesson(mod.id, lesson.id, 'duration', e.target.value)}
+                                      placeholder="10m"
+                                      className="w-16 text-xs text-center font-bold bg-slate-100 border-none rounded-lg py-1.5 focus:ring-emerald-500"
+                                    />
+                                  )}
                                    <label className="flex items-center gap-2 cursor-pointer group/label">
                                     <div className={`size-4 rounded border flex items-center justify-center transition-all ${lesson.isPreview ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300'}`}>
                                       {lesson.isPreview && <div className="size-2 bg-white rounded-full" />}

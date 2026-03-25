@@ -17,6 +17,7 @@ export const LEVELS = [
 export const CATEGORIES = [
     "Web Development",
     "Data Science",
+    "Mobile Development",
     "Design",
     "Business"
 ];
