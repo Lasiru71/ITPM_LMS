@@ -9,7 +9,7 @@ const LessonSchema = new mongoose.Schema({
   fileUrl: { type: String },
   description: { type: String },
   deadline: { type: Date },
-  lateSubmissionDeadline: { type: Date }
+  publishDate: { type: Date }
 });
 
 const ModuleSchema = new mongoose.Schema({

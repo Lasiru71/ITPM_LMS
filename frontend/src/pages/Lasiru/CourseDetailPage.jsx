@@ -56,7 +56,7 @@ const CourseDetailPage = () => {
     fileUrl: "",
     description: "",
     deadline: "",
-    lateSubmissionDeadline: ""
+    publishDate: new Date().toISOString().slice(0, 16)
   });
   const [newLessonFile, setNewLessonFile] = useState(null);
 
@@ -69,7 +69,7 @@ const CourseDetailPage = () => {
     fileUrl: "",
     description: "",
     deadline: "",
-    lateSubmissionDeadline: ""
+    publishDate: ""
   });
   const [editLessonFile, setEditLessonFile] = useState(null);
 
@@ -206,8 +206,11 @@ const CourseDetailPage = () => {
         const newLessonObj = {
           title: newLesson.title,
           type: newLesson.type,
-          duration: newLesson.duration,
-          fileUrl: newLessonFile ? URL.createObjectURL(newLessonFile) : (newLesson.fileUrl || "")
+          duration: newLesson.type === 'video' ? (newLesson.duration || "10m") : "",
+          fileUrl: newLessonFile ? URL.createObjectURL(newLessonFile) : (newLesson.fileUrl || ""),
+          description: newLesson.type === 'assignment' ? (newLesson.description || "") : "",
+          deadline: newLesson.type === 'assignment' ? (newLesson.deadline || "") : null,
+          publishDate: newLesson.type === 'assignment' ? (newLesson.publishDate || "") : null
         };
         updatedCourse.modules[moduleIndex].lessons.push(newLessonObj);
         localCourses[localIndex] = updatedCourse;
@@ -221,7 +224,7 @@ const CourseDetailPage = () => {
           fileUrl: "",
           description: "",
           deadline: "",
-          lateSubmissionDeadline: ""
+          publishDate: new Date().toISOString().slice(0, 16)
         });
         setNewLessonFile(null);
         setAddingLessonTo(null);
@@ -230,15 +233,18 @@ const CourseDetailPage = () => {
         showToast("success", "Lesson added successfully!");
         return;
       }
-
+      
+      const formData = new FormData();
       formData.append("title", newLesson.title);
       formData.append("type", newLesson.type);
-      formData.append("duration", newLesson.duration);
+      if (newLesson.type === 'video') {
+        formData.append("duration", newLesson.duration || "0m");
+      }
       
       if (newLesson.type === 'assignment') {
         formData.append("description", newLesson.description || "");
         formData.append("deadline", newLesson.deadline || "");
-        formData.append("lateSubmissionDeadline", newLesson.lateSubmissionDeadline || "");
+        formData.append("publishDate", newLesson.publishDate || "");
       }
 
       if (newLesson.fileUrl) {
@@ -269,7 +275,7 @@ const CourseDetailPage = () => {
         fileUrl: "",
         description: "",
         deadline: "",
-        lateSubmissionDeadline: ""
+        publishDate: new Date().toISOString().slice(0, 16)
       });
       setNewLessonFile(null);
       setAddingLessonTo(null);
@@ -302,7 +308,7 @@ const CourseDetailPage = () => {
       fileUrl: lesson.fileUrl || "",
       description: lesson.description || "",
       deadline: lesson.deadline ? new Date(lesson.deadline).toISOString().slice(0, 16) : "",
-      lateSubmissionDeadline: lesson.lateSubmissionDeadline ? new Date(lesson.lateSubmissionDeadline).toISOString().slice(0, 16) : ""
+      publishDate: lesson.publishDate ? new Date(lesson.publishDate).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
     });
     setEditLessonFile(null);
   };
@@ -325,11 +331,21 @@ const CourseDetailPage = () => {
         const lesson = updatedCourse.modules[moduleIndex].lessons[lessonIndex];
         lesson.title = editLessonData.title;
         lesson.type = editLessonData.type;
-        lesson.duration = editLessonData.duration;
+        lesson.duration = editLessonData.type === 'video' ? (editLessonData.duration || "10m") : "";
         if (editLessonFile) {
           lesson.fileUrl = URL.createObjectURL(editLessonFile);
         } else if (editLessonData.fileUrl !== undefined) {
           lesson.fileUrl = editLessonData.fileUrl;
+        }
+        
+        if (editLessonData.type === 'assignment') {
+          lesson.description = editLessonData.description;
+          lesson.deadline = editLessonData.deadline;
+          lesson.publishDate = editLessonData.publishDate;
+        } else {
+          lesson.description = "";
+          lesson.deadline = null;
+          lesson.publishDate = null;
         }
         localCourses[localIndex] = updatedCourse;
         localStorage.setItem("courses", JSON.stringify(localCourses));
@@ -342,14 +358,17 @@ const CourseDetailPage = () => {
         return;
       }
 
+      const formData = new FormData();
       formData.append("title", editLessonData.title);
       formData.append("type", editLessonData.type);
-      formData.append("duration", editLessonData.duration);
+      if (editLessonData.type === 'video') {
+        formData.append("duration", editLessonData.duration || "0m");
+      }
       
       if (editLessonData.type === 'assignment') {
         formData.append("description", editLessonData.description || "");
         formData.append("deadline", editLessonData.deadline || "");
-        formData.append("lateSubmissionDeadline", editLessonData.lateSubmissionDeadline || "");
+        formData.append("publishDate", editLessonData.publishDate || "");
       }
 
       if (editLessonData.fileUrl) {
@@ -634,13 +653,15 @@ const CourseDetailPage = () => {
                                   <option value="ppt">📊 PPT</option>
                                   <option value="assignment">📝 Assignment</option>
                                 </select>
-                                <input
-                                  type="text"
-                                  placeholder="Duration (e.g. 15m)"
-                                  value={editLessonData.duration}
-                                  onChange={(e) => setEditLessonData({ ...editLessonData, duration: e.target.value })}
-                                  style={{ maxWidth: '100px' }}
-                                />
+                                  {editLessonData.type === 'video' && (
+                                    <input
+                                      type="text"
+                                      placeholder="Duration (e.g. 15m)"
+                                      value={editLessonData.duration}
+                                      onChange={(e) => setEditLessonData({ ...editLessonData, duration: e.target.value })}
+                                      style={{ maxWidth: '100px' }}
+                                    />
+                                  )}
                               </div>
 
                               {/* Assignment Specific Fields */}
@@ -660,19 +681,22 @@ const CourseDetailPage = () => {
                                   </div>
                                   <div className="assignment-form-row-dates">
                                     <div className="assignment-form-group">
+                                      <label>Publish Date</label>
+                                      <input
+                                        type="datetime-local"
+                                        value={editLessonData.publishDate}
+                                        min={new Date().toISOString().split('T')[0] + "T00:00"}
+                                        max={new Date().toISOString().split('T')[0] + "T23:59"}
+                                        onChange={(e) => setEditLessonData({ ...editLessonData, publishDate: e.target.value })}
+                                      />
+                                    </div>
+                                    <div className="assignment-form-group">
                                       <label>Deadline</label>
                                       <input
                                         type="datetime-local"
                                         value={editLessonData.deadline}
+                                        min={new Date().toISOString().split('T')[0] + "T00:00"}
                                         onChange={(e) => setEditLessonData({ ...editLessonData, deadline: e.target.value })}
-                                      />
-                                    </div>
-                                    <div className="assignment-form-group">
-                                      <label>End of Time (Late Submission)</label>
-                                      <input
-                                        type="datetime-local"
-                                        value={editLessonData.lateSubmissionDeadline}
-                                        onChange={(e) => setEditLessonData({ ...editLessonData, lateSubmissionDeadline: e.target.value })}
                                       />
                                     </div>
                                   </div>
@@ -796,10 +820,12 @@ const CourseDetailPage = () => {
                                     <File size={12} /> File
                                   </span>
                                 )}
-                                <span className="lesson-duration">
-                                  <Clock size={12} style={{ display: 'inline', marginRight: '3px' }} />
-                                  {lesson.duration || "10m"}
-                                </span>
+                                {lesson.type === 'video' && (
+                                  <span className="lesson-duration">
+                                    <Clock size={12} style={{ display: 'inline', marginRight: '3px' }} />
+                                    {lesson.duration || "10m"}
+                                  </span>
+                                )}
                                 <div className="lesson-actions">
                                   <button
                                     className="lesson-action-btn edit-lesson"
@@ -851,13 +877,15 @@ const CourseDetailPage = () => {
                             onChange={(e) => setNewLesson({ ...newLesson, title: e.target.value })}
                             onKeyDown={(e) => e.key === "Enter" && handleAddLesson(mIndex)}
                           />
-                          <input
-                            type="text"
-                            placeholder="Duration (e.g. 15m)"
-                            value={newLesson.duration}
-                            onChange={(e) => setNewLesson({ ...newLesson, duration: e.target.value })}
-                            style={{ maxWidth: '120px' }}
-                          />
+                          {newLesson.type === 'video' && (
+                            <input
+                              type="text"
+                              placeholder="Duration (e.g. 15m)"
+                              value={newLesson.duration}
+                              onChange={(e) => setNewLesson({ ...newLesson, duration: e.target.value })}
+                              style={{ maxWidth: '120px' }}
+                            />
+                          )}
                         </div>
 
                         {/* Assignment Specific Fields */}
@@ -881,19 +909,22 @@ const CourseDetailPage = () => {
                             </div>
                             <div className="assignment-form-row-dates">
                               <div className="assignment-form-group">
+                                <label>Publish Date</label>
+                                <input
+                                  type="datetime-local"
+                                  value={newLesson.publishDate}
+                                  min={new Date().toISOString().split('T')[0] + "T00:00"}
+                                  max={new Date().toISOString().split('T')[0] + "T23:59"}
+                                  onChange={(e) => setNewLesson({ ...newLesson, publishDate: e.target.value })}
+                                />
+                              </div>
+                              <div className="assignment-form-group">
                                 <label>Deadline</label>
                                 <input
                                   type="datetime-local"
                                   value={newLesson.deadline}
+                                  min={new Date().toISOString().split('T')[0] + "T00:00"}
                                   onChange={(e) => setNewLesson({ ...newLesson, deadline: e.target.value })}
-                                />
-                              </div>
-                              <div className="assignment-form-group">
-                                <label>End of Time (Late Submission)</label>
-                                <input
-                                  type="datetime-local"
-                                  value={newLesson.lateSubmissionDeadline}
-                                  onChange={(e) => setNewLesson({ ...newLesson, lateSubmissionDeadline: e.target.value })}
                                 />
                               </div>
                             </div>

@@ -91,10 +91,5 @@ export const CATEGORIES = [
   "Data Science",
   "Mobile Development",
   "Design",
-  "Business",
-  "Marketing",
-  "Music",
-  "Lifestyle",
-  "Photography",
-  "Health & Fitness"
+  "Business"
 ];

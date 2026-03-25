@@ -13,7 +13,7 @@ export default function Courses() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
 
-  const categories = ['All', 'Web Development', 'Data Science', 'Design', 'Business'];
+  const categories = ['All', 'Web Development', 'Data Science', 'Mobile Development', 'Design', 'Business'];
 
   useEffect(() => {
     const fetchCourses = async () => {
