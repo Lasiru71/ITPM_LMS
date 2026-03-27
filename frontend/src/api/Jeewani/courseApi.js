@@ -1,24 +1,23 @@
-// src/api/Jeewani/courseApi.js
-
-const STORAGE_KEY = "courses";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 // 🔹 GET ALL COURSES
 export const getAllCourses = async () => {
   try {
-    const courses = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    return courses;
+    const response = await fetch(`${API_BASE_URL}/courses`);
+    if (!response.ok) throw new Error("Failed to fetch courses");
+    return await response.json();
   } catch (error) {
     console.error("Fetch error:", error);
     return [];
   }
 };
 
-// 🔹 GET SINGLE COURSE (optional - edit page use කරන්න පුළුවන්)
+// 🔹 GET SINGLE COURSE
 export const getCourseById = async (id) => {
   try {
-    const courses = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-
-    return courses.find((c) => c._id === id);
+    const response = await fetch(`${API_BASE_URL}/courses/${id}`);
+    if (!response.ok) throw new Error("Failed to fetch course");
+    return await response.json();
   } catch (error) {
     console.error("Get by ID error:", error);
     return null;
@@ -28,19 +27,13 @@ export const getCourseById = async (id) => {
 // 🔹 CREATE COURSE
 export const createCourse = async (course) => {
   try {
-    const courses = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-
-    const newCourse = {
-      ...course,
-      _id: Date.now().toString(), // 🔥 unique id
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedCourses = [...courses, newCourse];
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCourses));
-
-    return newCourse;
+    const response = await fetch(`${API_BASE_URL}/courses`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(course),
+    });
+    if (!response.ok) throw new Error("Failed to create course");
+    return await response.json();
   } catch (error) {
     console.error("Create error:", error);
     throw error;
@@ -50,12 +43,10 @@ export const createCourse = async (course) => {
 // 🔴 DELETE COURSE
 export const deleteCourse = async (id) => {
   try {
-    const courses = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-
-    const updatedCourses = courses.filter((c) => c._id !== id);
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCourses));
-
+    const response = await fetch(`${API_BASE_URL}/courses/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("Failed to delete course");
     return true;
   } catch (error) {
     console.error("Delete error:", error);
@@ -66,22 +57,16 @@ export const deleteCourse = async (id) => {
 // 🟡 UPDATE COURSE
 export const updateCourse = async (id, updatedData) => {
   try {
-    const courses = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    // Sanitize data: remove _id and id from the body if they exist
+    const { _id, id: someId, ...sanitizedData } = updatedData;
 
-    const updatedCourses = courses.map((c) =>
-      c._id === id
-        ? {
-            ...c,
-            ...updatedData,
-            updatedAt: new Date().toISOString(),
-          }
-        : c
-    );
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCourses));
-
-    // return updated course
-    return updatedCourses.find((c) => c._id === id);
+    const response = await fetch(`${API_BASE_URL}/courses/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sanitizedData),
+    });
+    if (!response.ok) throw new Error(`Failed to update course (Status: ${response.status})`);
+    return await response.json();
   } catch (error) {
     console.error("Update error:", error);
     throw error;
