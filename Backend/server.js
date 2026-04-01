@@ -6,6 +6,7 @@ import { PORT, MONGO_URI } from "./config.js";
 import authRoutes from "./routes/Lasiru/authRoutes.js";
 import adminRoutes from "./routes/Lasiru/adminRoutes.js";
 import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
+import reviewRoutes from "./routes/Lasiru/reviewRoutes.js";
 
 
 // Jeewani
@@ -37,6 +38,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/announcements", announcementRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Jeewani routes
 app.use("/api/jeewani/courses", jeewaniCourseRoutes);

@@ -39,6 +39,7 @@ import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
+import ReviewManagement from "../../components/Lasiru/ReviewManagement";
 import MaterialUpload from "../../components/sadeepa/MaterialUpload";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
@@ -389,6 +390,8 @@ const AdminDashboard = () => {
             case "materials": return <MaterialUpload />;
             case 'announcement':
                 return <AnnouncementManagement />;
+            case "reviews":
+                return <ReviewManagement />;
             default:
                 return renderOverview();
         }
@@ -438,6 +441,12 @@ const AdminDashboard = () => {
                         <div className="nav-item-content"><Megaphone size={20} /> Announcement</div>
                         {activeTab === "announcement" && <ChevronRight size={16} />}
                     </div>
+
+                    <div className="nav-section-title">Feedback</div>
+                    <div className={`admin-nav-item ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>
+                        <div className="nav-item-content"><Star size={20} /> Reviews</div>
+                        {activeTab === "reviews" && <ChevronRight size={16} />}
+                    </div>
                 </nav>
 
                 <div className="sidebar-footer">
@@ -463,7 +472,7 @@ const AdminDashboard = () => {
             <main className="admin-main-content">
                 <DashboardHeader
                     title="Admin Dashboard"
-                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'}
+                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement' || activeTab === 'reviews'}
                     onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
