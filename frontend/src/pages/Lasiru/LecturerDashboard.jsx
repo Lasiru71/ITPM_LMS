@@ -8,17 +8,11 @@ import {
     Settings,
     LogOut,
     ChevronRight,
-    Users,
-    ChevronLeft,
     Pencil,
     Trash2,
     Search,
     RefreshCw,
-    MoreVertical,
-    CheckCircle2,
-    AlertCircle,
     Clock,
-    DollarSign,
     GraduationCap,
     Globe,
     Eye
@@ -301,17 +295,15 @@ const LecturerDashboard = () => {
                                     <th>Level</th>
                                     <th>Price</th>
                                     <th>Lessons</th>
-                                    <th>Duration</th>
+
                                     <th>Last Updated</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredCourses.length > 0 ? (
-                                    filteredCourses.map(course => {
-                                        const isOwnCourse = course.instructorId === (user._id || user.id);
-                                        return (
-                                            <tr key={course._id || course.id}>
+                                    filteredCourses.map(course => (
+                                        <tr key={course._id || course.id}>
                                                 <td>
                                                     <div className="table-course-info">
                                                         <div className="course-mini-thumb">
@@ -336,11 +328,7 @@ const LecturerDashboard = () => {
                                                         {course.totalLessons || course.modules?.length || 0}
                                                     </span>
                                                 </td>
-                                                <td>
-                                                    <Badge className="duration-badge bg-blue-50 text-blue-600 border-none">
-                                                        {course.duration || '0m'}
-                                                    </Badge>
-                                                </td>
+
                                                 <td>
                                                     <span className="date-text">
                                                         {course.updatedAt ? new Date(course.updatedAt).toLocaleDateString() : 'N/A'}
@@ -372,8 +360,7 @@ const LecturerDashboard = () => {
                                                     </div>
                                                 </td>
                                             </tr>
-                                        );
-                                    })
+                                    ))
                                 ) : (
                                     <tr>
                                         <td colSpan="7" className="empty-table-row">
@@ -530,10 +517,7 @@ const LecturerDashboard = () => {
                                                 <BookOpen size={16} className="text-emerald-500" />
                                                 <span className="text-xs font-semibold">{course.totalLessons || '0'} Lessons</span>
                                             </div>
-                                            <div className="flex items-center gap-2 text-slate-500">
-                                                <Clock size={16} className="text-emerald-500" />
-                                                <span className="text-xs font-semibold">{course.duration || '0m'}</span>
-                                            </div>
+
                                             <div className="flex items-center gap-2 text-slate-500">
                                                 <Globe size={16} className="text-emerald-500" />
                                                 <span className="text-xs font-semibold">{course.language || 'English'}</span>
