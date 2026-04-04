@@ -47,16 +47,23 @@ const CourseDetailPage = () => {
   const [editingModuleIndex, setEditingModuleIndex] = useState(null);
   const [editModuleTitle, setEditModuleTitle] = useState("");
 
+  // Helper for Local Datetime in YYYY-MM-DDTHH:mm format
+  const getLocalCurrentDatetime = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return new Date(now.getTime() - offset).toISOString().slice(0, 16);
+  };
+
   // State for Add Lesson
   const [addingLessonTo, setAddingLessonTo] = useState(null);
-  const [newLesson, setNewLesson] = useState({ 
-    title: "", 
-    type: "video", 
-    duration: "10m", 
+  const [newLesson, setNewLesson] = useState({
+    title: "",
+    type: "video",
+    duration: "10m",
     fileUrl: "",
     description: "",
     deadline: "",
-    publishDate: new Date().toISOString().slice(0, 16)
+    publishDate: getLocalCurrentDatetime()
   });
   const [newLessonFile, setNewLessonFile] = useState(null);
 
@@ -192,6 +199,19 @@ const CourseDetailPage = () => {
       return;
     }
 
+    if (newLesson.type === 'assignment') {
+      const nowLocal = getLocalCurrentDatetime();
+      if (newLesson.publishDate !== nowLocal) {
+        showToast("error", "Publish date must be set to the current time.");
+        setNewLesson(prev => ({ ...prev, publishDate: nowLocal }));
+        return;
+      }
+      if (newLesson.deadline && newLesson.deadline <= nowLocal) {
+        showToast("error", "Deadline must be in the future.");
+        return;
+      }
+    }
+
     setSaving(true);
     setUploadProgress(0);
 
@@ -224,7 +244,7 @@ const CourseDetailPage = () => {
           fileUrl: "",
           description: "",
           deadline: "",
-          publishDate: new Date().toISOString().slice(0, 16)
+          publishDate: getLocalCurrentDatetime()
         });
         setNewLessonFile(null);
         setAddingLessonTo(null);
@@ -275,7 +295,7 @@ const CourseDetailPage = () => {
         fileUrl: "",
         description: "",
         deadline: "",
-        publishDate: new Date().toISOString().slice(0, 16)
+        publishDate: getLocalCurrentDatetime()
       });
       setNewLessonFile(null);
       setAddingLessonTo(null);
@@ -307,8 +327,8 @@ const CourseDetailPage = () => {
       duration: lesson.duration || "10m", 
       fileUrl: lesson.fileUrl || "",
       description: lesson.description || "",
-      deadline: lesson.deadline ? new Date(lesson.deadline).toISOString().slice(0, 16) : "",
-      publishDate: lesson.publishDate ? new Date(lesson.publishDate).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
+      deadline: lesson.deadline ? new Date(new Date(lesson.deadline).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "",
+      publishDate: lesson.publishDate ? new Date(new Date(lesson.publishDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : getLocalCurrentDatetime()
     });
     setEditLessonFile(null);
   };
@@ -316,6 +336,19 @@ const CourseDetailPage = () => {
   const handleSaveLessonEdit = async () => {
     if (!editLessonData.title.trim()) return;
     const { moduleIndex, lessonIndex } = editingLesson;
+
+    if (editLessonData.type === 'assignment') {
+      const nowLocal = getLocalCurrentDatetime();
+      if (editLessonData.publishDate !== nowLocal) {
+        showToast("error", "Publish date must be set to the current time.");
+        setEditLessonData(prev => ({ ...prev, publishDate: nowLocal }));
+        return;
+      }
+      if (editLessonData.deadline && editLessonData.deadline <= nowLocal) {
+        showToast("error", "Deadline must be in the future.");
+        return;
+      }
+    }
 
     setSaving(true);
     setUploadProgress(0);
@@ -685,8 +718,8 @@ const CourseDetailPage = () => {
                                       <input
                                         type="datetime-local"
                                         value={editLessonData.publishDate}
-                                        min={new Date().toISOString().split('T')[0] + "T00:00"}
-                                        max={new Date().toISOString().split('T')[0] + "T23:59"}
+                                        min={getLocalCurrentDatetime()}
+                                        max={getLocalCurrentDatetime()}
                                         onChange={(e) => setEditLessonData({ ...editLessonData, publishDate: e.target.value })}
                                       />
                                     </div>
@@ -695,7 +728,7 @@ const CourseDetailPage = () => {
                                       <input
                                         type="datetime-local"
                                         value={editLessonData.deadline}
-                                        min={new Date().toISOString().split('T')[0] + "T00:00"}
+                                        min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000 + 60000).toISOString().slice(0, 16)}
                                         onChange={(e) => setEditLessonData({ ...editLessonData, deadline: e.target.value })}
                                       />
                                     </div>
@@ -913,8 +946,8 @@ const CourseDetailPage = () => {
                                 <input
                                   type="datetime-local"
                                   value={newLesson.publishDate}
-                                  min={new Date().toISOString().split('T')[0] + "T00:00"}
-                                  max={new Date().toISOString().split('T')[0] + "T23:59"}
+                                  min={getLocalCurrentDatetime()}
+                                  max={getLocalCurrentDatetime()}
                                   onChange={(e) => setNewLesson({ ...newLesson, publishDate: e.target.value })}
                                 />
                               </div>
@@ -923,7 +956,7 @@ const CourseDetailPage = () => {
                                 <input
                                   type="datetime-local"
                                   value={newLesson.deadline}
-                                  min={new Date().toISOString().split('T')[0] + "T00:00"}
+                                  min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000 + 60000).toISOString().slice(0, 16)}
                                   onChange={(e) => setNewLesson({ ...newLesson, deadline: e.target.value })}
                                 />
                               </div>
