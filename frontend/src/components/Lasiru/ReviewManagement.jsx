@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Search, Trash2, Star, CheckCircle, XCircle, AlertTriangle, MessageSquare } from "lucide-react";
-import { getAllReviews, deleteReview, updateReviewStatus } from "../../api/Lasiru/reviewApi";
+import { Search, Trash2, Star, CheckCircle, XCircle, AlertTriangle, MessageSquare, Reply } from "lucide-react";
+import { getAllReviews, deleteReview, updateReviewStatus, addAdminReply } from "../../api/Lasiru/reviewApi";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 
 const ReviewManagement = () => {
@@ -9,6 +9,9 @@ const ReviewManagement = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showReplyModal, setShowReplyModal] = useState(false);
+    const [activeReview, setActiveReview] = useState(null);
+    const [replyText, setReplyText] = useState("");
     const [deleteId, setDeleteId] = useState(null);
     const { showToast } = useToast();
 
@@ -56,6 +59,27 @@ const ReviewManagement = () => {
         }
     };
 
+    const handleReplyClick = (review) => {
+        setActiveReview(review);
+        setReplyText(review.adminReply || "");
+        setShowReplyModal(true);
+    };
+
+    const submitReply = async () => {
+        if (!replyText.trim()) {
+            showToast("error", "Please enter a reply");
+            return;
+        }
+        try {
+            await addAdminReply(activeReview._id, replyText);
+            showToast("success", "Reply sent successfully");
+            setShowReplyModal(false);
+            fetchReviews();
+        } catch (error) {
+            showToast("error", "Failed to send reply");
+        }
+    };
+
     const renderStars = (rating) => {
         return (
             <div style={{ display: "flex", gap: "2px", color: "#f59e0b" }}>
@@ -75,6 +99,7 @@ const ReviewManagement = () => {
         (rev) =>
             (rev.courseId?.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (rev.studentId?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (rev.studentId?.nicNumber?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (rev.comment?.toLowerCase() || "").includes(searchQuery.toLowerCase())
     );
 
@@ -91,7 +116,7 @@ const ReviewManagement = () => {
                     <Search size={18} className="search-icon" />
                     <input
                         type="text"
-                        placeholder="Search by course, student or comment..."
+                        placeholder="Search by course, student or ID..."
                         className="admin-input"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -108,10 +133,11 @@ const ReviewManagement = () => {
                     <table className="admin-table">
                         <thead>
                             <tr>
+                                <th>Student & ID</th>
                                 <th>Course</th>
-                                <th>Student</th>
+                                <th>Date</th>
                                 <th>Rating</th>
-                                <th style={{ width: "30%" }}>Comment</th>
+                                <th style={{ width: "25%" }}>Comment</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -120,12 +146,15 @@ const ReviewManagement = () => {
                             {filteredReviews.length > 0 ? (
                                 filteredReviews.map((rev) => (
                                     <tr key={rev._id}>
-                                        <td style={{ fontWeight: 600 }}>{rev.courseId?.title || "Deleted Course"}</td>
                                         <td>
                                             <div style={{ display: "flex", flexDirection: "column" }}>
-                                                <span>{rev.studentId?.name || "Unknown"}</span>
-                                                <span style={{ fontSize: "0.75rem", color: "#64748b" }}>{rev.studentId?.email}</span>
+                                                <span style={{ fontWeight: 600 }}>{rev.studentId?.name || "Unknown"}</span>
+                                                <span style={{ fontSize: "0.75rem", color: "#64748b" }}>ID: {rev.studentId?.nicNumber || "N/A"}</span>
                                             </div>
+                                        </td>
+                                        <td>{rev.courseName || "N/A"}</td>
+                                        <td style={{ fontSize: "0.85rem", color: "#64748b" }}>
+                                            {new Date(rev.createdAt).toLocaleDateString()}
                                         </td>
                                         <td>{renderStars(rev.rating)}</td>
                                         <td>
@@ -142,35 +171,26 @@ const ReviewManagement = () => {
                                             </p>
                                         </td>
                                         <td>
-                                            <span className={`admin-badge ${
-                                                rev.status === "Approved" ? "badge-active" : 
-                                                rev.status === "Rejected" ? "badge-inactive" : ""
-                                            }`}>
-                                                {rev.status}
-                                            </span>
+                                            {!rev.adminReply ? (
+                                                <span className="admin-badge" style={{ background: "#fef2f2", color: "#991b1b" }}>
+                                                    Pending
+                                                </span>
+                                            ) : (
+                                                <span className="admin-badge badge-active">
+                                                    Replied
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="admin-actions">
                                             <div style={{ display: "flex", gap: "0.5rem" }}>
-                                                {rev.status !== "Approved" && (
-                                                    <button
-                                                        className="admin-btn admin-btn-ghost"
-                                                        style={{ color: "#10b981", padding: "0.4rem" }}
-                                                        onClick={() => handleUpdateStatus(rev._id, "Approved")}
-                                                        title="Approve Review"
-                                                    >
-                                                        <CheckCircle size={16} />
-                                                    </button>
-                                                )}
-                                                {rev.status !== "Rejected" && (
-                                                    <button
-                                                        className="admin-btn admin-btn-ghost"
-                                                        style={{ color: "#f59e0b", padding: "0.4rem" }}
-                                                        onClick={() => handleUpdateStatus(rev._id, "Rejected")}
-                                                        title="Reject Review"
-                                                    >
-                                                        <XCircle size={16} />
-                                                    </button>
-                                                )}
+                                                <button
+                                                    className="admin-btn admin-btn-ghost"
+                                                    style={{ color: "#10b981", padding: "0.4rem" }}
+                                                    onClick={() => handleReplyClick(rev)}
+                                                    title="Reply to Review"
+                                                >
+                                                    <Reply size={16} />
+                                                </button>
                                                 <button
                                                     className="admin-btn admin-btn-ghost"
                                                     style={{ color: "#ef4444", padding: "0.4rem" }}
@@ -185,7 +205,7 @@ const ReviewManagement = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" style={{ textAlign: "center", padding: "4rem", color: "#64748b" }}>
+                                    <td colSpan="7" style={{ textAlign: "center", padding: "4rem", color: "#64748b" }}>
                                         <div style={{ marginBottom: "1rem" }}><MessageSquare size={48} style={{ opacity: 0.2, margin: "0 auto" }} /></div>
                                         No reviews found matching your search.
                                     </td>
@@ -194,6 +214,47 @@ const ReviewManagement = () => {
                         </tbody>
                     </table>
                 </div>
+            )}
+
+            {showReplyModal && createPortal(
+                <div className="admin-modal-overlay">
+                    <div className="admin-confirm-modal" style={{ maxWidth: "500px", textAlign: "left" }}>
+                        <h3 style={{ marginBottom: "0.5rem" }}>Reply to Review</h3>
+                        <p style={{ fontSize: "0.875rem", color: "#64748b", marginBottom: "1.5rem" }}>
+                            Your reply will be visible to the student on their reviews page.
+                        </p>
+                        
+                        <div style={{ background: "#f8fafc", padding: "1rem", borderRadius: "0.75rem", marginBottom: "1.5rem", borderLeft: "4px solid #10b981" }}>
+                            <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 600 }}>{activeReview.studentId?.name}:</p>
+                            <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#475569" }}>"{activeReview.comment}"</p>
+                        </div>
+
+                        <textarea
+                            className="admin-input"
+                            style={{ width: "100%", minHeight: "120px", marginBottom: "1.5rem", padding: "1rem" }}
+                            placeholder="Type your response here..."
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                        />
+
+                        <div className="confirm-actions" style={{ justifyContent: "flex-end" }}>
+                            <button 
+                                className="admin-btn admin-btn-ghost" 
+                                onClick={() => setShowReplyModal(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="admin-btn" 
+                                onClick={submitReply}
+                                style={{ background: "#10b981", color: "white" }}
+                            >
+                                Send Reply
+                            </button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
             )}
 
             {showConfirm && createPortal(

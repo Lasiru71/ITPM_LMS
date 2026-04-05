@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Bell, Search, User, LogOut, LayoutDashboard, Settings, Globe } from "lucide-react";
+import { Search, User, LogOut, LayoutDashboard, Globe } from "lucide-react";
 import "../../Styles/Lasiru/DashboardHeader.css";
+import NotificationBell from "./NotificationBell";
 
 const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = "light" }) => {
     const navigate = useNavigate();
@@ -48,10 +49,7 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
                     <span>Back to Site</span>
                 </Link>
 
-                <div className="dash-header-icon-btn" title="Notifications">
-                    <Bell size={22} />
-                    <span className="dash-notif-badge"></span>
-                </div>
+                <NotificationBell />
 
                 <div className="dash-profile-dropdown-container">
                     <button 

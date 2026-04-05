@@ -16,6 +16,21 @@ export const getAllReviews = async () => {
     return response.data;
 };
 
+export const getStudentReviews = async () => {
+    const response = await axios.get(`${API_URL}/my-reviews`, getAuthHeader());
+    return response.data;
+};
+
+export const createReview = async (reviewData) => {
+    const response = await axios.post(`${API_URL}/`, reviewData, getAuthHeader());
+    return response.data;
+};
+
+export const addAdminReply = async (id, adminReply) => {
+    const response = await axios.patch(`${API_URL}/reply/${id}`, { adminReply }, getAuthHeader());
+    return response.data;
+};
+
 export const deleteReview = async (id) => {
     const response = await axios.delete(`${API_URL}/delete/${id}`, getAuthHeader());
     return response.data;
