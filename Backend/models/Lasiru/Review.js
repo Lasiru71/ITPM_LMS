@@ -2,9 +2,8 @@ import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
   {
-    courseId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
+    courseName: {
+      type: String,
       required: true,
     },
     studentId: {
@@ -28,10 +27,16 @@ const reviewSchema = new mongoose.Schema(
       enum: ["Pending", "Approved", "Rejected"],
       default: "Approved",
     },
+    adminReply: {
+      type: String,
+      default: "",
+    },
+    repliedAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
 
-const Review = mongoose.model("Review", reviewSchema);
-
-export default Review;
+const ReviewValue = mongoose.models.ReviewLasiru || mongoose.model("ReviewLasiru", reviewSchema);
+export default ReviewValue;

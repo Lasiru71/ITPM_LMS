@@ -10,6 +10,7 @@ import CourseDetailPage from "./pages/Lasiru/CourseDetailPage.jsx";
 import ExamLogin from "./pages/sadeepa/ExamLogin.jsx";
 import AttendExam from "./pages/sadeepa/AttendExam.jsx";
 import Project from "./pages/sadeepa/Project.jsx";
+import ReviewsPage from "./pages/Lasiru/ReviewsPage.jsx";
 
 // Home imports
 import MainLayout from "./layouts/Home/MainLayout.jsx";
@@ -20,6 +21,8 @@ import Courses from "./pages/Home/Courses.jsx";
 import News from "./pages/Home/News.jsx";
 import FreeExam from "./pages/Home/FreeExam.jsx";
 import GptHelper from "./pages/Home/GptHelper.jsx";
+
+import NotificationsPage from "./pages/Lasiru/NotificationsPage.jsx";
 
 function App() {
   return (
@@ -33,6 +36,7 @@ function App() {
         <Route path="/news" element={<News />} />
         <Route path="/create-free-exam" element={<FreeExam />} />
         <Route path="/gpt-helper" element={<GptHelper />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
       </Route>
 
       {/* Auth Routes */}
@@ -43,6 +47,7 @@ function App() {
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
       <Route path="/lecturer-dashboard" element={<LecturerDashboard />} />
       <Route path="/student-dashboard" element={<StudentDashboard />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/edit-course/:id" element={<EditCourse />} />
       <Route path="/lecturer/courses/:courseId" element={<CourseDetailPage />} />
       <Route path="/exam-login" element={<ExamLogin />} />

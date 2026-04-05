@@ -1,0 +1,233 @@
+import React, { useState, useEffect } from 'react';
+import { Star, Send, MessageSquare, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { getStudentReviews, createReview } from '../../api/Lasiru/reviewApi';
+import '../../Styles/Lasiru/StudentDashboard.css';
+
+const HARDCODED_COURSES = [
+    "Introduction to React.js",
+    "Advanced Node.js Patterns",
+    "UI/UX Design Essentials",
+    "Database Management with MongoDB",
+    "Python for Beginners",
+    "Graphic Design with Photoshop",
+    "Mobile App Development with React Native",
+    "Machine Learning Masterclass",
+    "Digital Marketing & Business Growth",
+    "Flutter Mobile App Development"
+];
+
+export default function ReviewsPage() {
+    const [reviews, setReviews] = useState([]);
+    const [formData, setFormData] = useState({
+        courseName: '',
+        rating: 5,
+        comment: ''
+    });
+    const [isReviewsLoading, setIsReviewsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
+
+    useEffect(() => {
+        fetchReviews();
+    }, []);
+
+    const fetchReviews = async () => {
+        try {
+            setIsReviewsLoading(true);
+            const data = await getStudentReviews();
+            setReviews(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+            setMessage({ type: 'error', text: 'Could not load your history. Please check if you are logged in.' });
+        } finally {
+            setIsReviewsLoading(false);
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setMessage({ type: 'error', text: 'You must be logged in to post a review.' });
+            return;
+        }
+
+        if (!formData.courseName) {
+            setMessage({ type: 'error', text: 'Please select a course.' });
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            await createReview(formData);
+            setMessage({ type: 'success', text: 'Review submitted successfully!' });
+            setFormData({ courseName: '', rating: 5, comment: '' });
+            fetchReviews(); // Refresh history
+        } catch (error) {
+            setMessage({ type: 'error', text: error.response?.data?.message || 'Error submitting review.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="dashboard-container" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+            <header style={{ marginBottom: '2.5rem' }}>
+                <h1 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0f172a' }}>Reviews & <span style={{ color: '#10b981' }}>Ratings</span></h1>
+                <p style={{ color: '#64748b', marginTop: '0.5rem' }}>Share your learning experience and view administrative feedback.</p>
+            </header>
+
+            {message.text && (
+                <div style={{ 
+                    padding: '1rem', 
+                    borderRadius: '0.75rem', 
+                    marginBottom: '2rem',
+                    background: message.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                    color: message.type === 'success' ? '#065f46' : '#991b1b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    border: `1px solid ${message.type === 'success' ? '#10b981' : '#ef4444'}`
+                }}>
+                    {message.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+                    {message.text}
+                </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2.5rem' }}>
+                {/* Submit Review Section */}
+                <section style={{ background: '#fff', padding: '2rem', borderRadius: '1.25rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', height: 'fit-content' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Send size={20} style={{ color: '#10b981' }} /> Write a New Review
+                    </h2>
+                    
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ marginBottom: '1.25rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}>Select Course</label>
+                            <select 
+                                name="courseName"
+                                value={formData.courseName}
+                                onChange={handleInputChange}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0', outline: 'none' }}
+                            >
+                                <option value="">-- Choose a course --</option>
+                                {HARDCODED_COURSES.map(course => (
+                                    <option key={course} value={course}>{course}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div style={{ marginBottom: '1.25rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}>Rating</label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {[1, 2, 3, 4, 5].map(star => (
+                                    <Star 
+                                        key={star}
+                                        size={24}
+                                        style={{ cursor: 'pointer', fill: star <= formData.rating ? '#f59e0b' : 'none', color: star <= formData.rating ? '#f59e0b' : '#cbd5e1' }}
+                                        onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}>Your Experience</label>
+                            <textarea 
+                                name="comment"
+                                value={formData.comment}
+                                onChange={handleInputChange}
+                                placeholder="What did you think of the course?"
+                                rows="4"
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0', outline: 'none', resize: 'none' }}
+                                required
+                            />
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            disabled={isSubmitting}
+                            style={{ 
+                                width: '100%', 
+                                background: '#10b981', 
+                                color: '#fff', 
+                                padding: '0.75rem', 
+                                borderRadius: '0.5rem', 
+                                border: 'none', 
+                                fontWeight: 700, 
+                                cursor: 'pointer',
+                                opacity: isSubmitting ? 0.7 : 1,
+                                transition: 'background 0.2s'
+                            }}
+                        >
+                            {isSubmitting ? 'Submitting...' : 'Post Review'}
+                        </button>
+                    </form>
+                </section>
+
+                {/* Review History Section */}
+                <section>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <MessageSquare size={20} style={{ color: '#10b981' }} /> My Review History
+                    </h2>
+
+                    {isReviewsLoading ? (
+                        <div style={{ textAlign: 'center', padding: '3rem' }}>
+                            <div style={{ width: '30px', height: '30px', border: '3px solid #f3f3f3', borderTop: '3px solid #10b981', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 10px' }} />
+                            <p style={{ fontSize: '0.875rem', color: '#64748b' }}>Loading history...</p>
+                        </div>
+                    ) : reviews.length === 0 ? (
+                        <div style={{ background: '#f8fafc', padding: '3rem', borderRadius: '1.25rem', textAlign: 'center', border: '1px dashed #cbd5e1' }}>
+                            <p style={{ color: '#64748b' }}>You haven't submitted any reviews yet.</p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            {reviews.map(review => (
+                                <div key={review._id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                                        <div>
+                                            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>{review.courseName}</h3>
+                                            <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem' }}>
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <Star 
+                                                        key={star} 
+                                                        size={14} 
+                                                        style={{ fill: star <= review.rating ? '#f59e0b' : 'none', color: star <= review.rating ? '#f59e0b' : '#cbd5e1' }} 
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                            <Clock size={12} /> {new Date(review.createdAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <p style={{ color: '#475569', fontSize: '0.9375rem', lineHeight: 1.6, marginBottom: '1rem' }}>"{review.comment}"</p>
+
+                                    {/* Admin Reply */}
+                                    {review.adminReply ? (
+                                        <div style={{ background: '#f0fdf4', padding: '1rem', borderRadius: '0.75rem', borderLeft: '4px solid #10b981' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#065f46' }}>Admin Response</span>
+                                                <span style={{ fontSize: '0.75rem', color: '#65a30d' }}>• {new Date(review.repliedAt).toLocaleDateString()}</span>
+                                            </div>
+                                            <p style={{ color: '#166534', fontSize: '0.875rem', fontStyle: 'italic' }}>{review.adminReply}</p>
+                                        </div>
+                                    ) : (
+                                        <div style={{ display: 'inline-block', padding: '0.25rem 0.75rem', background: '#f1f5f9', color: '#64748b', fontSize: '0.75rem', fontWeight: 600, borderRadius: '999px' }}>
+                                            Response Pending
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            </div>
+        </div>
+    );
+}

@@ -1,6 +1,9 @@
 import express from "express";
 import {
+    createReview,
     getAllReviews,
+    getStudentReviews,
+    addAdminReply,
     deleteReview,
     updateReviewStatus,
 } from "../../Controllers/Lasiru/reviewController.js";
@@ -8,15 +11,17 @@ import { authenticate, authorizeRoles } from "../../middleware/Lasiru/authMiddle
 
 const router = express.Router();
 
-// Public routes (if any)
-// router.get("/", getAllPublishedReviews);
-
-// Protected routes (Admin only)
+// All review routes require authentication
 router.use(authenticate);
-router.use(authorizeRoles("Admin"));
 
-router.get("/all", getAllReviews);
-router.delete("/delete/:id", deleteReview);
-router.patch("/status/:id", updateReviewStatus);
+// Student routes
+router.post("/", createReview);
+router.get("/my-reviews", getStudentReviews);
+
+// Admin only routes
+router.get("/all", authorizeRoles("Admin"), getAllReviews);
+router.patch("/reply/:id", authorizeRoles("Admin"), addAdminReply);
+router.delete("/delete/:id", authorizeRoles("Admin"), deleteReview);
+router.patch("/status/:id", authorizeRoles("Admin"), updateReviewStatus);
 
 export default router;
