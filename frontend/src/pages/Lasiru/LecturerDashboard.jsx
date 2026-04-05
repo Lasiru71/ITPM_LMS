@@ -137,13 +137,16 @@ const LecturerDashboard = () => {
             ];
             setAllCourses(combined);
             showToast("success", "Dashboard updated");
-        } catch (error) {
+        } catch {
             showToast("error", "Refresh failed");
         }
     };
 
     const myCourses = allCourses
-        .filter(c => c.instructorId === (user._id || user.id))
+        .filter(c => {
+            const userId = user?.id || user?._id;
+            return c.instructorId === userId;
+        })
         .sort((a, b) => {
             const dateA = new Date(a.updatedAt || a.lastUpdated || 0);
             const dateB = new Date(b.updatedAt || b.lastUpdated || 0);
@@ -189,7 +192,7 @@ const LecturerDashboard = () => {
             try {
                 await deleteCourse(courseId);
                 showToast("success", `Course "${courseTitle}" deleted successfully`);
-            } catch (error) {
+            } catch {
                 showToast("error", "Failed to delete course");
             }
         }
