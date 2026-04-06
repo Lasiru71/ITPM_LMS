@@ -15,7 +15,10 @@ import {
   ChevronUp,
   Lock,
   CreditCard,
-  ArrowLeft
+  ArrowLeft,
+  CircleCheck,
+  Zap,
+  Trophy
 } from 'lucide-react';
 
 const API_BASE = "http://localhost:5000/api/courses";
@@ -26,17 +29,23 @@ const PublicCourseDetail = () => {
   const [loading, setLoading] = useState(true);
   const [expandedModules, setExpandedModules] = useState({});
 
+  const [isEnrolled, setIsEnrolled] = useState(false); // Default to not enrolled
+
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        // Try local storage first (consistent with the app's current logic)
         const localCourses = JSON.parse(localStorage.getItem("courses") || "[]");
         const localCourse = localCourses.find(c => c._id === id || c.id === id);
+
+        // Mock check for enrollment (could be from localStorage or API)
+        const userEnrollments = JSON.parse(localStorage.getItem("enrolled_courses") || "[]");
+        if (userEnrollments.includes(id)) {
+          setIsEnrolled(true);
+        }
 
         if (localCourse) {
           setCourse(localCourse);
           setLoading(false);
-          // Auto-expand first module
           if (localCourse.modules?.length > 0) {
             setExpandedModules({ 0: true });
           }
@@ -66,103 +75,92 @@ const PublicCourseDetail = () => {
     }));
   };
 
+  const handleLessonClick = (lesson) => {
+    if (!isEnrolled) {
+      alert("🔒 Access Denied: This content is locked. Please enroll in the course to access videos and documents.");
+      // Option to scroll to enrollment section
+      const enrollButton = document.getElementById('enroll-section');
+      if (enrollButton) enrollButton.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    // Proceed to view lesson
+    console.log("Viewing lesson:", lesson.title);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-600 font-medium animate-pulse">Loading course details...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="max-w-md w-full text-center bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
-          <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShieldCheck size={40} />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Course Not Found</h2>
-          <p className="text-slate-500 mb-8">We couldn't find the course you're looking for. It may have been removed or the link is incorrect.</p>
-          <Link to="/courses" className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all">
-            <ArrowLeft size={18} /> Back to Courses
-          </Link>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">Course Not Found</h2>
+          <Link to="/courses" className="text-emerald-600 font-bold">Back to Course List</Link>
         </div>
       </div>
     );
   }
 
-  // Calculate stats
   const totalModules = course.modules?.length || 0;
   const totalLessons = course.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0;
   const coursePrice = (course.price === 0 || course.price === "0" || course.price === 'Free' || !course.price) ? 'Free' : `$${course.price}`;
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-20">
-      {/* Hero Section */}
-      <div className="bg-slate-900 text-white pt-12 pb-24 md:pb-32 px-4 relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-emerald-500/10 blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-1/4 h-1/2 bg-blue-500/10 blur-[100px] pointer-events-none"></div>
-        
+    <div className="min-h-screen bg-[#f8fafc] pt-20">
+      
+      {/* Dark Hero - Classic Style */}
+      <div className="bg-[#0f172a] text-white pt-16 pb-32 px-4 shadow-sm relative overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-8 items-start relative z-10">
           <div className="md:col-span-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Link to="/courses" className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-sm font-medium transition-colors">
-                Courses
-              </Link>
-              <ChevronRight size={14} className="text-slate-500" />
-              <span className="text-slate-400 text-sm">{course.category || 'Professional Development'}</span>
+            <div className="flex items-center gap-2 mb-6 text-emerald-400 text-xs font-bold uppercase tracking-widest">
+              <span>Courses</span>
+              <ChevronRight size={14} />
+              <span>{course.category || 'Professional Development'}</span>
             </div>
             
-            <h1 className="text-3xl md:text-5xl font-extrabold mb-6 leading-tight tracking-tight">
-              {course.title}
+            <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
+              {course.title || "DSA Mastery"}
             </h1>
             
-            <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-3xl leading-relaxed">
-              {course.description || course.shortDescription || "Master the core concepts and advanced techniques in this comprehensive curriculum designed for career-ready skills."}
+            <p className="text-lg text-slate-300 mb-8 max-w-2xl leading-relaxed">
+              {course.description || course.shortDescription || "Gain industry-ready skills with our professional curriculum lead by expert instructors."}
             </p>
             
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div className="flex flex-wrap gap-8 pt-2">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400">
-                  <Globe size={20} />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Language</p>
-                  <p className="text-sm font-medium">English</p>
+                <Globe size={18} className="text-slate-400 font-bold" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Language</span>
+                  <span className="text-sm font-bold">English</span>
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400">
-                  <Users size={20} />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Students</p>
-                  <p className="text-sm font-medium">1.2k+ Enrolled</p>
+                <Users size={18} className="text-slate-400" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Students</span>
+                  <span className="text-sm font-bold">1,245+ Enrolled</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400">
-                  <Award size={20} />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Certificate</p>
-                  <p className="text-sm font-medium">Included</p>
+                <ShieldCheck size={18} className="text-slate-400" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Status</span>
+                  <span className="text-sm font-bold">Accredited</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400">
-                  <ShieldCheck size={20} />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Access</p>
-                  <p className="text-sm font-medium">Lifetime</p>
+                 <Clock size={18} className="text-slate-400" />
+                 <div className="flex flex-col">
+                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Access</span>
+                  <span className="text-sm font-bold">Lifetime</span>
                 </div>
               </div>
             </div>
@@ -170,50 +168,48 @@ const PublicCourseDetail = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 mt-[-80px] md:mt-[-120px] pb-24">
-        <div className="grid md:grid-cols-12 gap-8">
-          
-          {/* Left Column - Details */}
-          <div className="md:col-span-8 space-y-8">
-            
-            {/* Learning Outcomes */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-              <h2 className="text-2xl font-bold text-slate-900 mb-6">What you'll learn</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {[
-                  "Expert instruction from industry professionals",
-                  "Hands-on projects and real-world applications",
-                  "Quizzes and assessments to track progress",
-                  "Step-by-step guidance on complex topics",
-                  "Lifetime access to all course materials",
-                  "Verifiable professional certificate upon completion"
-                ].map((item, idx) => (
-                  <div key={idx} className="flex gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mt-0.5">
-                      <ShieldCheck size={14} />
-                    </div>
-                    <p className="text-slate-600 text-[15px]">{item}</p>
-                  </div>
-                ))}
+      {/* Overlapping Feature Boxes - Precisely as in the user screenshot */}
+      <div className="max-w-7xl mx-auto px-4 mt-[-60px] relative z-20">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { title: "Adaptive Learning", desc: "Quizzes and assessments that adjust to your pace.", icon: <Award className="text-emerald-500" /> },
+            { title: "Expert Support", desc: "Direct guidance on complex topics from mentors.", icon: <Zap className="text-blue-500" /> },
+            { title: "Lifetime Access", desc: "Never lose access to your learning materials.", icon: <ShieldCheck className="text-amber-500" /> },
+            { title: "Verified Status", desc: "Get a professional certificate upon completion.", icon: <Trophy className="text-teal-500" /> }
+          ].map((item, idx) => (
+            <div key={idx} className="bg-white p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-50 hover:shadow-xl transition-all">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center mb-4">
+                {React.cloneElement(item.icon, { size: 18 })}
               </div>
+              <h4 className="font-black text-slate-900 text-sm mb-1 uppercase tracking-tight">{item.title}</h4>
+              <p className="text-slate-500 text-[10px] leading-relaxed font-semibold">{item.desc}</p>
             </div>
+          ))}
+        </div>
+      </div>
 
-            {/* Course Content / Documents Section */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 overflow-hidden">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 mt-12 mb-32">
+        <div className="grid lg:grid-cols-12 gap-10 items-start">
+          
+          <div className="lg:col-span-8 space-y-10">
+            
+            {/* Course Content - Classic Success Style */}
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+              <div className="flex items-center justify-between mb-8 pb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-1">Course Content</h2>
-                  <p className="text-slate-500 text-sm">Explore all the structured learning materials for this course.</p>
+                  <h2 className="text-2xl font-black text-slate-900 mb-1">Course Content</h2>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">Structured learning path for this course.</p>
                 </div>
-                <div className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-2 border border-slate-100">
-                  <div className="flex flex-col items-center border-r border-slate-200 pr-3">
-                    <span className="text-lg font-bold text-slate-800 leading-tight">{totalModules}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Modules</span>
+                <div className="flex gap-2 p-1 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="px-5 py-2 text-center">
+                    <span className="block text-sm font-black text-slate-900">{totalModules}</span>
+                    <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold">Modules</span>
                   </div>
-                  <div className="flex flex-col items-center pl-1">
-                    <span className="text-lg font-bold text-emerald-600 leading-tight">{totalLessons}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Lessons</span>
+                  <div className="w-px h-6 bg-slate-200 mt-2"></div>
+                  <div className="px-5 py-2 text-center">
+                    <span className="block text-sm font-black text-slate-900">{totalLessons}</span>
+                    <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold">Lessons</span>
                   </div>
                 </div>
               </div>
@@ -221,158 +217,140 @@ const PublicCourseDetail = () => {
               <div className="space-y-4">
                 {course.modules && course.modules.length > 0 ? (
                   course.modules.map((module, mIndex) => (
-                    <div key={mIndex} className="border border-slate-100 rounded-2xl overflow-hidden transition-all duration-300">
+                    <div key={mIndex} className={`bg-white border border-slate-100 rounded-3xl overflow-hidden transition-all duration-300 ${expandedModules[mIndex] ? 'shadow-md border-emerald-50' : ''}`}>
                       <button 
-                        className={`w-full flex items-center justify-between p-5 text-left transition-colors ${expandedModules[mIndex] ? 'bg-slate-50' : 'bg-white hover:bg-slate-50'}`}
+                        className={`w-full flex items-center justify-between p-6 text-left ${expandedModules[mIndex] ? 'bg-slate-50/50' : 'bg-white hover:bg-slate-50/30'}`}
                         onClick={() => toggleModule(mIndex)}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${expandedModules[mIndex] ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                        <div className="flex items-center gap-5">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs ${expandedModules[mIndex] ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-100 text-slate-500'}`}>
                             {mIndex + 1}
                           </div>
                           <div>
-                            <h3 className="text-slate-900 font-bold">{module.title}</h3>
-                            <span className="text-xs text-slate-400 font-medium">{module.lessons?.length || 0} Lessons</span>
+                            <h3 className="text-sm font-black text-slate-900 uppercase">{module.title}</h3>
+                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{module.lessons?.length || 0} Lessons Included</span>
                           </div>
                         </div>
-                        {expandedModules[mIndex] ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
+                        {expandedModules[mIndex] ? <ChevronUp size={18} className="text-emerald-500" /> : <ChevronDown size={18} className="text-slate-300" />}
                       </button>
                       
                       {expandedModules[mIndex] && (
-                        <div className="border-t border-slate-100 p-2 space-y-1">
+                        <div className="px-6 pb-6 pt-2 space-y-2 border-t border-slate-50">
                           {module.lessons && module.lessons.length > 0 ? (
                             module.lessons.map((lesson, lIndex) => (
                               <div 
                                 key={lIndex} 
-                                className="group flex items-center justify-between p-3.5 hover:bg-emerald-50 rounded-xl transition-all cursor-default"
+                                onClick={() => handleLessonClick(lesson)}
+                                className={`flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-50 transition-all group ${!isEnrolled ? 'opacity-70 cursor-not-allowed' : 'hover:border-emerald-100 cursor-pointer'}`}
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-600 flex items-center justify-center transition-colors">
-                                    {lesson.type === 'video' ? <Play size={16} fill="currentColor" /> : <FileText size={16} />}
+                                <div className="flex items-center gap-4">
+                                  <div className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center transition-colors ${!isEnrolled ? 'text-slate-300' : 'text-slate-400 group-hover:text-emerald-500 group-hover:bg-emerald-50'}`}>
+                                    {lesson.type === 'video' ? <Play size={14} fill="currentColor" /> : <FileText size={14} />}
                                   </div>
                                   <div>
-                                    <h4 className="text-[14px] font-semibold text-slate-700 group-hover:text-emerald-700 transition-colors">
-                                      {lesson.title}
-                                    </h4>
-                                    <div className="flex items-center gap-3 mt-1">
-                                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">{lesson.type}</span>
-                                      {lesson.duration && (
-                                        <span className="flex items-center gap-1 text-[11px] text-slate-400">
-                                          <Clock size={10} /> {lesson.duration}
-                                        </span>
-                                      )}
-                                    </div>
+                                    <h4 className="text-[13px] font-bold text-slate-700">{lesson.title}</h4>
+                                    <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{lesson.type} • {lesson.duration || "15 mins"}</span>
                                   </div>
                                 </div>
-                                <div className="text-slate-300">
-                                  <Lock size={16} />
+                                <div className={`${!isEnrolled ? 'text-slate-300' : 'text-slate-100'}`}>
+                                  {isEnrolled ? <CircleCheck size={14} className="text-emerald-500" /> : <Lock size={14} />}
                                 </div>
                               </div>
                             ))
                           ) : (
-                            <div className="p-8 text-center text-slate-400 text-sm italic py-12">
-                              This module doesn't have any lessons yet.
-                            </div>
+                            <div className="p-8 text-center text-slate-400 text-xs italic">Upcoming lessons.</div>
                           )}
                         </div>
                       )}
                     </div>
                   ))
                 ) : (
-                  <div className="p-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                  <div className="p-16 text-center bg-slate-50/50 rounded-[2.5rem] border border-dashed border-slate-200">
                     <BookOpen size={48} className="mx-auto text-slate-200 mb-4" />
-                    <h3 className="text-lg font-bold text-slate-800">No Content Added Yet</h3>
-                    <p className="text-slate-500 max-w-xs mx-auto mt-2">The instructor is currently building this curriculum. Check back soon for updates!</p>
+                    <h3 className="text-lg font-black text-slate-400">Curriculum Coming Soon</h3>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Instructor Section */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-              <h2 className="text-2xl font-bold text-slate-900 mb-6">Instructor</h2>
-              <div className="flex items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 overflow-hidden shadow-lg border-2 border-white">
-                   <img 
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(course.instructorName || course.instructor || "Instructor")}&background=random&size=200`} 
-                    alt="Instructor" 
-                    className="w-full h-full object-cover"
-                   />
+            {/* Instructor - High Contrast & Visible */}
+            <div className="bg-white rounded-3xl p-10 shadow-sm border border-slate-100">
+              <h2 className="text-xl font-black text-slate-900 mb-8 uppercase tracking-tight">Meet Your Instructor</h2>
+              <div className="flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
+                <div className="w-24 h-24 rounded-[2rem] bg-slate-900 flex items-center justify-center font-black text-white border border-slate-800 text-2xl shadow-xl">
+                   {course.instructorName ? course.instructorName.charAt(0) : "I"}
+                   {course.instructorName ? course.instructorName.charAt(1) : ""}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">{course.instructorName || course.instructor || "Lead Instructor"}</h3>
-                  <p className="text-emerald-600 font-bold text-sm mb-2">Subject Matter Expert</p>
-                  <p className="text-slate-500 text-sm max-w-md leading-relaxed">
-                    With over 10 years of experience in {course.category || 'this field'}, our lead instructor brings practical knowledge and industry insights to every lesson.
+                  <h3 className="text-2xl font-black text-slate-950 leading-none mb-2">{course.instructorName || "Principal Instructor"}</h3>
+                  <p className="text-emerald-600 font-black text-[10px] uppercase tracking-[0.2em] mb-4">Master Course Lecturer</p>
+                  <p className="text-slate-700 text-[13px] leading-relaxed max-w-lg font-medium">
+                    "Bringing real-world industry experience directly to your screen, simplifying complex concepts for every learner through expert-led sessions."
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Sidebar Card */}
-          <div className="md:col-span-4 lg:sticky lg:top-24 h-fit">
-            <div className="bg-white rounded-[32px] overflow-hidden shadow-2xl border border-slate-100 group/sidebar">
-              {/* Preview Image */}
-              <div className="relative aspect-video overflow-hidden">
+          {/* Right Sidebar - Classic Polished */}
+          <div className="lg:col-span-4 lg:sticky lg:top-24 h-fit" id="enroll-section">
+            <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.08)] border border-white">
+              <div className="relative aspect-video group">
                 <img 
                   src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=450&fit=crop"} 
                   alt={course.title}
-                  className="w-full h-full object-cover group-hover/sidebar:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover/sidebar:opacity-100 transition-opacity">
-                   <div className="w-16 h-16 rounded-full bg-white text-emerald-600 flex items-center justify-center shadow-lg transform scale-90 group-hover/sidebar:scale-100 transition-transform">
-                     <Play fill="currentColor" className="ml-1" />
+                <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center">
+                   <div className="w-14 h-14 rounded-full bg-white text-emerald-500 flex items-center justify-center shadow-xl">
+                     <Play size={20} fill="currentColor" />
                    </div>
-                </div>
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-emerald-600 text-xs font-black uppercase tracking-widest rounded-full shadow-sm">
-                    Premium Course
-                  </span>
                 </div>
               </div>
               
-              <div className="p-8">
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-4xl font-black text-slate-900 tracking-tight">{coursePrice}</span>
-                  {course.price > 0 && <span className="text-slate-400 line-through text-lg">$199.99</span>}
+              <div className="p-10">
+                <div className="flex items-baseline gap-3 mb-8">
+                  <span className="text-5xl font-black text-slate-900 tracking-tighter">{coursePrice}</span>
+                  {course.price > 0 && <span className="text-slate-500 line-through font-bold text-lg decoration-slate-400">$199.99</span>}
                 </div>
                 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-4 mb-10">
                   <Link 
                     to={`/payment/${course._id || id}`}
-                    className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-center shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-2 group/pay"
+                    className="w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-center shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 transform active:scale-95"
                   >
-                    <CreditCard size={20} className="group-hover/pay:rotate-12 transition-transform" />
+                    <CreditCard size={20} />
                     ENROLL NOW
                   </Link>
-                  
-                  <button className="w-full py-4 px-6 border-2 border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 text-slate-700 rounded-2xl font-bold transition-all">
-                    Free Preview
+                  <button className="w-full py-4 bg-slate-50 border border-slate-100 text-slate-600 rounded-2xl font-black text-[10px] tracking-widest hover:bg-slate-100 transition-all uppercase">
+                    Launch Sneak Peek
                   </button>
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm py-2 border-b border-dashed border-slate-100">
-                    <span className="text-slate-500 flex items-center gap-2 font-medium"><Clock size={16} /> Total Duration</span>
-                    <span className="text-slate-900 font-bold">12h 45m</span>
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] block mb-2">Specifications</span>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500 font-bold flex items-center gap-2"><Clock size={16} /> Total Load</span>
+                    <span className="text-slate-900 font-black">12.5 Hours</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm py-2 border-b border-dashed border-slate-100">
-                    <span className="text-slate-500 flex items-center gap-2 font-medium"><Users size={16} /> Students</span>
-                    <span className="text-slate-900 font-bold">1,245+</span>
+                  <div className="flex justify-between items-center text-sm pt-4 border-t border-dashed border-slate-100">
+                    <span className="text-slate-500 font-bold flex items-center gap-2"><Users size={16} /> Students</span>
+                    <span className="text-slate-900 font-black">1,500+</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm py-2">
-                    <span className="text-slate-500 flex items-center gap-2 font-medium"><Award size={16} /> Certificate</span>
-                    <span className="text-slate-900 font-bold">Verifiable</span>
+                  <div className="flex justify-between items-center text-sm pt-4 border-t border-dashed border-slate-100">
+                    <span className="text-slate-500 font-bold flex items-center gap-2"><Award size={16} /> Certificate</span>
+                    <span className="text-emerald-600 font-black">Included</span>
                   </div>
                 </div>
 
-                <div className="mt-8 pt-8 border-t border-slate-100 text-center">
-                  <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-4">Secure Payment Options</p>
-                  <div className="flex justify-center gap-4 opacity-30 grayscale hover:grayscale-0 transition-all">
-                    <div className="w-10 h-6 bg-slate-400 rounded-sm"></div>
-                    <div className="w-10 h-6 bg-slate-400 rounded-sm"></div>
-                    <div className="w-10 h-6 bg-slate-400 rounded-sm"></div>
+                <div className="mt-10 pt-8 border-t border-slate-50 text-center">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Certified Secure Payments</p>
+                  <div className="flex justify-center gap-3">
+                    <div className="px-3 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black text-[#1A1F71] border border-slate-100 italic tracking-tighter">VISA</div>
+                    <div className="px-3 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black flex items-center gap-0.5 border border-slate-100">
+                      <span className="text-[#EB001B]">Master</span><span className="text-[#F79E1B]">card</span>
+                    </div>
+                    <div className="px-3 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black text-[#003087] border border-slate-100 italic">PayPal</div>
                   </div>
                 </div>
               </div>
