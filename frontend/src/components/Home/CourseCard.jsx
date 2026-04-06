@@ -35,24 +35,21 @@ export default function CourseCard({ course }) {
           </div>
         </div>
         
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100 mb-4">
+        <div className="flex items-center justify-between mt-auto pt-4 mb-4">
           <p className="text-lg font-bold text-slate-900">${course.price}</p>
-          <Button variant="ghost" size="sm" className="group/btn text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
-            Learn More
-            <ChevronRight className="size-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
-          </Button>
+          <span className="flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 cursor-pointer">
+            Learn More <ChevronRight className="size-4 ml-0.5" />
+          </span>
         </div>
 
         {/* Payment Button - Navigates to custom payment page */}
         <Link to={`/payment/${course.id}`} className="block w-full">
-          <button className="w-full flex items-center justify-between bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3 px-5 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98] group/pay">
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 bg-white/20 rounded-lg">
-                <CreditCard className="size-5" />
-              </div>
-              <span className="text-sm tracking-tight font-bold">Make Payment to Enroll</span>
+          <button className="w-full flex items-center justify-between bg-[#19b386] hover:bg-[#149870] text-white py-2.5 px-4 rounded-[10px] transition-all duration-300">
+            <div className="flex items-center gap-2 font-medium">
+              <CreditCard className="size-[18px] opacity-90" />
+              <span className="text-[14px]">Make Payment to Enroll</span>
             </div>
-            <ArrowRight className="size-5 group-hover/pay:translate-x-1 transition-transform" />
+            <ArrowRight className="size-[18px] opacity-90" />
           </button>
         </Link>
       </div>
