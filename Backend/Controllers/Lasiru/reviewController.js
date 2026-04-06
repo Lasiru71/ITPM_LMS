@@ -72,18 +72,31 @@ export const addAdminReply = async (req, res) => {
     }
 };
 
-// Delete a review
+// Delete a review (Student can delete own, Admin can delete any)
 export const deleteReview = async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedReview = await Review.findByIdAndDelete(id);
+        const userId = req.user._id;
+        const userRole = req.user.role;
+
+        // 1. Find the review first to check ownership
+        const review = await Review.findById(id);
         
-        if (!deletedReview) {
+        if (!review) {
             return res.status(404).json({ message: "Review not found" });
         }
+
+        // 2. Permission check: Admin or the student who wrote the review
+        if (userRole !== "Admin" && review.studentId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "You don't have permission to delete this review." });
+        }
+
+        // 3. Perform deletion
+        await Review.findByIdAndDelete(id);
         
         res.status(200).json({ message: "Review deleted successfully" });
     } catch (error) {
+        console.error("Delete review error:", error.message);
         res.status(500).json({ message: "Error deleting review", error: error.message });
     }
 };
