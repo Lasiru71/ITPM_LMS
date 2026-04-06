@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Bell, Calendar, ChevronLeft, ChevronRight, Inbox, AlertCircle } from "lucide-react";
+import { Bell, Calendar, ChevronLeft, ChevronRight, Inbox, LayoutDashboard, Megaphone, Users, BookOpen, GraduationCap, Settings, LogOut, User } from "lucide-react";
 import { getPaginatedNotifications } from "../../api/Lasiru/adminApi";
-import DashboardHeader from "../../components/Lasiru/DashboardHeader";
-import AuthLayout from "../../components/Lasiru/AuthLayout";
+import { useLogout } from "../../hooks/Lasiru/useLogout";
+import "../../Styles/Lasiru/NotificationCenter.css";
 
 const NotificationsPage = () => {
+    const { handleLogout } = useLogout();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({
@@ -44,134 +45,149 @@ const NotificationsPage = () => {
         }
     };
 
-    const getPriorityStyle = (priority) => {
+    const getPriorityClass = (priority) => {
         switch (priority) {
-            case "High": return { color: "#ef4444", background: "#fef2f2" };
-            case "Medium": return { color: "#f59e0b", background: "#fffbeb" };
-            default: return { color: "#3b82f6", background: "#eff6ff" };
+            case "High": return "nc-priority-high";
+            case "Medium": return "nc-priority-medium";
+            default: return "nc-priority-low";
         }
     };
 
     return (
-        <AuthLayout>
-            <DashboardHeader title="All Notifications" />
-            <main className="dash-main-content">
-                <div className="admin-content-card">
-                    <div style={{ marginBottom: "2rem" }}>
-                        <h2 style={{ margin: 0, fontSize: "1.75rem", fontWeight: 800 }}>Notification Center</h2>
-                        <p style={{ color: "#64748b", marginTop: "0.5rem" }}>
-                            Stay updated with the latest announcements for {role}s.
-                        </p>
+        <div className="nc-page-wrapper">
+            {/* Left Gradient Panel */}
+            <aside className="nc-sidebar-panel">
+                <div className="nc-sidebar-logo">
+                    <BookOpen size={28} />
+                    <span>EduVault</span>
+                </div>
+                
+                <ul className="nc-sidebar-menu">
+                    <li className="nc-menu-item">
+                        <LayoutDashboard size={20} />
+                        <span>Dashboard</span>
+                    </li>
+                    <li className="nc-menu-item active">
+                        <Bell size={20} />
+                        <span>Notifications</span>
+                    </li>
+                    <li className="nc-menu-item">
+                        <Users size={20} />
+                        <span>Community</span>
+                    </li>
+                    <li className="nc-menu-item">
+                        <GraduationCap size={20} />
+                        <span>Coursework</span>
+                    </li>
+                </ul>
+
+                <div className="nc-sidebar-footer" style={{ marginTop: 'auto' }}>
+                    <div className="nc-menu-item">
+                        <Settings size={20} />
+                        <span>Settings</span>
+                    </div>
+                    <div className="nc-menu-item" style={{ color: '#f43f5e' }} onClick={handleLogout}>
+                        <LogOut size={20} />
+                        <span>Sign Out</span>
+                    </div>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="nc-main-content">
+                <header className="nc-header">
+                    <div className="nc-header-left">
+                        <h1>Notification Center</h1>
+                    </div>
+                    <div className="nc-header-actions">
+                        <button className="nc-bell-btn">
+                            <Bell size={22} />
+                            <span className="nc-bell-dot"></span>
+                        </button>
+                        <div className="nc-user-avatar">
+                            {user.name ? user.name.charAt(0).toUpperCase() : <User size={20} />}
+                        </div>
+                    </div>
+                </header>
+
+                <div className="nc-container">
+                    <div className="nc-section-header">
+                        <h2>Important Updates</h2>
+                        <p>Stay updated with the latest announcements for {role}s.</p>
                     </div>
 
                     {loading ? (
                         <div style={{ padding: "4rem", textAlign: "center" }}>
-                            <div className="spinner-small" style={{ width: "40px", height: "40px", margin: "0 auto" }}></div>
-                            <p style={{ marginTop: "1rem", color: "#64748b" }}>Loading notifications...</p>
+                            <div className="spinner-small" style={{ width: "40px", height: "40px", margin: "0 auto", border: "3px solid #e2e8f0", borderTopColor: "#4f46e5", borderRadius: "50%", animation: "spin 1s linear infinite" }}></div>
+                            <p style={{ marginTop: "1rem", color: "#64748b" }}>Loading your updates...</p>
                         </div>
                     ) : notifications.length === 0 ? (
-                        <div style={{ padding: "5rem 2rem", textAlign: "center", background: "#f8fafc", borderRadius: "1.5rem" }}>
-                            <Inbox size={64} color="#e2e8f0" style={{ marginBottom: "1.5rem" }} />
-                            <h3 style={{ margin: 0, color: "#1e293b" }}>No notifications found</h3>
-                            <p style={{ color: "#64748b", marginTop: "0.5rem" }}>You're all caught up! Check back later for new updates.</p>
+                        <div className="nc-empty-state">
+                            <Inbox size={64} className="nc-empty-icon" />
+                            <h3>No notifications yet</h3>
+                            <p>You're all caught up! Check back later for new updates.</p>
                         </div>
                     ) : (
-                        <div className="notification-list-full">
-                            {notifications.map((notif) => (
-                                <div key={notif._id} className="notification-row" style={{ 
-                                    padding: "2rem",
-                                    borderBottom: "1px solid #f1f5f9",
-                                    display: "flex",
-                                    gap: "2rem",
-                                    transition: "background 0.2s"
-                                }}>
-                                    <div className="notif-date-box" style={{ 
-                                        width: "80px", 
-                                        height: "80px", 
-                                        background: "#f8fafc", 
-                                        borderRadius: "1rem",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        flexShrink: 0,
-                                        border: "1px solid #e2e8f0"
-                                    }}>
-                                        <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>
-                                            {new Date(notif.createdAt).toLocaleString('default', { month: 'short' })}
-                                        </span>
-                                        <span style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0f172a" }}>
-                                            {new Date(notif.createdAt).getDate()}
-                                        </span>
-                                    </div>
-
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-                                            <div>
-                                                <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "#1e293b" }}>{notif.title}</h3>
-                                                <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem", alignItems: "center" }}>
-                                                    <span style={{ 
-                                                        fontSize: "0.75rem", 
-                                                        fontWeight: 700, 
-                                                        padding: "0.25rem 0.75rem", 
-                                                        borderRadius: "999px",
-                                                        ...getPriorityStyle(notif.priority)
-                                                    }}>
-                                                        {notif.priority} Priority
-                                                    </span>
-                                                    <span style={{ fontSize: "0.75rem", color: "#94a3b8", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                                                        <Calendar size={14} /> {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <span style={{ 
-                                                fontSize: "0.7rem", 
-                                                fontWeight: 800, 
-                                                color: "#64748b", 
-                                                background: "#f1f5f9", 
-                                                padding: "0.3rem 0.8rem", 
-                                                borderRadius: "0.5rem" 
-                                            }}>
-                                                TARGET: {notif.toWhom.toUpperCase()}
-                                            </span>
+                        <div className="nc-card-grid">
+                            {notifications.map((notif) => {
+                                const date = new Date(notif.createdAt);
+                                return (
+                                    <div key={notif._id} className="nc-card">
+                                        <div className="nc-date-badge">
+                                            <span className="nc-month">{date.toLocaleString('default', { month: 'short' })}</span>
+                                            <span className="nc-day">{date.getDate()}</span>
                                         </div>
-                                        <p style={{ color: "#475569", lineHeight: 1.7, fontSize: "1rem", margin: 0 }}>
-                                            {notif.description || notif.content}
-                                        </p>
+
+                                        <div className="nc-card-body">
+                                            <div className="nc-card-top">
+                                                <div>
+                                                    <h3 className="nc-title">{notif.title}</h3>
+                                                    <div className="nc-meta">
+                                                        <span className={`nc-priority-tag ${getPriorityClass(notif.priority)}`}>
+                                                            {notif.priority}
+                                                        </span>
+                                                        <span className="nc-time">
+                                                            <Calendar size={14} /> {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <span className="nc-target-label">
+                                                    FOR: {notif.toWhom.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <p className="nc-content">
+                                                {notif.description || notif.content}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
 
                             {/* Pagination */}
                             {pagination.pages > 1 && (
-                                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "1rem", marginTop: "3rem" }}>
+                                <div className="nc-pagination">
                                     <button 
-                                        className="admin-btn admin-btn-ghost"
+                                        className="nc-page-btn"
                                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                                         disabled={pagination.currentPage === 1}
-                                        style={{ padding: "0.75rem" }}
                                     >
                                         <ChevronLeft size={20} />
                                     </button>
                                     
-                                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                                        {[...Array(pagination.pages)].map((_, i) => (
-                                            <button 
-                                                key={i + 1}
-                                                onClick={() => handlePageChange(i + 1)}
-                                                className={`admin-btn ${pagination.currentPage === i + 1 ? "admin-btn-primary" : "admin-btn-ghost"}`}
-                                                style={{ minWidth: "40px", height: "40px", padding: 0 }}
-                                            >
-                                                {i + 1}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    {[...Array(pagination.pages)].map((_, i) => (
+                                        <button 
+                                            key={i + 1}
+                                            onClick={() => handlePageChange(i + 1)}
+                                            className={`nc-page-btn ${pagination.currentPage === i + 1 ? "active" : ""}`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
 
                                     <button 
-                                        className="admin-btn admin-btn-ghost"
+                                        className="nc-page-btn"
                                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                                         disabled={pagination.currentPage === pagination.pages}
-                                        style={{ padding: "0.75rem" }}
                                     >
                                         <ChevronRight size={20} />
                                     </button>
@@ -183,14 +199,9 @@ const NotificationsPage = () => {
             </main>
 
             <style dangerouslySetInnerHTML={{ __html: `
-                .notification-row:last-child { border-bottom: none; }
-                .notification-row:hover { background: #fcfdfe; }
-                @media (max-width: 640px) {
-                    .notification-row { flex-direction: column; gap: 1rem !important; }
-                    .notif-date-box { width: 60px !important; height: 60px !important; }
-                }
+                @keyframes spin { to { transform: rotate(360deg); } }
             `}} />
-        </AuthLayout>
+        </div>
     );
 };
 

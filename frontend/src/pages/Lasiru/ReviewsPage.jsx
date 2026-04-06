@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Star, Send, MessageSquare, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { getStudentReviews, createReview } from '../../api/Lasiru/reviewApi';
+import { Star, Send, MessageSquare, Clock, CheckCircle, AlertCircle, Trash2, Loader2 } from 'lucide-react';
+import { getStudentReviews, createReview, deleteReview } from '../../api/Lasiru/reviewApi';
+import { useToast } from '../../components/Lasiru/ToastProvider';
 import '../../Styles/Lasiru/StudentDashboard.css';
 
 const HARDCODED_COURSES = [
@@ -25,7 +26,9 @@ export default function ReviewsPage() {
     });
     const [isReviewsLoading, setIsReviewsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deletingIds, setDeletingIds] = useState(new Set());
     const [message, setMessage] = useState({ type: '', text: '' });
+    const { showToast } = useToast();
 
     useEffect(() => {
         fetchReviews();
@@ -72,6 +75,28 @@ export default function ReviewsPage() {
             setMessage({ type: 'error', text: error.response?.data?.message || 'Error submitting review.' });
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (reviewId) => {
+        if (!window.confirm("Are you sure you want to delete this review? This action cannot be undone.")) {
+            return;
+        }
+
+        try {
+            setDeletingIds(prev => new Set(prev).add(reviewId));
+            await deleteReview(reviewId);
+            showToast("success", "Review deleted successfully.");
+            fetchReviews(); // Refresh history
+        } catch (error) {
+            console.error("Error deleting review:", error);
+            showToast("error", "Failed to delete review. Please try again.");
+        } finally {
+            setDeletingIds(prev => {
+                const next = new Set(prev);
+                next.delete(reviewId);
+                return next;
+            });
         }
     };
 
@@ -202,9 +227,37 @@ export default function ReviewsPage() {
                                                 ))}
                                             </div>
                                         </div>
-                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                            <Clock size={12} /> {new Date(review.createdAt).toLocaleDateString()}
-                                        </span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                <Clock size={12} /> {new Date(review.createdAt).toLocaleDateString()}
+                                            </span>
+                                            
+                                            <button 
+                                                onClick={() => handleDelete(review._id)}
+                                                disabled={deletingIds.has(review._id)}
+                                                aria-label="Delete review"
+                                                title="Delete this review"
+                                                className="std-delete-btn"
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: '#94a3b8',
+                                                    cursor: 'pointer',
+                                                    padding: '0.25rem',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    borderRadius: '0.375rem'
+                                                }}
+                                            >
+                                                {deletingIds.has(review._id) ? (
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                ) : (
+                                                    <Trash2 size={16} />
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
                                     <p style={{ color: '#475569', fontSize: '0.9375rem', lineHeight: 1.6, marginBottom: '1rem' }}>"{review.comment}"</p>
 

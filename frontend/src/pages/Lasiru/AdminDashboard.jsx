@@ -43,6 +43,7 @@ import ReviewManagement from "../../components/Lasiru/ReviewManagement";
 import MaterialUpload from "../../components/sadeepa/MaterialUpload";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
+import { useLogout } from "../../hooks/Lasiru/useLogout";
 
 const COLORS = ['#12b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
 
@@ -55,6 +56,7 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { handleLogout } = useLogout();
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -75,12 +77,6 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        showToast("success", "Logged out successfully");
-        navigate("/login");
-    };
 
     // --- PDF Report Generation ---
     const generatePDFReport = async (type) => {

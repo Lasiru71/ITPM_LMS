@@ -23,6 +23,7 @@ import FreeExam from "./pages/Home/FreeExam.jsx";
 import GptHelper from "./pages/Home/GptHelper.jsx";
 
 import NotificationsPage from "./pages/Lasiru/NotificationsPage.jsx";
+import ProtectedRoute from "./components/Lasiru/ProtectedRoute.jsx";
 
 function App() {
   return (
@@ -43,17 +44,17 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Dashboard Routes */}
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      <Route path="/lecturer-dashboard" element={<LecturerDashboard />} />
-      <Route path="/student-dashboard" element={<StudentDashboard />} />
-      <Route path="/notifications" element={<NotificationsPage />} />
-      <Route path="/edit-course/:id" element={<EditCourse />} />
-      <Route path="/lecturer/courses/:courseId" element={<CourseDetailPage />} />
-      <Route path="/exam-login" element={<ExamLogin />} />
-      <Route path="/exam-login/:id" element={<AttendExam />} />
-      <Route path="/project" element={<Project />} />
-      <Route path="/profile" element={<UserProfile />} />
+      {/* Dashboard Routes - PROTECTED */}
+      <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/lecturer-dashboard" element={<ProtectedRoute><LecturerDashboard /></ProtectedRoute>} />
+      <Route path="/student-dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+      <Route path="/edit-course/:id" element={<ProtectedRoute><EditCourse /></ProtectedRoute>} />
+      <Route path="/lecturer/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
+      <Route path="/exam-login" element={<ProtectedRoute><ExamLogin /></ProtectedRoute>} />
+      <Route path="/exam-login/:id" element={<ProtectedRoute><AttendExam /></ProtectedRoute>} />
+      <Route path="/project" element={<ProtectedRoute><Project /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
     </Routes>
   );
 }

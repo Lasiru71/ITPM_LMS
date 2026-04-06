@@ -21,7 +21,8 @@ router.get("/my-reviews", getStudentReviews);
 // Admin only routes
 router.get("/all", authorizeRoles("Admin"), getAllReviews);
 router.patch("/reply/:id", authorizeRoles("Admin"), addAdminReply);
-router.delete("/delete/:id", authorizeRoles("Admin"), deleteReview);
+// Admin & Student delete route (Security handled in controller)
+router.delete("/delete/:id", deleteReview);
 router.patch("/status/:id", authorizeRoles("Admin"), updateReviewStatus);
 
 export default router;
