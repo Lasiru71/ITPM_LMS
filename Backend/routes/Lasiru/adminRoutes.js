@@ -12,23 +12,22 @@ import { authenticate, authorizeRoles } from "../../middleware/Lasiru/authMiddle
 
 const router = express.Router();
 
-// All routes are protected and require admin role
+// All routes are protected
 router.use(authenticate);
-router.use(authorizeRoles("Admin"));
 
 // Lecturer routes
-router.get("/lecturers", getAllLecturers);
-router.post("/lecturers", createLecturer);
-router.delete("/lecturers/:id", deleteLecturer);
+router.get("/lecturers", authorizeRoles("Admin"), getAllLecturers);
+router.post("/lecturers", authorizeRoles("Admin"), createLecturer);
+router.delete("/lecturers/:id", authorizeRoles("Admin"), deleteLecturer);
 
-// Student routes
-router.get("/students", getAllStudents);
-router.delete("/students/:id", deleteStudent);
+// Student routes (Lecturers also need to be able to see students for attendance)
+router.get("/students", authorizeRoles("Admin", "Lecturer"), getAllStudents);
+router.delete("/students/:id", authorizeRoles("Admin"), deleteStudent);
 
 // Toggle status for any user
-router.patch("/users/:id/toggle", toggleUserStatus);
+router.patch("/users/:id/toggle", authorizeRoles("Admin"), toggleUserStatus);
 
 // Dashboard Stats
-router.get("/stats", getDashboardStats);
+router.get("/stats", authorizeRoles("Admin"), getDashboardStats);
 
 export default router;
