@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, Send, MessageSquare, Clock, CheckCircle, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import { getStudentReviews, createReview, deleteReview } from '../../api/Lasiru/reviewApi';
 import { getAllCourses } from '../../api/Jeewani/courseApi';
+import { MOCK_COURSES } from '../../constants/Home/mockData';
 import { useToast } from '../../components/Lasiru/ToastProvider';
 import '../../Styles/Lasiru/StudentDashboard.css';
 
@@ -30,9 +31,14 @@ export default function ReviewsPage() {
     const fetchCourses = async () => {
         try {
             const data = await getAllCourses();
-            setAvailableCourses(Array.isArray(data) ? data : []);
+            const customCourses = Array.isArray(data) ? data : [];
+            setAvailableCourses([
+                ...customCourses,
+                ...MOCK_COURSES.map(c => ({ ...c, _id: String(c.id) }))
+            ]);
         } catch (error) {
             console.error("Error fetching courses:", error);
+            setAvailableCourses(MOCK_COURSES.map(c => ({ ...c, _id: String(c.id) })));
         }
     };
 
