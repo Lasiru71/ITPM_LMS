@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import api from "../services/api";
 
 export default function PaymentPage() {
@@ -17,9 +18,21 @@ export default function PaymentPage() {
   const [slipImage, setSlipImage] = useState(null);
   const [showSlipUpload, setShowSlipUpload] = useState(false);
 
+  const { courseId: paramCourseId } = useParams();
+
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  useEffect(() => {
+    if (paramCourseId && courses.length > 0) {
+      const course = courses.find((c) => String(c._id) === String(paramCourseId));
+      if (course) {
+        setCourseId(course._id);
+        setSelectedCourse(course);
+      }
+    }
+  }, [paramCourseId, courses]);
 
   const fetchCourses = async () => {
     try {

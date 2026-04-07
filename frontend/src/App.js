@@ -28,6 +28,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/payment" />} />
             <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/payment/:courseId" element={<PaymentPage />} />
             <Route path="/admin-payments" element={<AdminPayments />} />
             <Route path="/generate-qr" element={<GenerateQRPage />} />
             <Route path="/scan-attendance" element={<ScanAttendancePage />} />

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Star, Clock, ChevronRight } from 'lucide-react';
+import { Star, Clock, ChevronRight, CreditCard } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from './ui/Button';
 
 export default function CourseCard({ course }) {
@@ -32,12 +33,21 @@ export default function CourseCard({ course }) {
           <span className="text-xs text-slate-400">({course.reviews} reviews)</span>
         </div>
         
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
-          <p className="text-lg font-bold text-slate-900">${course.price}</p>
-          <Button variant="ghost" size="sm" className="group/btn text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
-            Learn More
-            <ChevronRight className="size-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
-          </Button>
+        <div className="flex flex-col gap-3 mt-auto pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-between">
+            <p className="text-lg font-bold text-slate-900">${course.price}</p>
+            <Button variant="ghost" size="sm" className="group/btn text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700">
+              Learn More
+              <ChevronRight className="size-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+          
+          <Link to={`/payment/${course._id || course.id}`} className="w-full">
+            <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2 py-5">
+              <CreditCard className="size-4" />
+              Pay Now
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
