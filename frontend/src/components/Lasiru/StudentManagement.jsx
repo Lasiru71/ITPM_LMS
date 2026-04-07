@@ -57,7 +57,7 @@ const StudentManagement = ({ onUpdate }) => {
         (std) =>
             (std.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (std.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-            (std.nicNumber?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+            (std.studentId?.toLowerCase() || "").includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -80,7 +80,7 @@ const StudentManagement = ({ onUpdate }) => {
                 <table className="admin-table">
                     <thead>
                         <tr>
-                             <th>NIC Number</th>
+                            <th>Student ID</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Status</th>
@@ -90,7 +90,7 @@ const StudentManagement = ({ onUpdate }) => {
                     <tbody>
                         {filteredStudents.map((std) => (
                             <tr key={std._id}>
-                                 <td>{std.nicNumber || "N/A"}</td>
+                                <td>{std.studentId || "N/A"}</td>
                                 <td>{std.name}</td>
                                 <td>{std.email}</td>
                                 <td>

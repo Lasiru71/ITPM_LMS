@@ -90,13 +90,3 @@ export const deleteAnnouncement = async (id) => {
     const response = await axios.delete(`${ANNOUNCE_URL}/${id}`, getAuthHeader());
     return response.data;
 };
-
-export const getLatestNotifications = async (role) => {
-    const response = await axios.get(`${ANNOUNCE_URL}/notifications/latest?role=${role}`, getAuthHeader());
-    return response.data;
-};
-
-export const getPaginatedNotifications = async (role, page = 1, limit = 10) => {
-    const response = await axios.get(`${ANNOUNCE_URL}/notifications/all?role=${role}&page=${page}&limit=${limit}`, getAuthHeader());
-    return response.data;
-};

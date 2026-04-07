@@ -31,10 +31,9 @@ const AnnouncementManagement = () => {
     
     const [formData, setFormData] = useState({
         title: "",
-        description: "",
+        content: "",
         category: "General",
         priority: "Low",
-        toWhom: "All",
         isActive: true
     });
 
@@ -58,10 +57,9 @@ const AnnouncementManagement = () => {
         if (announcement) {
             setFormData({
                 title: announcement.title,
-                description: announcement.description || announcement.content || "",
+                content: announcement.content,
                 category: announcement.category,
                 priority: announcement.priority,
-                toWhom: announcement.toWhom || "All",
                 isActive: announcement.isActive
             });
             setIsEditing(true);
@@ -69,10 +67,9 @@ const AnnouncementManagement = () => {
         } else {
             setFormData({
                 title: "",
-                description: "",
+                content: "",
                 category: "General",
                 priority: "Low",
-                toWhom: "All",
                 isActive: true
             });
             setIsEditing(false);
@@ -86,12 +83,8 @@ const AnnouncementManagement = () => {
             showToast("error", "Announcement Title is required");
             return false;
         }
-        if (!formData.description.trim()) {
-            showToast("error", "Description body is required");
-            return false;
-        }
-        if (!formData.toWhom) {
-            showToast("error", "Please select a target audience");
+        if (!formData.content.trim()) {
+            showToast("error", "Content body is required");
             return false;
         }
         return true;
@@ -133,8 +126,8 @@ const AnnouncementManagement = () => {
     };
 
     const filteredAnnouncements = announcements.filter(ann => {
-        const descMatch = (ann.description || ann.content || "").toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesSearch = ann.title.toLowerCase().includes(searchQuery.toLowerCase()) || descMatch;
+        const matchesSearch = ann.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             ann.content.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = categoryFilter === "All" || ann.category === categoryFilter;
         return matchesSearch && matchesCategory;
     });
@@ -144,14 +137,6 @@ const AnnouncementManagement = () => {
             case "High": return "#ef4444";
             case "Medium": return "#f59e0b";
             default: return "#3b82f6";
-        }
-    };
-
-    const getToWhomBadgeStyle = (toWhom) => {
-        switch (toWhom) {
-            case "Student": return { background: "#ecfdf5", color: "#10b981", border: "1px solid #10b981" };
-            case "Lecture": return { background: "#eff6ff", color: "#3b82f6", border: "1px solid #3b82f6" };
-            default: return { background: "#fef2f2", color: "#ef4444", border: "1px solid #ef4444" };
         }
     };
 
@@ -195,81 +180,68 @@ const AnnouncementManagement = () => {
             <div className="announcements-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "1.5rem" }}>
                 {filteredAnnouncements.map((ann) => (
                     <div key={ann._id} className="announcement-card" style={{ 
-                        background: "#fff", 
+                        background: "#f8fafc", 
                         borderRadius: "1.25rem", 
                         padding: "1.5rem",
                         border: "1px solid #e2e8f0",
                         position: "relative",
-                        transition: "all 0.2s ease",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                        transition: "transform 0.2s, box-shadow 0.2s"
                     }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-                            <div style={{ display: "flex", gap: "0.5rem" }}>
-                                <span style={{ 
-                                    background: "#f1f5f9", 
-                                    padding: "0.4rem 0.8rem", 
-                                    borderRadius: "0.75rem", 
-                                    fontSize: "0.7rem", 
-                                    fontWeight: 700,
-                                    color: "#64748b",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "0.4rem"
-                                }}>
-                                    <Tag size={12} /> {ann.category}
-                                </span>
-                                <span style={{ 
-                                    padding: "0.4rem 0.8rem", 
-                                    borderRadius: "0.75rem", 
-                                    fontSize: "0.7rem", 
-                                    fontWeight: 700,
-                                    ...getToWhomBadgeStyle(ann.toWhom)
-                                }}>
-                                    For: {ann.toWhom}
-                                </span>
-                            </div>
+                            <span style={{ 
+                                background: "white", 
+                                padding: "0.4rem 0.8rem", 
+                                borderRadius: "0.75rem", 
+                                fontSize: "0.75rem", 
+                                fontWeight: 700,
+                                color: "#64748b",
+                                border: "1px solid #e2e8f0",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.4rem"
+                            }}>
+                                <Tag size={12} /> {ann.category}
+                            </span>
                             <div style={{ display: "flex", gap: "0.5rem" }}>
                                 <button 
                                     style={{ border: "none", background: "none", color: "#64748b", cursor: "pointer" }}
                                     onClick={() => handleOpenModal(ann)}
                                 >
-                                    <Edit size={16} />
+                                    <Edit size={18} />
                                 </button>
                                 <button 
                                     style={{ border: "none", background: "none", color: "#ef4444", cursor: "pointer" }}
                                     onClick={() => handleDeleteClick(ann._id)}
                                 >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={18} />
                                 </button>
                             </div>
                         </div>
 
-                        <h4 style={{ margin: "0 0 0.75rem", fontSize: "1.1rem", fontWeight: 700 }}>{ann.title}</h4>
+                        <h4 style={{ margin: "0 0 0.75rem", fontSize: "1.1rem" }}>{ann.title}</h4>
                         <p style={{ 
                             margin: "0 0 1.5rem", 
                             color: "#475569", 
-                            fontSize: "0.875rem", 
-                            lineHeight: 1.6,
+                            fontSize: "0.9rem", 
+                            lineHeight: 1.5,
                             display: "-webkit-box",
                             WebkitLineClamp: 3,
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden"
                         }}>
-                            {ann.description || ann.content}
+                            {ann.content}
                         </p>
 
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1rem", borderTop: "1px solid #f1f5f9" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#94a3b8", fontSize: "0.75rem" }}>
-                                <Clock size={12} /> {new Date(ann.createdAt).toLocaleDateString()}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1rem", borderTop: "1px solid #e2e8f0" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#94a3b8", fontSize: "0.8rem" }}>
+                                <Clock size={14} /> {new Date(ann.createdAt).toLocaleDateString()}
                             </div>
                             <span style={{ 
                                 color: getPriorityColor(ann.priority), 
-                                fontWeight: 700, 
-                                fontSize: "0.75rem",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.025em"
+                                fontWeight: 600, 
+                                fontSize: "0.8rem" 
                             }}>
-                                {ann.priority} Priority
+                                ● {ann.priority} Priority
                             </span>
                         </div>
                     </div>
@@ -279,49 +251,26 @@ const AnnouncementManagement = () => {
             {showModal && createPortal(
                 <div className="admin-modal-overlay">
                     <div className="admin-modal" style={{ maxWidth: "600px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                            <h2 style={{ margin: 0 }}>{isEditing ? "Edit Announcement" : "New Announcement"}</h2>
-                            <button onClick={() => setShowModal(false)} style={{ border: "none", background: "none", cursor: "pointer", color: "#64748b" }}>
-                                <X size={24} />
-                            </button>
-                        </div>
-
+                        <h2>{isEditing ? "Edit Announcement" : "Publish Announcement"}</h2>
                         <form onSubmit={handleSubmit} noValidate>
                             <div className="admin-form-group">
-                                <label>Target Audience (toWhom) <span style={{ color: "#ef4444" }}>*</span></label>
-                                <select
-                                    className="admin-input"
-                                    value={formData.toWhom}
-                                    onChange={(e) => setFormData({ ...formData, toWhom: e.target.value })}
-                                    style={{ border: "2px solid #e2e8f0" }}
-                                >
-                                    <option value="Student">Student</option>
-                                    <option value="Lecture">Lecture</option>
-                                    <option value="All">All</option>
-                                </select>
-                            </div>
-
-                            <div className="admin-form-group">
-                                <label>Headline <span style={{ color: "#ef4444" }}>*</span></label>
+                                <label>Title</label>
                                 <input
                                     className="admin-input"
-                                    placeholder="e.g. Mid-semester exam schedules updated"
+                                    placeholder="Enter announcement headline..."
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 />
                             </div>
-
                             <div className="admin-form-group">
-                                <label>Detailed Description <span style={{ color: "#ef4444" }}>*</span></label>
+                                <label>Content</label>
                                 <textarea
                                     className="admin-input"
-                                    placeholder="Write the full announcement details here..."
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    style={{ minHeight: "120px" }}
+                                    placeholder="Write the detailed announcement content here..."
+                                    value={formData.content}
+                                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                 ></textarea>
                             </div>
-
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                                 <div className="admin-form-group">
                                     <label>Category</label>
@@ -337,7 +286,7 @@ const AnnouncementManagement = () => {
                                     </select>
                                 </div>
                                 <div className="admin-form-group">
-                                    <label>Priority Level</label>
+                                    <label>Priority</label>
                                     <select
                                         className="admin-input"
                                         value={formData.priority}
@@ -349,18 +298,17 @@ const AnnouncementManagement = () => {
                                     </select>
                                 </div>
                             </div>
-
-                            <div style={{ display: "flex", gap: "1rem", marginTop: "2.5rem" }}>
-                                <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1, padding: "1rem" }}>
-                                    {isEditing ? "Save Changes" : "Publish Announcement"}
+                            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+                                <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1 }}>
+                                    {isEditing ? "Update Announcement" : "Publish Now"}
                                 </button>
                                 <button
                                     type="button"
                                     className="admin-btn admin-btn-ghost"
-                                    style={{ flex: 0.5 }}
+                                    style={{ flex: 1 }}
                                     onClick={() => setShowModal(false)}
                                 >
-                                    Dismiss
+                                    Cancel
                                 </button>
                             </div>
                         </form>
@@ -375,8 +323,8 @@ const AnnouncementManagement = () => {
                         <div className="confirm-icon-container">
                             <AlertTriangle size={32} />
                         </div>
-                        <h3>Remove Announcement?</h3>
-                        <p>Are you sure you want to delete this announcement? This action will remove it for all targeted users.</p>
+                        <h3>Delete Announcement?</h3>
+                        <p>This news post will be permanently removed. This action cannot be undone.</p>
                         <div className="confirm-actions">
                             <button 
                                 className="admin-btn admin-btn-ghost" 
@@ -388,7 +336,7 @@ const AnnouncementManagement = () => {
                                 className="admin-btn admin-btn-danger" 
                                 onClick={confirmDelete}
                             >
-                                Confirm Delete
+                                Delete Now
                             </button>
                         </div>
                     </div>

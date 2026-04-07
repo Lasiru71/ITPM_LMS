@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/Lasiru/AuthLayout.jsx";
 import { loginUser } from "../../api/Lasiru/authApi.js";
 import "./../../Styles/Lasiru/Login.css";
@@ -7,9 +7,7 @@ import { useToast } from "../../components/Lasiru/ToastProvider.jsx";
 
 function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { showToast } = useToast();
-  const from = location.state?.from;
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -45,9 +43,7 @@ function LoginPage() {
 
       showToast("success", "Successfully signed in.");
 
-      if (from) {
-        navigate(from);
-      } else if (data.user.role === "Admin") {
+      if (data.user.role === "Admin") {
         navigate("/admin-dashboard");
       } else if (data.user.role === "Lecturer") {
         navigate("/lecturer-dashboard");
@@ -160,6 +156,9 @@ function LoginPage() {
           {loading ? "Signing in..." : "Sign In"}
         </button>
 
+        <div className="lasiru-login-extra">
+          <h4>QUICK DEMO ACCESS</h4>
+        </div>
 
         <p className="lasiru-switch-link">
           Don&apos;t have an account?{" "}
