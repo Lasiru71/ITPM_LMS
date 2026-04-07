@@ -11,6 +11,10 @@ import {
     ChevronRight,
     User,
     PlayCircle,
+    FileText,
+    Calendar,
+    Clock,
+    CheckCircle,
     MessageSquare
 } from "lucide-react";
 import { useToast } from "../../components/Lasiru/ToastProvider";
@@ -31,6 +35,8 @@ const StudentDashboard = () => {
     const navItems = [
         { id: "my-learning", label: "MyLearning", icon: <PlayCircle size={20} /> },
         { id: "browse", label: "Browse Courses", icon: <Search size={20} /> },
+        { id: "assignments", label: "Assignments", icon: <FileText size={20} /> },
+        { id: "announcements", label: "Announcements", icon: <Bell size={20} /> },
         { id: "certificates", label: "Certificates", icon: <Award size={20} /> },
         { id: "reviews", label: "My Reviews", icon: <MessageSquare size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
@@ -39,6 +45,8 @@ const StudentDashboard = () => {
     const [courses, setCourses] = useState([]);
     const [myCourses, setMyCourses] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [assignmentsState, setAssignmentsState] = useState({ available: [], pending: [], completed: [] });
+    const [announcements, setAnnouncements] = useState([]);
 
     const fetchMyCourses = async () => {
         try {
@@ -99,9 +107,28 @@ const StudentDashboard = () => {
             ];
             setCourses(combined);
         };
+
+        const fetchAnnouncements = async () => {
+            try {
+                const res = await fetch(`http://localhost:5000/api/announcements`);
+                if (res.ok) setAnnouncements(await res.json());
+            } catch (err) { console.error("Error fetching announcements", err); }
+        };
+
+        const fetchAssignments = async () => {
+             try {
+                const studentId = user._id || user.id;
+                if (!studentId) return;
+                const res = await fetch(`http://localhost:5000/api/assignments/student?studentId=${studentId}`);
+                if (res.ok) setAssignmentsState(await res.json());
+             } catch (err) { console.error("Error fetching assignments", err); }
+        };
+
         fetchCourses();
         fetchMyCourses();
-    }, [user._id]);
+        fetchAnnouncements();
+        fetchAssignments();
+    }, [user._id, user.id]);
 
     const handleEnroll = async (courseId, price) => {
         try {
@@ -265,6 +292,106 @@ const StudentDashboard = () => {
                             ))}
                         </div>
                     )}
+                </div>
+            );
+        }
+
+        if (activeTab === "announcements") {
+            return (
+                <div className="animate-in fade-in duration-500 max-w-4xl">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><Bell className="text-blue-500"/> Recent Announcements</h2>
+                        {announcements.length === 0 ? (
+                            <div className="text-center py-10 text-gray-500">No announcements at the moment.</div>
+                        ) : (
+                            <div className="space-y-4">
+                                {announcements.map((ann, idx) => (
+                                    <div key={ann._id || idx} className="p-4 border border-blue-50 rounded-xl bg-blue-50/30 hover:bg-blue-50 transition-colors">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="font-semibold text-gray-800 text-lg">{ann.title}</h3>
+                                            <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded-md shadow-sm border border-gray-100">
+                                                {new Date(ann.createdAt || Date.now()).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                        <p className="text-gray-600 text-sm whitespace-pre-wrap">{ann.content || ann.message}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        if (activeTab === "assignments") {
+            return (
+                <div className="animate-in fade-in duration-500">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mb-4"><Clock size={24}/></div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">{assignmentsState.pending?.length || 0}</div>
+                            <div className="text-sm text-gray-500 font-medium tracking-wide">PENDING ASSIGNMENTS</div>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-4"><CheckCircle size={24}/></div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">{assignmentsState.completed?.length || 0}</div>
+                            <div className="text-sm text-gray-500 font-medium tracking-wide">COMPLETED ASSIGNMENTS</div>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4"><FileText size={24}/></div>
+                            <div className="text-3xl font-bold text-gray-800 mb-1">{assignmentsState.available?.length || 0}</div>
+                            <div className="text-sm text-gray-500 font-medium tracking-wide">AVAILABLE QUIZZES</div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="border-b border-gray-100 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <h2 className="text-xl font-bold text-gray-800">Your Tasks</h2>
+                        </div>
+                        <div className="p-6">
+                            {(!assignmentsState.pending?.length && !assignmentsState.completed?.length && !assignmentsState.available?.length) ? (
+                                <div className="text-center py-10 flex flex-col items-center justify-center gap-4">
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">
+                                        <FileText size={32}/>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-800">No Assignments Yet</h3>
+                                    <p className="text-gray-500 text-sm max-w-sm">You haven't been assigned any tasks or quizzes yet. Check back later!</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {[...(assignmentsState.pending || []).map(a => ({...a, status: 'pending'})), ...(assignmentsState.completed || []).map(a => ({...a, status: 'completed'}))].map((assignment, idx) => (
+                                        <div key={assignment._id || idx} className="flex flex-col md:flex-row items-center justify-between p-4 rounded-xl border border-gray-100 hover:shadow-md transition-shadow bg-gray-50/50">
+                                            <div className="flex items-center gap-4 w-full md:w-auto mb-4 md:mb-0">
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${assignment.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                    {assignment.status === 'completed' ? <CheckCircle size={24}/> : <FileText size={24}/>}
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-gray-800 text-lg mb-1">{assignment.title}</h4>
+                                                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                                                        <span className="flex items-center gap-1"><Clock size={14}/> {new Date(assignment.deadline).toLocaleDateString()}</span>
+                                                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-200 text-gray-700">{assignment.type || 'Assignment'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="w-full md:w-auto flex justify-end">
+                                                {assignment.status === 'completed' ? (
+                                                    <div className="text-right">
+                                                        <div className="text-sm font-semibold text-green-600 mb-1">Submitted</div>
+                                                        <div className="text-xs text-gray-500">Grade: {assignment.submission?.grade || 'Pending'} ({assignment.submission?.marks || 0}%)</div>
+                                                    </div>
+                                                ) : (
+                                                    <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm">
+                                                        Start Attempt
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             );
         }

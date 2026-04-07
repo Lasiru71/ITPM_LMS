@@ -87,7 +87,7 @@ const LecturerDashboard = () => {
                         reviews: 10,
                         category: c.category || 'General',
                         level: c.level || 'Beginner',
-                        totalLessons: c.totalLessons || 0,
+                        totalLessons: c.totalLessons || c.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0,
                         duration: c.duration || '0m',
                         language: c.language || 'English',
                         updatedAt: c.updatedAt || c.lastUpdated || new Date().toISOString(),
@@ -135,7 +135,7 @@ const LecturerDashboard = () => {
                     reviews: 10,
                     category: c.category || 'General',
                     level: c.level || 'Beginner',
-                    totalLessons: c.totalLessons || 0,
+                    totalLessons: c.totalLessons || c.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0,
                     duration: c.duration || '0m',
                     language: c.language || 'English',
                     updatedAt: c.updatedAt || c.lastUpdated || new Date().toISOString(),
@@ -330,7 +330,7 @@ const LecturerDashboard = () => {
                                                 </td>
                                                 <td>
                                                     <span className="module-count font-bold text-slate-700">
-                                                        {course.totalLessons || course.modules?.length || 0}
+                                                        {course.totalLessons || 0}
                                                     </span>
                                                 </td>
 
