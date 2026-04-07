@@ -716,3 +716,215 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Premium Reviews v2 Styles */
+.reviews-section-v2 {
+  padding: 1rem 0;
+}
+
+.reviews-grid-premium {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2rem;
+}
+
+.premium-review-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(241, 245, 249, 1);
+  border-radius: 1.5rem;
+  padding: 1.75rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-review-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.1), 0 8px 10px -6px rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.card-top-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  opacity: 0.7;
+}
+
+.review-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.student-profile-v2 {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.student-avatar-v2 {
+  width: 48px;
+  height: 48px;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+}
+
+.student-info-v2 h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.badge-course-v2 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 0.25rem;
+  display: inline-block;
+  background: #f1f5f9;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+}
+
+.rating-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: #10b98110;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  color: #059669;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  border: 1px solid #10b98120;
+}
+
+.review-content-v2 {
+  position: relative;
+  flex: 1;
+  margin-bottom: 1.5rem;
+}
+
+.quote-icon {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  font-size: 3rem;
+  font-family: serif;
+  color: #10b98110;
+  line-height: 1;
+  user-select: none;
+}
+
+.review-content-v2 p {
+  position: relative;
+  z-index: 1;
+  color: #475569;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  font-style: italic;
+  margin: 0;
+}
+
+.review-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.review-date {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #94a3b8;
+}
+
+.replied-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #10b981;
+  background: #dcfce7;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+}
+
+.pending-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #f59e0b;
+  background: #fffbeb;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+}
+
+.premium-empty-state {
+  background: #fff;
+  border-radius: 2rem;
+  padding: 5rem 2rem;
+  text-align: center;
+  border: 2px dashed #e2e8f0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.02);
+}
+
+.empty-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.icon-box {
+  width: 100px;
+  height: 100px;
+  background: #f8fafc;
+  border-radius: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  color: #cbd5e1;
+  border: 1px solid #f1f5f9;
+}
+
+.premium-empty-state h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+}
+
+.premium-empty-state p {
+  color: #64748b;
+  max-width: 400px;
+  margin: 0 auto;
+}

@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
   {
+    courseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+        required: false, // temporarily false to not break existing data
+    },
     courseName: {
       type: String,
       required: true,
