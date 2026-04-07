@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+    Globe,
+    Eye,
+    Users,
+    Search,
+    Calendar,
+    CheckCircle,
+    XCircle,
+    RefreshCw,
+    Clock,
+    GraduationCap,
     LayoutDashboard,
     BookOpen,
     PlusCircle,
@@ -9,19 +19,14 @@ import {
     LogOut,
     ChevronRight,
     Pencil,
-    Trash2,
-    Search,
-    RefreshCw,
-    Clock,
-    GraduationCap,
-    Globe,
-    Eye
+    Trash2
 } from "lucide-react";
 
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import LecturerSettings from "../../components/Lasiru/LecturerSettings";
+import AttendanceView from "../../components/Lasiru/AttendanceView";
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
 import { getAllReviews } from "../../api/Jeewani/reviewApi";
@@ -203,6 +208,7 @@ const LecturerDashboard = () => {
         { id: "my-courses", label: "My Courses", icon: <BookOpen size={20} /> },
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
+        { id: "attendance", label: "Attendance", icon: <Users size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
@@ -438,6 +444,14 @@ const LecturerDashboard = () => {
             return (
                 <div className="settings-section animate-in fade-in duration-500">
                     <LecturerSettings onProfileUpdate={setUser} />
+                </div>
+            );
+        }
+
+        if (activeTab === "attendance") {
+            return (
+                <div className="attendance-section animate-in fade-in duration-500">
+                    <AttendanceView courses={myCourses} />
                 </div>
             );
         }
