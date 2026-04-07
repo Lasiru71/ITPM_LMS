@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-    LayoutDashboard, 
-    Users, 
-    BookOpen, 
-    LogOut, 
-    Bell, 
+import {
+    LayoutDashboard,
+    Users,
+    BookOpen,
+    LogOut,
+    Bell,
     ChevronRight,
     TrendingUp,
     GraduationCap,
@@ -17,13 +17,13 @@ import {
     Eye,
     Megaphone
 } from "lucide-react";
-import { 
-    AreaChart, 
-    Area, 
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip, 
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
     ResponsiveContainer,
     PieChart,
     Pie,
@@ -36,6 +36,7 @@ import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
+import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
 
 const COLORS = ['#12b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
@@ -81,15 +82,15 @@ const AdminDashboard = () => {
         try {
             const doc = new jsPDF();
             const timestamp = new Date().toLocaleString();
-            
+
             doc.setFontSize(22);
             doc.setTextColor(18, 185, 129); // Primary color
             doc.text("EduVault", 14, 20);
-            
+
             doc.setFontSize(18);
             doc.setTextColor(30, 41, 59); // Dark grey
             doc.text(`${type}`, 14, 30);
-            
+
             doc.setFontSize(10);
             doc.setTextColor(100);
             doc.text(`Report Generation Date: ${timestamp}`, 14, 40);
@@ -100,12 +101,12 @@ const AdminDashboard = () => {
                 const data = await getAllLecturers();
                 const tableData = data.map((l, index) => [
                     index + 1,
-                    l.name, 
-                    l.email, 
-                    l.isActive ? "Active" : "Inactive", 
+                    l.name,
+                    l.email,
+                    l.isActive ? "Active" : "Inactive",
                     new Date(l.createdAt).toLocaleDateString()
                 ]);
-                
+
                 doc.autoTable({
                     startY: 60,
                     head: [['#', 'Name', 'Email Address', 'Status', 'Joined Date']],
@@ -113,17 +114,17 @@ const AdminDashboard = () => {
                     theme: 'striped',
                     headStyles: { fillColor: [18, 185, 129], textColor: [255, 255, 255] },
                 });
-            } 
+            }
             else if (type === "Student Roster") {
                 const data = await getAllStudents();
                 const tableData = data.map((s, index) => [
                     index + 1,
-                    s.studentId || "N/A", 
-                    s.name, 
-                    s.email, 
+                    s.studentId || "N/A",
+                    s.name,
+                    s.email,
                     s.isActive ? "Active" : "Inactive"
                 ]);
-                
+
                 doc.autoTable({
                     startY: 60,
                     head: [['#', 'Student ID', 'Full Name', 'Email Address', 'Status']],
@@ -141,7 +142,7 @@ const AdminDashboard = () => {
                     ["Current Active Sessions", stats.totals.active],
                     ["Revenue Analysis", "$2.8M (Platform Growth Estimate)"]
                 ];
-                
+
                 doc.autoTable({
                     startY: 60,
                     head: [['Metric', 'Value']],
@@ -178,7 +179,7 @@ const AdminDashboard = () => {
                             <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Total Users</p>
                         </div>
                     </div>
-                    
+
                     <div className="stat-card">
                         <div style={{ color: '#3b82f6', marginBottom: '1rem' }}><BookOpen size={24} /></div>
                         <div className="stat-info">
@@ -272,12 +273,12 @@ const AdminDashboard = () => {
     };
 
     const renderPlaceholder = (title, icon) => (
-        <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            height: '400px', 
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '400px',
             textAlign: 'center',
             background: 'white',
             borderRadius: '1.5rem',
@@ -317,7 +318,7 @@ const AdminDashboard = () => {
                     </div>
                     <span>EduVault</span>
                 </div>
-                
+
                 <nav className="admin-nav">
                     <div className="nav-section-title">Main</div>
                     <div className={`admin-nav-item ${activeTab === "overview" ? "active" : ""}`} onClick={() => setActiveTab("overview")}>
@@ -359,7 +360,7 @@ const AdminDashboard = () => {
                 </nav>
 
                 <div className="sidebar-footer">
-                    <div 
+                    <div
                         style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem", cursor: "pointer" }}
                         onClick={() => navigate("/profile")}
                         title="View My Profile"
@@ -379,18 +380,17 @@ const AdminDashboard = () => {
             </aside>
 
             <main className="admin-main-content">
-                <header className="admin-header">
-                    <div>
-                        <h1 style={{ margin: 0, fontSize: '1.75rem' }}>Admin Dashboard</h1>
-                        <p style={{ color: '#64748b', margin: '0.5rem 0 0' }}>Manage your platform components from one place.</p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                        <Bell size={24} style={{ color: '#64748b', cursor: 'pointer' }} />
-                        <div onClick={() => navigate("/")} style={{ color: '#64748b', cursor: 'pointer', fontSize: '0.9rem' }}>← Back to Site</div>
-                    </div>
-                </header>
+                <DashboardHeader 
+                    title="Admin Dashboard" 
+                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'} 
+                    onSearchChange={(val) => console.log("Searching for:", val)}
+                />
 
                 <div className="admin-scroll-container">
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h1 style={{ margin: 0, fontSize: '1.75rem' }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
+                        <p style={{ color: '#64748b', margin: '0.5rem 0 0' }}>Manage your platform components from one place.</p>
+                    </div>
                     {loading && activeTab === 'overview' ? (
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>
                     ) : renderContent()}

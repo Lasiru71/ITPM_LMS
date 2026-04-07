@@ -1,33 +1,32 @@
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import { PORT, MONGO_URI } from "./config.js";
-import authRoutes from "./routes/Lasiru/authRoutes.js";
-import adminRoutes from "./routes/Lasiru/adminRoutes.js";
-import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const path = require("path");
+
+const paymentRoutes = require("./routes/payment.routes");
+const attendanceRoutes = require("./routes/attendance.routes");
+const courseRoutes = require("./routes/course.routes");
 
 const app = express();
 
-// Middlewares
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(express.json());
 
-// Health check
-app.get("/", (req, res) => {
-  res.send("Backend Running");
-});
+// serve uploaded files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Auth & RBAC routes (Lasiru)
-app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/announcements", announcementRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/attendance", attendanceRoutes);
 
-// MongoDB connection (modern Mongoose 9+)
 mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.error(err));
-
-// Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  .connect("mongodb+srv://itpmsliit:ItpmSliit2026@itpm.fwhtwym.mongodb.net/ITPM_LMS?appName=ITPM")
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(5000, () => {
+      console.log("Server running on port 5000");
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });

@@ -327,3 +327,42 @@ body {
     display: none;
   }
 }
+.lasiru-back-home {
+  margin-bottom: 2.5rem;
+  width: 100%;
+}
+
+.lasiru-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.6rem 1rem;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.lasiru-back-link:hover {
+  color: #0d9488;
+  background: white;
+  border-color: #0d9488;
+  transform: translateX(-4px);
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.15);
+}
+
+.lasiru-back-link svg {
+  transition: transform 0.3s ease;
+}
+
+.lasiru-back-link:hover svg {
+  transform: scale(1.2);
+}
