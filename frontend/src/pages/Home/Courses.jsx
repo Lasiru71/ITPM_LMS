@@ -1,53 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, BookOpen, Star, Clock, User, ArrowRight } from 'lucide-react';
+import { Search, BookOpen } from 'lucide-react';
 import { MOCK_COURSES } from '../../constants/Home/mockData';
-import { getAllCourses } from '../../api/Jeewani/courseApi';
+import { useCourseStore } from '../../stores/courseStore';
 import CourseCard from '../../components/Home/CourseCard';
 import '../../Styles/Home/Home.css';
 
 export default function Courses() {
-  const [courses, setCourses] = useState([]);
-  const [filteredCourses, setFilteredCourses] = useState([]);
+  const { courses: realCourses, fetchCourses, isLoading } = useCourseStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [isLoading, setIsLoading] = useState(true);
 
   const categories = ['All', 'Web Development', 'Data Science', 'Mobile Development', 'Design', 'Business'];
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const customCourses = await getAllCourses();
-        // Combine mock courses and custom courses
-        // Note: custom courses from localStorage might need mapping to match MOCK_COURSES structure
-        const combined = [...MOCK_COURSES, ...customCourses.map(c => ({
-            id: c._id,
-            title: c.title,
-            instructor: c.instructorName || 'Lecturer',
-            price: c.price,
-            image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
-            thumbnail: c.thumbnail,
-            rating: 4.5,
-            reviews: 10,
-            category: c.category || 'General',
-            level: 'All Levels'
-        }))];
-        setCourses(combined);
-        setFilteredCourses(combined);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-        setCourses(MOCK_COURSES);
-        setFilteredCourses(MOCK_COURSES);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchCourses();
-  }, []);
+  }, [fetchCourses]);
 
-  useEffect(() => {
-    let result = courses;
+  const allCourses = React.useMemo(() => {
+    const mappedRealCourses = realCourses.map(c => ({
+      ...c,
+      id: c._id || c.id,
+      title: c.title,
+      instructor: c.instructorName || 'Lecturer',
+      price: c.price,
+      image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
+      thumbnail: c.thumbnail,
+      rating: c.rating || 4.5,
+      reviews: c.reviews || 10,
+      category: c.category || 'General',
+      level: c.level || 'All Levels'
+    }));
+
+    return [
+      ...mappedRealCourses,
+      ...MOCK_COURSES.filter(
+        (mock) => !mappedRealCourses.some((real) => real.id === mock.id)
+      ),
+    ];
+  }, [realCourses]);
+
+  const filteredCourses = React.useMemo(() => {
+    let result = allCourses;
     if (searchTerm) {
       result = result.filter(c => 
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,8 +51,8 @@ export default function Courses() {
     if (selectedCategory !== 'All') {
       result = result.filter(c => c.category === selectedCategory);
     }
-    setFilteredCourses(result);
-  }, [searchTerm, selectedCategory, courses]);
+    return result;
+  }, [searchTerm, selectedCategory, allCourses]);
 
   return (
     <div className="home-page-bg" style={{ minHeight: '100vh', padding: '2rem 0 6rem' }}>
