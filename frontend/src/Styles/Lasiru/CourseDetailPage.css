@@ -800,6 +800,216 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ─── Reviews Section Styling ─── */
+.course-detail-reviews-container {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  border: 1px solid #e8ecf1;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.reviews-tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.reviews-tab-title-group h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.reviews-tab-title-group p {
+  color: #64748b;
+  font-size: 0.9375rem;
+}
+
+.course-rating-summary {
+  background: #f8fafc;
+  padding: 1rem 1.75rem;
+  border-radius: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid #e2e8f0;
+}
+
+.rating-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.score-num {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.rating-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.course-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.detail-review-card {
+  background: #fff;
+  border: 1px solid #f1f5f9;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.detail-review-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  border-color: #10b98130;
+}
+
+.detail-review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.detail-student-info {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.detail-student-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.detail-student-text h4 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.detail-review-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.detail-review-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #fffbeb;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  color: #d97706;
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+
+.detail-review-body {
+  flex: 1;
+  margin-bottom: 1.25rem;
+}
+
+.detail-review-body p {
+  color: #475569;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-style: italic;
+  margin: 0;
+}
+
+.detail-review-reply {
+  display: flex;
+  gap: 0.75rem;
+  background: #f0fdf4;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border-left: 3px solid #10b981;
+}
+
+.reply-arrow {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.reply-content strong {
+  display: block;
+  font-size: 0.75rem;
+  color: #059669;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.02em;
+}
+
+.reply-content p {
+  font-size: 0.8125rem;
+  color: #166534;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.reviews-empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #94a3b8;
+}
+
+.empty-reviews-icon {
+  width: 80px;
+  height: 80px;
+  background: #f8fafc;
+  border-radius: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  color: #cbd5e1;
+  border: 1px solid #f1f5f9;
+}
+
+.reviews-empty-state h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.75rem;
+}
+
+.reviews-empty-state p {
+  max-width: 400px;
+  margin: 0 auto;
+  font-size: 0.9375rem;
+}
+
 .assignment-header-ui {
   margin-bottom: 0.5rem;
   border-bottom: 1px solid #f1f5f9;
