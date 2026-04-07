@@ -10,6 +10,7 @@ import CourseDetailPage from "./pages/Lasiru/CourseDetailPage.jsx";
 import ExamLogin from "./pages/sadeepa/ExamLogin.jsx";
 import AttendExam from "./pages/sadeepa/AttendExam.jsx";
 import Project from "./pages/sadeepa/Project.jsx";
+import ReviewsPage from "./pages/Lasiru/ReviewsPage.jsx";
 
 // Home imports
 import MainLayout from "./layouts/Home/MainLayout.jsx";
@@ -21,6 +22,9 @@ import News from "./pages/Home/News.jsx";
 import FreeExam from "./pages/Home/FreeExam.jsx";
 import GptHelper from "./pages/Home/GptHelper.jsx";
 import PublicCourseDetail from "./pages/Home/PublicCourseDetail.jsx";
+
+import NotificationsPage from "./pages/Lasiru/NotificationsPage.jsx";
+import ProtectedRoute from "./components/Lasiru/ProtectedRoute.jsx";
 
 function App() {
   return (
@@ -35,22 +39,24 @@ function App() {
         <Route path="/news" element={<News />} />
         <Route path="/create-free-exam" element={<FreeExam />} />
         <Route path="/gpt-helper" element={<GptHelper />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
       </Route>
 
       {/* Auth Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Dashboard Routes */}
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      <Route path="/lecturer-dashboard" element={<LecturerDashboard />} />
-      <Route path="/student-dashboard" element={<StudentDashboard />} />
-      <Route path="/edit-course/:id" element={<EditCourse />} />
-      <Route path="/lecturer/courses/:courseId" element={<CourseDetailPage />} />
-      <Route path="/exam-login" element={<ExamLogin />} />
-      <Route path="/exam-login/:id" element={<AttendExam />} />
-      <Route path="/project" element={<Project />} />
-      <Route path="/profile" element={<UserProfile />} />
+      {/* Dashboard Routes - PROTECTED */}
+      <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/lecturer-dashboard" element={<ProtectedRoute><LecturerDashboard /></ProtectedRoute>} />
+      <Route path="/student-dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+      <Route path="/edit-course/:id" element={<ProtectedRoute><EditCourse /></ProtectedRoute>} />
+      <Route path="/lecturer/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
+      <Route path="/exam-login" element={<ProtectedRoute><ExamLogin /></ProtectedRoute>} />
+      <Route path="/exam-login/:id" element={<ProtectedRoute><AttendExam /></ProtectedRoute>} />
+      <Route path="/project" element={<ProtectedRoute><Project /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
     </Routes>
   );
 }
