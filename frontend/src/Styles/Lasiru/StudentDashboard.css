@@ -467,3 +467,23 @@
   color: white;
   border-color: var(--primary);
 }
+
+.std-delete-btn:hover:not(:disabled) {
+  background-color: #fee2e2 !important;
+  color: #ef4444 !important;
+  transform: scale(1.1);
+}
+
+.std-delete-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

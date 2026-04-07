@@ -10,30 +10,29 @@ import {
     Bell,
     ChevronRight,
     User,
-    PlayCircle
+    PlayCircle,
+    MessageSquare
 } from "lucide-react";
 import { useToast } from "../../components/Lasiru/ToastProvider";
+import { useLogout } from "../../hooks/Lasiru/useLogout";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import CourseCard from "../../components/Home/CourseCard";
+import ReviewsPage from "./ReviewsPage.jsx";
 import "../../Styles/Lasiru/StudentDashboard.css";
 
 const StudentDashboard = () => {
     const [activeTab, setActiveTab] = useState("my-learning");
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { handleLogout } = useLogout();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        showToast("success", "Logged out successfully");
-        navigate("/login");
-    };
 
     const navItems = [
         { id: "my-learning", label: "MyLearning", icon: <PlayCircle size={20} /> },
         { id: "browse", label: "Browse Courses", icon: <Search size={20} /> },
         { id: "certificates", label: "Certificates", icon: <Award size={20} /> },
+        { id: "reviews", label: "My Reviews", icon: <MessageSquare size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
@@ -268,6 +267,10 @@ const StudentDashboard = () => {
                     )}
                 </div>
             );
+        }
+
+        if (activeTab === "reviews") {
+            return <ReviewsPage />;
         }
 
         return (

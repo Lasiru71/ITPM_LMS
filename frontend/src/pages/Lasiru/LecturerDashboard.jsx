@@ -24,6 +24,7 @@ import {
 
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
+import { useLogout } from "../../hooks/Lasiru/useLogout";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import LecturerSettings from "../../components/Lasiru/LecturerSettings";
 import AttendanceView from "../../components/Lasiru/AttendanceView";
@@ -48,6 +49,7 @@ const LecturerDashboard = () => {
 
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { handleLogout } = useLogout();
 
     const { courses, fetchCourses, deleteCourse, isLoading } = useCourseStore();
 
@@ -181,12 +183,6 @@ const LecturerDashboard = () => {
 
 
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        showToast("success", "Logged out successfully");
-        navigate("/login");
-    };
 
     const handleEditCourse = (courseId) => {
         navigate(`/edit-course/${courseId}`);
