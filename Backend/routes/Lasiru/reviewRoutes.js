@@ -18,8 +18,8 @@ router.use(authenticate);
 router.post("/", createReview);
 router.get("/my-reviews", getStudentReviews);
 
-// Admin only routes
-router.get("/all", authorizeRoles("Admin"), getAllReviews);
+// Admin & Lecturer routes
+router.get("/all", authorizeRoles("Admin", "Lecturer"), getAllReviews);
 router.patch("/reply/:id", authorizeRoles("Admin"), addAdminReply);
 // Admin & Student delete route (Security handled in controller)
 router.delete("/delete/:id", deleteReview);

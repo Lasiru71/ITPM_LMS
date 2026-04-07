@@ -15,6 +15,7 @@ import {
     BookOpen,
     PlusCircle,
     Star,
+    MessageSquare,
     Settings,
     LogOut,
     ChevronRight,
@@ -30,7 +31,7 @@ import LecturerSettings from "../../components/Lasiru/LecturerSettings";
 import AttendanceView from "../../components/Lasiru/AttendanceView";
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
-import { getAllReviews } from "../../api/Jeewani/reviewApi";
+import { getAllReviews } from "../../api/Lasiru/reviewApi";
 import { getAllCourses } from "../../api/Jeewani/courseApi";
 import { MOCK_COURSES } from "../../constants/Home/mockData";
 
@@ -58,8 +59,13 @@ const LecturerDashboard = () => {
     useEffect(() => {
         fetchCourses();
         const loadReviews = async () => {
-            const data = await getAllReviews();
-            setReviews(data);
+            try {
+                const data = await getAllReviews();
+                setReviews(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error("Error loading reviews:", err);
+                setReviews([]);
+            }
         };
         const fetchAllCourses = async () => {
             try {
@@ -108,8 +114,10 @@ const LecturerDashboard = () => {
         showToast("info", "Refreshing dashboard data...");
         try {
             await fetchCourses();
-            const reviewData = await getAllReviews();
-            setReviews(reviewData);
+            try {
+                const reviewData = await getAllReviews();
+                setReviews(Array.isArray(reviewData) ? reviewData : []);
+            } catch (revErr) { console.error("Review refresh fail:", revErr); }
 
             const customCourses = await getAllCourses();
             const combined = [
@@ -151,8 +159,13 @@ const LecturerDashboard = () => {
 
     const myCourses = allCourses
         .filter(c => {
-            const userId = user?.id || user?._id;
-            return c.instructorId === userId;
+            const userId = String(user?.id || user?._id || "none");
+            const instId = String(c.instructorId || "none");
+            const instName = String(c.instructor || "").trim().toLowerCase();
+            const myName = String(user?.name || "").trim().toLowerCase();
+            
+            // Match by ID primarily, or by instructor name as a fallback
+            return (instId !== "none" && instId === userId) || (instName !== "" && instName === myName);
         })
         .sort((a, b) => {
             const dateA = new Date(a.updatedAt || a.lastUpdated || 0);
@@ -163,16 +176,18 @@ const LecturerDashboard = () => {
 
 
     const calcAvgRating = () => {
-        if (!myCourses || myCourses.length === 0 || !reviews || reviews.length === 0) return "0.0";
+        if (!myCourses || myCourses.length === 0 || !Array.isArray(reviews) || reviews.length === 0) return "0.0";
 
-        // Only include reviews that belong to this lecturer's courses
         const lecturerCourseIds = new Set(
             myCourses.flatMap(c => [String(c._id), String(c.id)].filter(Boolean))
         );
 
         const lecturerReviews = reviews.filter(review => {
-            const reviewCourseId = String(review.courseId);
-            return lecturerCourseIds.has(reviewCourseId);
+            const rId = String(review.courseId);
+            const rName = String(review.courseName).trim().toLowerCase();
+            
+            if (review.courseId && lecturerCourseIds.has(rId)) return true;
+            return myCourses.some(c => String(c.title).trim().toLowerCase() === rName);
         });
 
         if (lecturerReviews.length === 0) return "0.0";
@@ -386,48 +401,92 @@ const LecturerDashboard = () => {
         }
 
         if (activeTab === "reviews") {
-            return (
-                <div className="reviews-section animate-in fade-in duration-500">
-                    <h2 className="text-2xl font-bold mb-6">Student Reviews</h2>
+            const safeReviews = Array.isArray(reviews) ? reviews : [];
+            const lecturerCourseIds = new Set(
+                myCourses.flatMap(c => [String(c._id), String(c.id)].filter(Boolean))
+            );
+    
+            const filteredReviews = safeReviews.filter(review => {
+                const rId = String(review.courseId);
+                const rName = String(review.courseName).trim().toLowerCase();
 
-                    {reviews.length === 0 ? (
-                        <div className="empty-state text-center py-12">
-                            <Star className="mx-auto mb-4 text-gray-300" size={48} />
-                            <h3 className="text-lg font-medium text-gray-500">No reviews yet</h3>
-                            <p className="text-sm text-gray-400">When students review your courses, they will appear here.</p>
+                if (review.courseId && lecturerCourseIds.has(rId)) return true;
+                return myCourses.some(c => String(c.title).trim().toLowerCase() === rName);
+            });
+
+            return (
+                <div className="reviews-section-v2 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                        <div>
+                            <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">System Feedback</h2>
+                            <p className="text-slate-500 mt-1">Real-time reviews and ratings from your students across all courses.</p>
+                        </div>
+                        <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100">
+                            <Star className="text-emerald-500 fill-emerald-500" size={20} />
+                            <span className="text-emerald-700 font-bold text-xl">{calcAvgRating()}</span>
+                            <span className="text-emerald-600/60 text-sm font-medium">Average Rating</span>
+                        </div>
+                    </div>
+
+                    {filteredReviews.length === 0 ? (
+                        <div className="premium-empty-state">
+                            <div className="empty-glow"></div>
+                            <div className="icon-box">
+                                <MessageSquare size={48} className="text-slate-300" />
+                            </div>
+                            <h3>No Reviews Yet</h3>
+                            <p>You haven't received any reviews for your courses. Improve your content to encourage student feedback!</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {reviews.map(review => {
-                                const matchedCourse = myCourses.find(c => c._id === review.courseId || c.id === review.courseId);
-                                const courseName = matchedCourse ? matchedCourse.title : "Unknown Course";
+                        <div className="reviews-grid-premium">
+                            {filteredReviews.map((review, index) => {
+                                const matchedCourse = myCourses.find(c => String(c._id) === String(review.courseId) || String(c.id) === String(review.courseId));
+                                const courseName = matchedCourse ? matchedCourse.title : (review.courseName || "General Feedback");
+                                const studentName = review.studentId?.name || "Anonymous Student";
+                                const initial = studentName.charAt(0).toUpperCase();
 
                                 return (
-                                    <Card key={review._id} className="relative overflow-hidden">
-                                        <CardHeader className="pb-2">
-                                            <div className="flex gap-4 justify-between items-start">
-                                                <div>
-                                                    <CardTitle className="text-lg">{review.studentName}</CardTitle>
-                                                    <CardDescription className="text-xs">{courseName}</CardDescription>
+                                    <div key={review._id} className="premium-review-card" style={{ animationDelay: `${index * 100}ms` }}>
+                                        <div className="card-top-accent"></div>
+                                        <div className="review-card-header">
+                                            <div className="student-profile-v2">
+                                                <div className="student-avatar-v2">
+                                                    {initial}
                                                 </div>
-                                                <div className="flex gap-1 text-amber-500 shrink-0">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <Star
-                                                            key={i}
-                                                            size={14}
-                                                            className={i < review.rating ? "fill-amber-500" : "fill-transparent text-gray-300"}
-                                                        />
-                                                    ))}
+                                                <div className="student-info-v2">
+                                                    <h4>{studentName}</h4>
+                                                    <div className="badge-course-v2">{courseName}</div>
                                                 </div>
                                             </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-sm text-gray-600 mt-2 italic">"{review.comment}"</p>
-                                            <p className="text-xs text-gray-400 mt-4 text-right">
-                                                {new Date(review.createdAt).toLocaleDateString()}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
+                                            <div className="rating-pill">
+                                                <Star size={12} className="fill-emerald-500 text-emerald-500" />
+                                                <span>{review.rating}.0</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="review-content-v2">
+                                            <div className="quote-icon">"</div>
+                                            <p>{review.comment}</p>
+                                        </div>
+
+                                        <div className="review-card-footer">
+                                            <div className="review-date">
+                                                <Clock size={12} />
+                                                {new Date(review.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </div>
+                                            {review.adminReply ? (
+                                                <div className="replied-status">
+                                                    <CheckCircle size={12} />
+                                                    Replied
+                                                </div>
+                                            ) : (
+                                                <div className="pending-status">
+                                                    <RefreshCw size={12} />
+                                                    Pending Response
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 );
                             })}
                         </div>
