@@ -18,10 +18,13 @@ import {
   Upload,
   File,
   Eye,
-  Presentation
+  Presentation,
+  Star,
+  MessageSquare
 } from "lucide-react";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { useToast } from "../../components/Lasiru/ToastProvider";
+import { getAllReviews } from "../../api/Lasiru/reviewApi";
 
 import "../../Styles/Lasiru/CourseDetailPage.css";
 
@@ -38,6 +41,7 @@ const CourseDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("modules");
+  const [reviews, setReviews] = useState([]);
 
   // State for Add Module
   const [isAddingModule, setIsAddingModule] = useState(false);
@@ -130,6 +134,15 @@ const CourseDetailPage = () => {
 
   useEffect(() => {
     fetchCourse();
+    const loadReviews = async () => {
+      try {
+        const data = await getAllReviews();
+        setReviews(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error loading reviews:", err);
+      }
+    };
+    loadReviews();
   }, [courseId]);
 
   // Helper to save course (for module operations that don't need file upload)
@@ -1045,9 +1058,77 @@ const CourseDetailPage = () => {
 
         {/* ─── REVIEWS TAB ─── */}
         {activeTab === "reviews" && (
-          <div className="reviews-placeholder">
-            <h2>Student Reviews</h2>
-            <p>Reviews will appear here once students start rating your course.</p>
+          <div className="course-detail-reviews-container animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="reviews-tab-header">
+              <div className="reviews-tab-title-group">
+                <h2>Student Reviews</h2>
+                <p>Authentic feedback from students enrolled in this course.</p>
+              </div>
+              {reviews.filter(r => String(r.courseId) === String(courseId)).length > 0 && (
+                <div className="course-rating-summary">
+                  <div className="rating-score">
+                    <Star size={24} className="star-filled" fill="#f59e0b" color="#f59e0b" />
+                    <span className="score-num">
+                      {(reviews.filter(r => String(r.courseId) === String(courseId)).reduce((acc, r) => acc + (r.rating || 0), 0) / 
+                        reviews.filter(r => String(r.courseId) === String(courseId)).length).toFixed(1)}
+                    </span>
+                  </div>
+                  <span className="rating-count">({reviews.filter(r => String(r.courseId) === String(courseId)).length} reviews)</span>
+                </div>
+              )}
+            </div>
+
+            {reviews.filter(r => String(r.courseId) === String(courseId)).length === 0 ? (
+              <div className="reviews-empty-state">
+                <div className="empty-reviews-icon">
+                  <MessageSquare size={48} />
+                </div>
+                <h3>No Reviews Yet</h3>
+                <p>There are no students ratings for this course at the moment. As soon as students post feedback, it will appear here.</p>
+              </div>
+            ) : (
+              <div className="course-reviews-grid">
+                {reviews
+                  .filter(r => String(r.courseId) === String(courseId))
+                  .map((review, idx) => {
+                    const studentName = review.studentId?.name || "Anonymous Student";
+                    const initial = studentName.charAt(0).toUpperCase();
+                    
+                    return (
+                      <div key={review._id} className="detail-review-card">
+                        <div className="detail-review-header">
+                          <div className="detail-student-info">
+                            <div className="detail-student-avatar">{initial}</div>
+                            <div className="detail-student-text">
+                              <h4>{studentName}</h4>
+                              <span className="detail-review-date">
+                                {new Date(review.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="detail-review-rating">
+                            <Star size={14} className="star-filled" fill="#f59e0b" color="#f59e0b" />
+                            <span>{review.rating}.0</span>
+                          </div>
+                        </div>
+                        <div className="detail-review-body">
+                          <p>"{review.comment}"</p>
+                        </div>
+                        {review.adminReply && (
+                          <div className="detail-review-reply">
+                            <div className="reply-arrow">↳</div>
+                            <div className="reply-content">
+                              <strong>Lecturer Response:</strong>
+                              <p>{review.adminReply}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                }
+              </div>
+            )}
           </div>
         )}
       </div>
