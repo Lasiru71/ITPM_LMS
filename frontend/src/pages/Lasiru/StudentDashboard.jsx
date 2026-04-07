@@ -16,6 +16,7 @@ import {
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import { useLogout } from "../../hooks/Lasiru/useLogout";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
+import CourseCard from "../../components/Home/CourseCard";
 import ReviewsPage from "./ReviewsPage.jsx";
 import "../../Styles/Lasiru/StudentDashboard.css";
 
@@ -41,13 +42,29 @@ const StudentDashboard = () => {
 
     const fetchMyCourses = async () => {
         try {
-            const studentId = user._id; // Assuming user contains the MongoDB _id
-            if (!studentId) return;
-            const response = await fetch(`http://localhost:5000/api/enrollments/student/${studentId}`);
-            if (response.ok) {
-                const data = await response.json();
-                setMyCourses(data);
+            const studentId = user._id || user.id;
+            let enrolled = [];
+            
+            if (studentId) {
+                const response = await fetch(`http://localhost:5000/api/enrollments/student/${studentId}`);
+                if (response.ok) {
+                    enrolled = await response.json();
+                }
             }
+
+            // Fallback to mock data for presentation if no real enrollments exist
+            if (enrolled.length === 0) {
+                const { MOCK_COURSES } = await import("../../constants/Home/mockData");
+                enrolled = MOCK_COURSES.slice(0, 2).map(c => ({
+                    _id: c.id,
+                    title: c.title,
+                    instructor: c.instructor,
+                    thumbnail: c.image || c.thumbnail,
+                    category: c.category
+                }));
+            }
+            
+            setMyCourses(enrolled);
         } catch (error) {
             console.error("Error fetching my courses:", error);
         }
@@ -58,16 +75,28 @@ const StudentDashboard = () => {
             const { MOCK_COURSES } = await import("../../constants/Home/mockData");
             const { getAllCourses } = await import("../../api/Jeewani/courseApi");
             const customCourses = await getAllCourses();
-            const combined = [...MOCK_COURSES, ...customCourses.map(c => ({
-                id: c._id,
+            const mappedRealCourses = customCourses.map(c => ({
+                ...c,
+                id: c._id || c.id,
                 title: c.title,
-                instructor: c.instructorName || 'Lecturer',
-                price: c.price,
+                instructor: c.instructorName || c.instructor || 'Lecturer',
+                price: c.price || 'Free',
                 image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
                 thumbnail: c.thumbnail,
-                rating: 4.5,
-                category: c.category || 'General'
-            }))];
+                rating: c.rating || 4.5,
+                reviews: c.reviews || 10,
+                category: c.category || 'General',
+                level: c.level || 'All Levels',
+                isBestseller: true,
+                isNew: true
+            }));
+
+            const combined = [
+                ...mappedRealCourses,
+                ...MOCK_COURSES.filter(
+                    (mock) => !mappedRealCourses.some((real) => real.id === mock.id)
+                )
+            ];
             setCourses(combined);
         };
         fetchCourses();
@@ -129,29 +158,9 @@ const StudentDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
                         {filteredCourses.map(course => (
-                            <div key={course.id} className="course-card bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="aspect-video relative">
-                                    <img src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"} alt={course.title} className="w-full h-full object-cover" />
-                                    <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
-                                        {course.category}
-                                    </div>
-                                </div>
-                                <div className="p-4">
-                                    <h3 className="font-bold text-gray-800 line-clamp-1">{course.title}</h3>
-                                    <p className="text-sm text-gray-500 mt-1">{course.instructor}</p>
-                                    <div className="flex justify-between items-center mt-4">
-                                        <span className="font-bold text-blue-600">${course.price}</span>
-                                        <button
-                                            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
-                                            onClick={() => handleEnroll(course.id, course.price)}
-                                        >
-                                            Enroll Now
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <CourseCard key={course.id} course={course} />
                         ))}
                     </div>
                 </div>
