@@ -15,14 +15,10 @@
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-<<<<<<< HEAD:Backend/package.json
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^9.2.0"
-=======
     "mongoose": "^9.2.4",
     "multer": "^2.1.1",
     "qrcode": "^1.5.4"
->>>>>>> 822eff66fafac5e92e8635fe5e891d25a237876d:backend/package.json
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
