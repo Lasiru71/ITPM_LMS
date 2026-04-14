@@ -6,6 +6,7 @@ import { useToast } from "../../components/Lasiru/ToastProvider";
 
 const StudentManagement = ({ onUpdate }) => {
     const [students, setStudents] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [showConfirm, setShowConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -17,11 +18,14 @@ const StudentManagement = ({ onUpdate }) => {
 
     const fetchStudents = async () => {
         try {
+            setIsLoading(true);
             const data = await getAllStudents();
             setStudents(data);
         } catch (error) {
             console.error("Error fetching students:", error);
             showToast("error", "Failed to load students");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -80,49 +84,60 @@ const StudentManagement = ({ onUpdate }) => {
             </div>
 
             <div className="admin-table-container">
-                <table className="premium-table">
-                    <thead>
-                        <tr>
-                            <th>Student ID</th>
-                            <th>Name</th>
-                            <th>Email Address</th>
-                            <th>Status</th>
-                            <th style={{ textAlign: "right" }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredStudents.map((std) => (
-                            <tr key={std._id}>
-                                <td style={{ color: "#64748b", fontSize: "0.85rem", fontFamily: "monospace" }}>{std.studentId || "N/A"}</td>
-                                <td style={{ fontWeight: 600, color: "#1e293b" }}>{std.name}</td>
-                                <td style={{ color: "#64748b" }}>{std.email}</td>                                <td>
-                                    <span className={`status-badge ${std.isActive ? "status-active" : "status-inactive"}`}>
-                                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
-                                        {std.isActive ? "Active" : "Inactive"}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
-                                        <button
-                                            className="action-icon-btn btn-toggle"
-                                            onClick={() => handleToggleStatus(std._id)}
-                                            title={std.isActive ? "Deactivate" : "Activate"}
-                                        >
-                                            {std.isActive ? <PowerOff size={18} /> : <Power size={18} />}
-                                        </button>
-                                        <button
-                                            className="action-icon-btn btn-delete"
-                                            onClick={() => handleDeleteClick(std._id)}
-                                            title="Delete Account"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </td>
+                {isLoading ? (
+                    <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#64748b" }}>
+                        <div style={{ width: '40px', height: '40px', border: '3px solid #f8fafc', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }}></div>
+                        <p style={{ margin: 0, fontWeight: 500 }}>Syncing student database...</p>
+                    </div>
+                ) : students.length === 0 ? (
+                    <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#64748b" }}>
+                        <p style={{ margin: 0 }}>No students found in the system.</p>
+                    </div>
+                ) : (
+                    <table className="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>Status</th>
+                                <th style={{ textAlign: "right" }}>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {filteredStudents.map((std) => (
+                                <tr key={std._id}>
+                                    <td style={{ color: "#64748b", fontSize: "0.85rem", fontFamily: "monospace" }}>{std.studentId || "N/A"}</td>
+                                    <td style={{ fontWeight: 600, color: "#1e293b" }}>{std.name}</td>
+                                    <td style={{ color: "#64748b" }}>{std.email}</td>                                <td>
+                                        <span className={`status-badge ${std.isActive ? "status-active" : "status-inactive"}`}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
+                                            {std.isActive ? "Active" : "Inactive"}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                                            <button
+                                                className="action-icon-btn btn-toggle"
+                                                onClick={() => handleToggleStatus(std._id)}
+                                                title={std.isActive ? "Deactivate" : "Activate"}
+                                            >
+                                                {std.isActive ? <PowerOff size={18} /> : <Power size={18} />}
+                                            </button>
+                                            <button
+                                                className="action-icon-btn btn-delete"
+                                                onClick={() => handleDeleteClick(std._id)}
+                                                title="Delete Account"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             {showConfirm && createPortal(

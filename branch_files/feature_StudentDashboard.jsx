@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
@@ -190,9 +190,9 @@ const StudentDashboard = () => {
             </aside>
 
             <main className="student-main-content">
-                <DashboardHeader 
-                    showSearch={true} 
-                    onSearchChange={(val) => console.log("Searching for:", val)} 
+                <DashboardHeader
+                    showSearch={true}
+                    onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
                 <div className="student-content-area">

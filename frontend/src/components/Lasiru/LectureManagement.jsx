@@ -6,6 +6,7 @@ import { useToast } from "../../components/Lasiru/ToastProvider";
 
 const LectureManagement = ({ onUpdate }) => {
     const [lecturers, setLecturers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
@@ -25,11 +26,14 @@ const LectureManagement = ({ onUpdate }) => {
 
     const fetchLecturers = async () => {
         try {
+            setIsLoading(true);
             const data = await getAllLecturers();
             setLecturers(data);
         } catch (error) {
             console.error("Error fetching lecturers:", error);
             showToast("error", "Failed to load lecturers");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -133,48 +137,59 @@ const LectureManagement = ({ onUpdate }) => {
             </div>
 
             <div className="admin-table-container">
-                <table className="premium-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email Address</th>
-                            <th>Status</th>
-                            <th style={{ textAlign: "right" }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredLecturers.map((lec) => (
-                            <tr key={lec._id}>
-                                <td style={{ fontWeight: 600, color: "#1e293b" }}>{lec.name}</td>
-                                <td style={{ color: "#64748b" }}>{lec.email}</td>
-                                <td>
-                                    <span className={`status-badge ${lec.isActive ? "status-active" : "status-inactive"}`}>
-                                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
-                                        {lec.isActive ? "Active" : "Inactive"}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
-                                        <button
-                                            className="action-icon-btn btn-toggle"
-                                            onClick={() => handleToggleStatus(lec._id)}
-                                            title={lec.isActive ? "Deactivate" : "Activate"}
-                                        >
-                                            {lec.isActive ? <PowerOff size={18} /> : <Power size={18} />}
-                                        </button>
-                                        <button
-                                            className="action-icon-btn btn-delete"
-                                            onClick={() => handleDeleteClick(lec._id)}
-                                            title="Delete Account"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </td>
+                {isLoading ? (
+                    <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#64748b" }}>
+                        <div style={{ width: '40px', height: '40px', border: '3px solid #f8fafc', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }}></div>
+                        <p style={{ margin: 0, fontWeight: 500 }}>Syncing lecturer database...</p>
+                    </div>
+                ) : lecturers.length === 0 ? (
+                    <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#64748b" }}>
+                        <p style={{ margin: 0 }}>No lecturers found in the system.</p>
+                    </div>
+                ) : (
+                    <table className="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>Status</th>
+                                <th style={{ textAlign: "right" }}>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {filteredLecturers.map((lec) => (
+                                <tr key={lec._id}>
+                                    <td style={{ fontWeight: 600, color: "#1e293b" }}>{lec.name}</td>
+                                    <td style={{ color: "#64748b" }}>{lec.email}</td>
+                                    <td>
+                                        <span className={`status-badge ${lec.isActive ? "status-active" : "status-inactive"}`}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
+                                            {lec.isActive ? "Active" : "Inactive"}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                                            <button
+                                                className="action-icon-btn btn-toggle"
+                                                onClick={() => handleToggleStatus(lec._id)}
+                                                title={lec.isActive ? "Deactivate" : "Activate"}
+                                            >
+                                                {lec.isActive ? <PowerOff size={18} /> : <Power size={18} />}
+                                            </button>
+                                            <button
+                                                className="action-icon-btn btn-delete"
+                                                onClick={() => handleDeleteClick(lec._id)}
+                                                title="Delete Account"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             {showModal && createPortal(

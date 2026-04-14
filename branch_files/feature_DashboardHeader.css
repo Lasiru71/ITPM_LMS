@@ -1,4 +1,4 @@
-.dash-unified-header {
+﻿.dash-unified-header {
     height: 80px;
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(16px);
@@ -163,8 +163,15 @@
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .dash-dropdown-user-info {
@@ -194,9 +201,20 @@
     letter-spacing: 0.05em;
 }
 
-.role-admin { background: #dcfce7; color: #15803d; }
-.role-lecturer { background: #dbeafe; color: #1e40af; }
-.role-student { background: #fef9c3; color: #854d0e; }
+.role-admin {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.role-lecturer {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.role-student {
+    background: #fef9c3;
+    color: #854d0e;
+}
 
 .dash-dropdown-divider {
     height: 1px;
@@ -235,9 +253,19 @@
 }
 
 @media (max-width: 768px) {
-    .dash-unified-header { padding: 0 1rem; height: 70px; }
-    .dash-user-name, .dash-back-site-btn span { display: none; }
-    .dash-back-site-btn { padding: 0.625rem; }
+    .dash-unified-header {
+        padding: 0 1rem;
+        height: 70px;
+    }
+
+    .dash-user-name,
+    .dash-back-site-btn span {
+        display: none;
+    }
+
+    .dash-back-site-btn {
+        padding: 0.625rem;
+    }
 }
 
 /* Dark Variant for User Profile */

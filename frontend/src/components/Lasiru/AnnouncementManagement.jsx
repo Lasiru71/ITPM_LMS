@@ -34,6 +34,7 @@ const AnnouncementManagement = () => {
         content: "",
         category: "General",
         priority: "Low",
+        toWhom: "All",
         isActive: true
     });
 
@@ -60,6 +61,7 @@ const AnnouncementManagement = () => {
                 content: announcement.content,
                 category: announcement.category,
                 priority: announcement.priority,
+                toWhom: announcement.toWhom || "All",
                 isActive: announcement.isActive
             });
             setIsEditing(true);
@@ -70,6 +72,7 @@ const AnnouncementManagement = () => {
                 content: "",
                 category: "General",
                 priority: "Low",
+                toWhom: "All",
                 isActive: true
             });
             setIsEditing(false);
@@ -140,6 +143,14 @@ const AnnouncementManagement = () => {
         }
     };
 
+    const getToWhomBadgeStyle = (toWhom) => {
+        switch (toWhom) {
+            case 'Students': return { background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' };
+            case 'Lecturers': return { background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' };
+            default: return { background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' };
+        }
+    };
+
     return (
         <div className="premium-management-card" style={{ animation: "fadeInUp 0.6s ease-out" }}>
             <div className="management-header">
@@ -181,13 +192,14 @@ const AnnouncementManagement = () => {
             <div className="announcements-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "2rem" }}>
                 {filteredAnnouncements.map((ann, idx) => (
                     <div key={ann._id} className="premium-card" style={{
-                        background: "#fff",
+                        background: "linear-gradient(160deg, #ffffff 0%, #f8fafc 100%)",
                         borderRadius: "1.5rem",
                         padding: "2rem",
-                        border: "1px solid #f1f5f9",
+                        border: "1px solid rgba(226, 232, 240, 0.8)",
+                        borderTop: `4px solid ${getPriorityColor(ann.priority)}`,
                         position: "relative",
-                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02), 0 10px 15px -3px rgba(0,0,0,0.03)",
+                        transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                        boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.05)",
                         animation: `fadeInUp 0.6s ease-out ${idx * 0.05}s both`
                     }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
@@ -302,6 +314,18 @@ const AnnouncementManagement = () => {
                                         <option value="High">High</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Target Audience (To Whom)</label>
+                                <select
+                                    className="admin-input"
+                                    value={formData.toWhom}
+                                    onChange={(e) => setFormData({ ...formData, toWhom: e.target.value })}
+                                >
+                                    <option value="All">All</option>
+                                    <option value="Students">Students</option>
+                                    <option value="Lecturers">Lecturers</option>
+                                </select>
                             </div>
                             <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
                                 <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1 }}>

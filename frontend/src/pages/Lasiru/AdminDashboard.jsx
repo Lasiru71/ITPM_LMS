@@ -5,7 +5,6 @@ import {
     Users,
     BookOpen,
     LogOut,
-    Bell,
     ChevronRight,
     TrendingUp,
     GraduationCap,
@@ -15,7 +14,8 @@ import {
     FileText,
     Download,
     Eye,
-    Megaphone
+    Megaphone,
+    Star
 } from "lucide-react";
 import {
     AreaChart,
@@ -30,12 +30,13 @@ import {
     Cell
 } from "recharts";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
+import ReviewManagement from "../../components/Lasiru/ReviewManagement";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
 
@@ -107,7 +108,7 @@ const AdminDashboard = () => {
                     new Date(l.createdAt).toLocaleDateString()
                 ]);
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['#', 'Name', 'Email Address', 'Status', 'Joined Date']],
                     body: tableData,
@@ -125,7 +126,7 @@ const AdminDashboard = () => {
                     s.isActive ? "Active" : "Inactive"
                 ]);
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['#', 'Student ID', 'Full Name', 'Email Address', 'Status']],
                     body: tableData,
@@ -143,7 +144,7 @@ const AdminDashboard = () => {
                     ["Revenue Analysis", "$2.8M (Platform Growth Estimate)"]
                 ];
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['Metric', 'Value']],
                     body: tableData,
@@ -173,21 +174,24 @@ const AdminDashboard = () => {
             <div className="admin-overview" style={{ animation: 'fadeIn 0.5s ease-out' }}>
                 <div style={{
                     background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-                    padding: '2.5rem',
+                    padding: '3rem',
                     borderRadius: '2rem',
                     color: 'white',
-                    marginBottom: '2.5rem',
+                    marginBottom: '3rem',
                     position: 'relative',
                     overflow: 'hidden',
-                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+                    boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
                 }}>
-                    <div style={{ position: 'relative', zIndex: 1 }}>
-                        <h1 style={{ fontSize: '2.5rem', margin: 0, fontWeight: 800 }}>Welcome back, {user.name || "Admin"}! 👋</h1>
-                        <p style={{ opacity: 0.8, fontSize: '1.1rem', marginTop: '0.5rem', maxWidth: '600px' }}>
-                            Here's what's happening with the platform today. You have {stats.totals.active} users active right now.
+                    <div style={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
+                        <h1 style={{ fontSize: '2.8rem', margin: 0, fontWeight: 800, background: 'linear-gradient(to right, #ffffff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Welcome back, {user.name || "Admin"}! 👋</h1>
+                        <p style={{ opacity: 0.8, fontSize: '1.1rem', marginTop: '1rem', lineHeight: 1.6 }}>
+                            Here's what's happening with the platform today. You have {stats.totals.active} users actively engaged right now. Keep up the great work!
                         </p>
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-                            <button className="admin-btn admin-btn-primary" onClick={() => setActiveTab('reports')}>
+                        <div style={{ display: 'flex', gap: '1.25rem', marginTop: '2.5rem' }}>
+                            <button className="admin-btn admin-btn-primary" onClick={() => setActiveTab('reports')} style={{ background: '#10b981', padding: '0.8rem 1.5rem', border: 'none', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)' }}>
                                 <FileText size={18} /> View Reports
                             </button>
                             <button className="admin-btn admin-btn-ghost" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none' }} onClick={() => navigate("/")}>
@@ -371,8 +375,8 @@ const AdminDashboard = () => {
             case "students": return <StudentManagement onUpdate={fetchStats} />;
             case "reports": return renderReports();
             case "courses": return renderPlaceholder("All Courses", <BookOpen size={48} />);
-            case "attendance": return renderPlaceholder("Student Attendance", <Activity size={48} />);
             case "announcement": return <AnnouncementManagement />;
+            case "reviews": return <ReviewManagement />;
             default: return renderOverview();
         }
     };
@@ -409,10 +413,6 @@ const AdminDashboard = () => {
                         <div className="nav-item-content"><BookOpen size={20} /> All Courses</div>
                         {activeTab === "courses" && <ChevronRight size={16} />}
                     </div>
-                    <div className={`admin-nav-item ${activeTab === "attendance" ? "active" : ""}`} onClick={() => setActiveTab("attendance")}>
-                        <div className="nav-item-content"><Activity size={20} /> Attendance</div>
-                        {activeTab === "attendance" && <ChevronRight size={16} />}
-                    </div>
 
                     <div className="nav-section-title">Business</div>
                     <div className={`admin-nav-item ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>
@@ -424,6 +424,10 @@ const AdminDashboard = () => {
                     <div className={`admin-nav-item ${activeTab === "announcement" ? "active" : ""}`} onClick={() => setActiveTab("announcement")}>
                         <div className="nav-item-content"><Megaphone size={20} /> Announcement</div>
                         {activeTab === "announcement" && <ChevronRight size={16} />}
+                    </div>
+                    <div className={`admin-nav-item ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>
+                        <div className="nav-item-content"><Star size={20} /> Reviews</div>
+                        {activeTab === "reviews" && <ChevronRight size={16} />}
                     </div>
                 </nav>
 

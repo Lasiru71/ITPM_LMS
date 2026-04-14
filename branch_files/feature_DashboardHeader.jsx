@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Search, User, LogOut, LayoutDashboard, Globe } from "lucide-react";
 import NotificationBell from "./NotificationBell";
@@ -30,9 +30,9 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
                 {showSearch ? (
                     <div className="dash-search-box">
                         <Search size={18} className="dash-search-icon" />
-                        <input 
-                            type="text" 
-                            placeholder="Search everything..." 
+                        <input
+                            type="text"
+                            placeholder="Search everything..."
                             onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
                         />
                     </div>
@@ -52,8 +52,8 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
                 <NotificationBell />
 
                 <div className="dash-profile-dropdown-container">
-                    <button 
-                        className="dash-profile-trigger" 
+                    <button
+                        className="dash-profile-trigger"
                         onClick={() => setProfileOpen(!profileOpen)}
                     >
                         <div className="dash-user-avatar">

@@ -1,6 +1,6 @@
-const Announcement = require("../../models/Lasiru/Announcement.js");
+const Announcement = require("../../models/Lasiru/Announcement");
 
-// @desc    Get all announcements (Admin view)
+// @desc    Get all announcements
 // @route   GET /api/announcements
 exports.getAllAnnouncements = async (req, res) => {
   try {
@@ -11,75 +11,18 @@ exports.getAllAnnouncements = async (req, res) => {
   }
 };
 
-// @desc    Get role-based notifications (Latest 5 for popup)
-// @route   GET /api/announcements/notifications/latest
-exports.getLatestNotifications = async (req, res) => {
-  const { role } = req.query; // role: Student, Lecture, Admin
-  let filter = {};
-
-  if (role === "Student") {
-    filter = { toWhom: { $in: ["Student", "All"] } };
-  } else if (role === "Lecture" || role === "Lecturer") {
-    filter = { toWhom: { $in: ["Lecture", "All"] } };
-  } else if (role === "Admin") {
-    filter = {}; // All
-  }
-
-  try {
-    const notifications = await Announcement.find(filter)
-      .sort({ createdAt: -1 })
-      .limit(5);
-    res.status(200).json(notifications);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Get all notifications with pagination (Full page)
-// @route   GET /api/announcements/notifications/all
-exports.getPaginatedNotifications = async (req, res) => {
-  const { role, page = 1, limit = 10 } = req.query;
-  const skip = (page - 1) * limit;
-  let filter = {};
-
-  if (role === "Student") {
-    filter = { toWhom: { $in: ["Student", "All"] } };
-  } else if (role === "Lecture" || role === "Lecturer") {
-    filter = { toWhom: { $in: ["Lecture", "All"] } };
-  } else if (role === "Admin") {
-    filter = {}; // All
-  }
-
-  try {
-    const total = await Announcement.countDocuments(filter);
-    const notifications = await Announcement.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    res.status(200).json({
-      notifications,
-      total,
-      pages: Math.ceil(total / limit),
-      currentPage: parseInt(page)
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 // @desc    Create an announcement
 // @route   POST /api/announcements
 exports.createAnnouncement = async (req, res) => {
-  const { title, description, toWhom, category, priority } = req.body;
+  const { title, content, category, priority, toWhom } = req.body;
 
   try {
     const newAnnouncement = new Announcement({
       title,
-      description,
-      toWhom,
+      content,
       category,
       priority,
+      toWhom,
     });
     await newAnnouncement.save();
     res.status(201).json(newAnnouncement);
@@ -92,12 +35,12 @@ exports.createAnnouncement = async (req, res) => {
 // @route   PUT /api/announcements/:id
 exports.updateAnnouncement = async (req, res) => {
   const { id } = req.params;
-  const { title, description, toWhom, category, priority, isActive } = req.body;
+  const { title, content, category, priority, isActive, toWhom } = req.body;
 
   try {
     const updatedAnnouncement = await Announcement.findByIdAndUpdate(
       id,
-      { title, description, toWhom, category, priority, isActive },
+      { title, content, category, priority, isActive, toWhom },
       { new: true, runValidators: true }
     );
     if (!updatedAnnouncement) {
@@ -120,6 +63,54 @@ exports.deleteAnnouncement = async (req, res) => {
       return res.status(404).json({ message: "Announcement not found" });
     }
     res.status(200).json({ message: "Announcement deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// @desc    Get latest 5 notifications by role
+// @route   GET /api/announcements/notifications/latest?role=Lecturer
+exports.getLatestNotifications = async (req, res) => {
+  const { role } = req.query;
+  try {
+    // Map role to accommodate all historical enums in the DB
+    const roleFilters = role === "Lecturer" ? ["Lecturers", "Lecturer", "Lecture", "All"]
+      : role === "Student" ? ["Students", "Student", "All"]
+        : ["All"];
+        
+    const filter = { toWhom: { $in: roleFilters }, isActive: { $ne: false } };
+    const notifications = await Announcement.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(5);
+    res.status(200).json(notifications);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get paginated notifications by role
+// @route   GET /api/announcements/notifications/all?role=Lecturer&page=1&limit=10
+exports.getPaginatedNotifications = async (req, res) => {
+  const { role } = req.query;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  try {
+    const roleFilters = role === "Lecturer" ? ["Lecturers", "Lecturer", "Lecture", "All"]
+      : role === "Student" ? ["Students", "Student", "All"]
+        : ["All"];
+        
+    const filter = { toWhom: { $in: roleFilters }, isActive: { $ne: false } };
+    const total = await Announcement.countDocuments(filter);
+    const notifications = await Announcement.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    res.status(200).json({
+      notifications,
+      total,
+      pages: Math.ceil(total / limit),
+      currentPage: page,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
