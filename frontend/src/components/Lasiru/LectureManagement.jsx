@@ -87,7 +87,7 @@ const LectureManagement = ({ onUpdate }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) return;
 
         try {
@@ -109,63 +109,67 @@ const LectureManagement = ({ onUpdate }) => {
     );
 
     return (
-        <div className="admin-content-card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                <h3 style={{ margin: 0 }}>Lecturer Directory</h3>
+        <div className="premium-management-card" style={{ animation: "fadeInUp 0.6s ease-out" }}>
+            <div className="management-header">
+                <div>
+                    <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1e293b", margin: 0 }}>Lecturer Directory</h3>
+                    <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.25rem" }}>Manage and monitor all platform educators.</p>
+                </div>
                 <div style={{ display: "flex", gap: "1rem" }}>
-                    <div className="admin-search-container">
-                        <Search size={18} className="search-icon" />
+                    <div className="modern-search-wrapper">
+                        <Search size={18} color="#94a3b8" />
                         <input
                             type="text"
                             placeholder="Search by name or email..."
-                            className="admin-input"
+                            className="modern-search-input"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <button className="admin-btn admin-btn-primary" onClick={() => setShowModal(true)}>
-                        <UserPlus size={18} /> Add New Lecturer
+                    <button className="admin-btn admin-btn-primary" onClick={() => setShowModal(true)} style={{ padding: "0.85rem 1.5rem" }}>
+                        <UserPlus size={18} /> <span>Add New Lecturer</span>
                     </button>
                 </div>
             </div>
 
             <div className="admin-table-container">
-                <table className="admin-table">
+                <table className="premium-table">
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Email</th>
+                            <th>Email Address</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th style={{ textAlign: "right" }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredLecturers.map((lec) => (
                             <tr key={lec._id}>
-                                <td>{lec.name}</td>
-                                <td>{lec.email}</td>
+                                <td style={{ fontWeight: 600, color: "#1e293b" }}>{lec.name}</td>
+                                <td style={{ color: "#64748b" }}>{lec.email}</td>
                                 <td>
-                                    <span className={`admin-badge ${lec.isActive ? "badge-active" : "badge-inactive"}`}>
+                                    <span className={`status-badge ${lec.isActive ? "status-active" : "status-inactive"}`}>
+                                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
                                         {lec.isActive ? "Active" : "Inactive"}
                                     </span>
                                 </td>
-                                <td className="admin-actions">
-                                    <button
-                                        className="admin-btn admin-btn-ghost"
-                                        onClick={() => handleToggleStatus(lec._id)}
-                                        title={lec.isActive ? "Deactivate" : "Activate"}
-                                    >
-                                        {lec.isActive ? <PowerOff size={16} /> : <Power size={16} />}
-                                        {lec.isActive ? "Deactivate" : "Activate"}
-                                    </button>
-                                    <button
-                                        className="admin-btn admin-btn-danger"
-                                        onClick={() => handleDeleteClick(lec._id)}
-                                        title="Delete"
-                                    >
-                                        <Trash2 size={16} />
-                                        Delete
-                                    </button>
+                                <td>
+                                    <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                                        <button
+                                            className="action-icon-btn btn-toggle"
+                                            onClick={() => handleToggleStatus(lec._id)}
+                                            title={lec.isActive ? "Deactivate" : "Activate"}
+                                        >
+                                            {lec.isActive ? <PowerOff size={18} /> : <Power size={18} />}
+                                        </button>
+                                        <button
+                                            className="action-icon-btn btn-delete"
+                                            onClick={() => handleDeleteClick(lec._id)}
+                                            title="Delete Account"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -248,14 +252,14 @@ const LectureManagement = ({ onUpdate }) => {
                         <h3>Delete Lecturer?</h3>
                         <p>This action cannot be undone. All data associated with this lecturer will be permanently removed.</p>
                         <div className="confirm-actions">
-                            <button 
-                                className="admin-btn admin-btn-ghost" 
+                            <button
+                                className="admin-btn admin-btn-ghost"
                                 onClick={() => setShowConfirm(false)}
                             >
                                 Cancel
                             </button>
-                            <button 
-                                className="admin-btn admin-btn-danger" 
+                            <button
+                                className="admin-btn admin-btn-danger"
                                 onClick={confirmDelete}
                                 style={{ background: "#ef4444", color: "white" }}
                             >

@@ -84,10 +84,10 @@ const ReviewManagement = () => {
         return (
             <div style={{ display: "flex", gap: "2px", color: "#f59e0b" }}>
                 {[...Array(5)].map((_, i) => (
-                    <Star 
-                        key={i} 
-                        size={14} 
-                        fill={i < rating ? "#f59e0b" : "none"} 
+                    <Star
+                        key={i}
+                        size={14}
+                        fill={i < rating ? "#f59e0b" : "none"}
                         strokeWidth={2}
                     />
                 ))}
@@ -104,20 +104,19 @@ const ReviewManagement = () => {
     );
 
     return (
-        <div className="admin-content-card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+        <div className="premium-management-card" style={{ animation: "fadeInUp 0.6s ease-out" }}>
+            <div className="management-header">
                 <div>
-                    <h3 style={{ margin: 0 }}>Reviews & Ratings</h3>
-                    <p style={{ color: "#64748b", fontSize: "0.85rem", marginTop: "0.25rem" }}>
-                        Manage student feedback and course ratings
-                    </p>
+                    <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1e293b", margin: 0 }}>Reviews & Ratings</h3>
+                    <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.25rem" }}>Monitor student feedback and manage course perceptions.</p>
                 </div>
-                <div className="admin-search-container" style={{ width: "350px" }}>
-                    <Search size={18} className="search-icon" />
+                <div className="modern-search-wrapper" style={{ width: "380px" }}>
+                    <Search size={18} color="#94a3b8" />
                     <input
                         type="text"
                         placeholder="Search by course, student or ID..."
-                        className="admin-input"
+                        className="modern-search-input"
+                        style={{ width: "100%" }}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -125,21 +124,21 @@ const ReviewManagement = () => {
             </div>
 
             {loading ? (
-                <div style={{ padding: "4rem", textAlign: "center", color: "#64748b" }}>
-                    Loading reviews...
+                <div style={{ padding: "6rem", textAlign: "center", color: "#94a3b8" }}>
+                    <div className="loading-spinner" style={{ marginBottom: "1rem" }}></div>
+                    <p style={{ fontWeight: 500 }}>Syncing reviews...</p>
                 </div>
             ) : (
                 <div className="admin-table-container">
-                    <table className="admin-table">
+                    <table className="premium-table">
                         <thead>
                             <tr>
                                 <th>Student & ID</th>
                                 <th>Course</th>
-                                <th>Date</th>
                                 <th>Rating</th>
                                 <th style={{ width: "25%" }}>Comment</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th style={{ textAlign: "right" }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -147,20 +146,23 @@ const ReviewManagement = () => {
                                 filteredReviews.map((rev) => (
                                     <tr key={rev._id}>
                                         <td>
-                                            <div style={{ display: "flex", flexDirection: "column" }}>
-                                                <span style={{ fontWeight: 600 }}>{rev.studentId?.name || "Unknown"}</span>
-                                                <span style={{ fontSize: "0.75rem", color: "#64748b" }}>ID: {rev.studentId?.nicNumber || "N/A"}</span>
+                                            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                                                <span style={{ fontWeight: 700, color: "#1e293b" }}>{rev.studentId?.name || "Unknown"}</span>
+                                                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontFamily: "monospace" }}>ID: {rev.studentId?.nicNumber || "N/A"}</span>
                                             </div>
                                         </td>
-                                        <td>{rev.courseName || "N/A"}</td>
-                                        <td style={{ fontSize: "0.85rem", color: "#64748b" }}>
-                                            {new Date(rev.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td>{renderStars(rev.rating)}</td>
+                                        <td style={{ fontWeight: 500, color: "#475569" }}>{rev.courseName || "N/A"}</td>
                                         <td>
-                                            <p style={{ 
-                                                fontSize: "0.85rem", 
-                                                lineHeight: "1.4", 
+                                            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                                                {renderStars(rev.rating)}
+                                                <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontWeight: 600 }}>{new Date(rev.createdAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p style={{
+                                                fontSize: "0.9rem",
+                                                lineHeight: "1.5",
+                                                color: "#64748b",
                                                 margin: 0,
                                                 display: "-webkit-box",
                                                 WebkitLineClamp: "2",
@@ -172,32 +174,32 @@ const ReviewManagement = () => {
                                         </td>
                                         <td>
                                             {!rev.adminReply ? (
-                                                <span className="admin-badge" style={{ background: "#fef2f2", color: "#991b1b" }}>
+                                                <span className="status-badge" style={{ background: "#fef2f2", color: "#dc2626" }}>
+                                                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
                                                     Pending
                                                 </span>
                                             ) : (
-                                                <span className="admin-badge badge-active">
+                                                <span className="status-badge status-active">
+                                                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
                                                     Replied
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="admin-actions">
-                                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                                        <td>
+                                            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
                                                 <button
-                                                    className="admin-btn admin-btn-ghost"
-                                                    style={{ color: "#10b981", padding: "0.4rem" }}
+                                                    className="action-icon-btn btn-toggle"
                                                     onClick={() => handleReplyClick(rev)}
                                                     title="Reply to Review"
                                                 >
-                                                    <Reply size={16} />
+                                                    <Reply size={18} />
                                                 </button>
                                                 <button
-                                                    className="admin-btn admin-btn-ghost"
-                                                    style={{ color: "#ef4444", padding: "0.4rem" }}
+                                                    className="action-icon-btn btn-delete"
                                                     onClick={() => handleDeleteClick(rev._id)}
                                                     title="Delete Review"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
                                         </td>
@@ -205,9 +207,9 @@ const ReviewManagement = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="7" style={{ textAlign: "center", padding: "4rem", color: "#64748b" }}>
-                                        <div style={{ marginBottom: "1rem" }}><MessageSquare size={48} style={{ opacity: 0.2, margin: "0 auto" }} /></div>
-                                        No reviews found matching your search.
+                                    <td colSpan="6" style={{ textAlign: "center", padding: "6rem", color: "#94a3b8" }}>
+                                        <div style={{ marginBottom: "1.5rem" }}><MessageSquare size={56} style={{ opacity: 0.1, margin: "0 auto" }} /></div>
+                                        <p style={{ fontSize: "1.1rem", fontWeight: 500 }}>No feedback discovered yet.</p>
                                     </td>
                                 </tr>
                             )}
@@ -223,7 +225,7 @@ const ReviewManagement = () => {
                         <p style={{ fontSize: "0.875rem", color: "#64748b", marginBottom: "1.5rem" }}>
                             Your reply will be visible to the student on their reviews page.
                         </p>
-                        
+
                         <div style={{ background: "#f8fafc", padding: "1rem", borderRadius: "0.75rem", marginBottom: "1.5rem", borderLeft: "4px solid #10b981" }}>
                             <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 600 }}>{activeReview.studentId?.name}:</p>
                             <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#475569" }}>"{activeReview.comment}"</p>
@@ -238,14 +240,14 @@ const ReviewManagement = () => {
                         />
 
                         <div className="confirm-actions" style={{ justifyContent: "flex-end" }}>
-                            <button 
-                                className="admin-btn admin-btn-ghost" 
+                            <button
+                                className="admin-btn admin-btn-ghost"
                                 onClick={() => setShowReplyModal(false)}
                             >
                                 Cancel
                             </button>
-                            <button 
-                                className="admin-btn" 
+                            <button
+                                className="admin-btn"
                                 onClick={submitReply}
                                 style={{ background: "#10b981", color: "white" }}
                             >
@@ -266,14 +268,14 @@ const ReviewManagement = () => {
                         <h3>Delete Review?</h3>
                         <p>Are you sure you want to permanently delete this student review? This action cannot be undone.</p>
                         <div className="confirm-actions">
-                            <button 
-                                className="admin-btn admin-btn-ghost" 
+                            <button
+                                className="admin-btn admin-btn-ghost"
                                 onClick={() => setShowConfirm(false)}
                             >
                                 Cancel
                             </button>
-                            <button 
-                                className="admin-btn admin-btn-danger" 
+                            <button
+                                className="admin-btn admin-btn-danger"
                                 onClick={confirmDelete}
                                 style={{ background: "#ef4444", color: "white" }}
                             >
