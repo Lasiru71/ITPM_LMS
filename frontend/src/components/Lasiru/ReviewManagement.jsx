@@ -99,7 +99,7 @@ const ReviewManagement = () => {
         (rev) =>
             (rev.courseId?.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (rev.studentId?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-            (rev.studentId?.nicNumber?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (rev.studentId?.studentId?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (rev.comment?.toLowerCase() || "").includes(searchQuery.toLowerCase())
     );
 
@@ -148,7 +148,7 @@ const ReviewManagement = () => {
                                         <td>
                                             <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                                                 <span style={{ fontWeight: 700, color: "#1e293b" }}>{rev.studentId?.name || "Unknown"}</span>
-                                                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontFamily: "monospace" }}>ID: {rev.studentId?.nicNumber || "N/A"}</span>
+                                                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontFamily: "monospace" }}>ID: {rev.studentId?.studentId || "N/A"}</span>
                                             </div>
                                         </td>
                                         <td style={{ fontWeight: 500, color: "#475569" }}>{rev.courseName || "N/A"}</td>

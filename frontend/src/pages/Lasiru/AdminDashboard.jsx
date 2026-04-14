@@ -36,6 +36,7 @@ import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
+import ReviewManagement from "../../components/Lasiru/ReviewManagement";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
 
@@ -373,6 +374,7 @@ const AdminDashboard = () => {
             case "courses": return renderPlaceholder("All Courses", <BookOpen size={48} />);
             case "attendance": return renderPlaceholder("Student Attendance", <Activity size={48} />);
             case "announcement": return <AnnouncementManagement />;
+            case "reviews": return <ReviewManagement />;
             default: return renderOverview();
         }
     };
@@ -424,6 +426,10 @@ const AdminDashboard = () => {
                     <div className={`admin-nav-item ${activeTab === "announcement" ? "active" : ""}`} onClick={() => setActiveTab("announcement")}>
                         <div className="nav-item-content"><Megaphone size={20} /> Announcement</div>
                         {activeTab === "announcement" && <ChevronRight size={16} />}
+                    </div>
+                    <div className={`admin-nav-item ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>
+                        <div className="nav-item-content"><Activity size={20} /> Reviews</div>
+                        {activeTab === "reviews" && <ChevronRight size={16} />}
                     </div>
                 </nav>
 

@@ -14,7 +14,7 @@ export const getAllAnnouncements = async (req, res) => {
 // @desc    Create an announcement
 // @route   POST /api/announcements
 export const createAnnouncement = async (req, res) => {
-  const { title, content, category, priority } = req.body;
+  const { title, content, category, priority, toWhom } = req.body;
 
   try {
     const newAnnouncement = new Announcement({
@@ -22,6 +22,7 @@ export const createAnnouncement = async (req, res) => {
       content,
       category,
       priority,
+      toWhom,
     });
     await newAnnouncement.save();
     res.status(201).json(newAnnouncement);
@@ -34,12 +35,12 @@ export const createAnnouncement = async (req, res) => {
 // @route   PUT /api/announcements/:id
 export const updateAnnouncement = async (req, res) => {
   const { id } = req.params;
-  const { title, content, category, priority, isActive } = req.body;
+  const { title, content, category, priority, isActive, toWhom } = req.body;
 
   try {
     const updatedAnnouncement = await Announcement.findByIdAndUpdate(
       id,
-      { title, content, category, priority, isActive },
+      { title, content, category, priority, isActive, toWhom },
       { new: true, runValidators: true }
     );
     if (!updatedAnnouncement) {

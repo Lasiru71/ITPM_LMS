@@ -34,6 +34,7 @@ const AnnouncementManagement = () => {
         content: "",
         category: "General",
         priority: "Low",
+        toWhom: "All",
         isActive: true
     });
 
@@ -60,6 +61,7 @@ const AnnouncementManagement = () => {
                 content: announcement.content,
                 category: announcement.category,
                 priority: announcement.priority,
+                toWhom: announcement.toWhom || "All",
                 isActive: announcement.isActive
             });
             setIsEditing(true);
@@ -70,6 +72,7 @@ const AnnouncementManagement = () => {
                 content: "",
                 category: "General",
                 priority: "Low",
+                toWhom: "All",
                 isActive: true
             });
             setIsEditing(false);
@@ -137,6 +140,14 @@ const AnnouncementManagement = () => {
             case "High": return "#ef4444";
             case "Medium": return "#f59e0b";
             default: return "#3b82f6";
+        }
+    };
+
+    const getToWhomBadgeStyle = (toWhom) => {
+        switch (toWhom) {
+            case 'Students': return { background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' };
+            case 'Lecturers': return { background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' };
+            default: return { background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' };
         }
     };
 
@@ -302,6 +313,18 @@ const AnnouncementManagement = () => {
                                         <option value="High">High</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Target Audience (To Whom)</label>
+                                <select
+                                    className="admin-input"
+                                    value={formData.toWhom}
+                                    onChange={(e) => setFormData({ ...formData, toWhom: e.target.value })}
+                                >
+                                    <option value="All">All</option>
+                                    <option value="Students">Students</option>
+                                    <option value="Lecturers">Lecturers</option>
+                                </select>
                             </div>
                             <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
                                 <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1 }}>
