@@ -1,0 +1,61 @@
+﻿node : C:\Users\Lasiru\
+Desktop\ITPM\ITPM_LMS\b
+ackend\server.js:26
+At line:1 char:1
++ node 
+backend/server.js 2>&1 
+| Out-File -FilePath 
+error_utf8.log -Enco 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (C:\Users\Lasi   
+ ru...nd\server.js:    
+26:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+const authRoutes = requ
+ire("./routes/Lasiru/au
+thRoutes");
+      ^
+
+SyntaxError: 
+Identifier 
+'authRoutes' has 
+already been declared
+    at wrapSafe (node:i
+nternal/modules/cjs/loa
+der:1620:18)
+    at Module._compile 
+(node:internal/modules/
+cjs/loader:1662:20)
+    at Object..js (node
+:internal/modules/cjs/l
+oader:1820:10)
+    at Module.load (nod
+e:internal/modules/cjs/
+loader:1423:32)
+    at Function._load (
+node:internal/modules/c
+js/loader:1246:12)
+    at TracingChannel.t
+raceSync (node:diagnost
+ics_channel:322:14)
+    at wrapModuleLoad (
+node:internal/modules/c
+js/loader:235:24)
+    at Function.execute
+UserEntryPoint [as 
+runMain] (node:internal
+/modules/run_main:171:5
+)
+    at node:internal/ma
+in/run_main_module:36:4
+9
+
+Node.js v22.18.0
