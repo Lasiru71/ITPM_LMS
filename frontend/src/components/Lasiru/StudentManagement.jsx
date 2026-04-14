@@ -57,7 +57,7 @@ const StudentManagement = ({ onUpdate }) => {
         (std) =>
             (std.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (std.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-            (std.nicNumber?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+            (std.studentId?.toLowerCase() || "").includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -83,7 +83,7 @@ const StudentManagement = ({ onUpdate }) => {
                 <table className="premium-table">
                     <thead>
                         <tr>
-                            <th>NIC Number</th>
+                            <th>Student ID</th>
                             <th>Name</th>
                             <th>Email Address</th>
                             <th>Status</th>
@@ -93,10 +93,9 @@ const StudentManagement = ({ onUpdate }) => {
                     <tbody>
                         {filteredStudents.map((std) => (
                             <tr key={std._id}>
-                                <td style={{ color: "#64748b", fontSize: "0.85rem", fontFamily: "monospace" }}>{std.nicNumber || "N/A"}</td>
+                                <td style={{ color: "#64748b", fontSize: "0.85rem", fontFamily: "monospace" }}>{std.studentId || "N/A"}</td>
                                 <td style={{ fontWeight: 600, color: "#1e293b" }}>{std.name}</td>
-                                <td style={{ color: "#64748b" }}>{std.email}</td>
-                                <td>
+                                <td style={{ color: "#64748b" }}>{std.email}</td>                                <td>
                                     <span className={`status-badge ${std.isActive ? "status-active" : "status-inactive"}`}>
                                         <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
                                         {std.isActive ? "Active" : "Inactive"}

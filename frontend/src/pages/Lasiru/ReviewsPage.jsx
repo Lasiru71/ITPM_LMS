@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Send, MessageSquare, Clock, CheckCircle, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import { getStudentReviews, createReview, deleteReview } from '../../api/Lasiru/reviewApi';
+import { getAllCourses } from '../../api/Jeewani/courseApi';
+import { MOCK_COURSES } from '../../constants/Home/mockData';
 import { useToast } from '../../components/Lasiru/ToastProvider';
 import '../../Styles/Lasiru/StudentDashboard.css';
 
-const HARDCODED_COURSES = [
-    "Introduction to React.js",
-    "Advanced Node.js Patterns",
-    "UI/UX Design Essentials",
-    "Database Management with MongoDB",
-    "Python for Beginners",
-    "Graphic Design with Photoshop",
-    "Mobile App Development with React Native",
-    "Machine Learning Masterclass",
-    "Digital Marketing & Business Growth",
-    "Flutter Mobile App Development"
-];
+// No hardcoded courses needed anymore
 
 export default function ReviewsPage() {
     const [reviews, setReviews] = useState([]);
+    const [availableCourses, setAvailableCourses] = useState([]);
     const [formData, setFormData] = useState({
+        courseId: '',
         courseName: '',
         rating: 5,
         comment: ''
@@ -32,7 +25,22 @@ export default function ReviewsPage() {
 
     useEffect(() => {
         fetchReviews();
+        fetchCourses();
     }, []);
+
+    const fetchCourses = async () => {
+        try {
+            const data = await getAllCourses();
+            const customCourses = Array.isArray(data) ? data : [];
+            setAvailableCourses([
+                ...customCourses,
+                ...MOCK_COURSES.map(c => ({ ...c, _id: String(c.id) }))
+            ]);
+        } catch (error) {
+            console.error("Error fetching courses:", error);
+            setAvailableCourses(MOCK_COURSES.map(c => ({ ...c, _id: String(c.id) })));
+        }
+    };
 
     const fetchReviews = async () => {
         try {
@@ -49,7 +57,17 @@ export default function ReviewsPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        
+        if (name === "courseId") {
+            const selectedCourse = availableCourses.find(c => (c._id || c.id) === value);
+            setFormData(prev => ({ 
+                ...prev, 
+                courseId: value,
+                courseName: selectedCourse ? selectedCourse.title : ''
+            }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -135,14 +153,14 @@ export default function ReviewsPage() {
                         <div style={{ marginBottom: '1.25rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}>Select Course</label>
                             <select 
-                                name="courseName"
-                                value={formData.courseName}
+                                name="courseId"
+                                value={formData.courseId}
                                 onChange={handleInputChange}
                                 style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0', outline: 'none' }}
                             >
                                 <option value="">-- Choose a course --</option>
-                                {HARDCODED_COURSES.map(course => (
-                                    <option key={course} value={course}>{course}</option>
+                                {availableCourses.map(course => (
+                                    <option key={course._id || course.id} value={course._id || course.id}>{course.title}</option>
                                 ))}
                             </select>
                         </div>

@@ -31,10 +31,9 @@ const AnnouncementManagement = () => {
 
     const [formData, setFormData] = useState({
         title: "",
-        description: "",
+        content: "",
         category: "General",
         priority: "Low",
-        toWhom: "All",
         isActive: true
     });
 
@@ -58,10 +57,9 @@ const AnnouncementManagement = () => {
         if (announcement) {
             setFormData({
                 title: announcement.title,
-                description: announcement.description || announcement.content || "",
+                content: announcement.content,
                 category: announcement.category,
                 priority: announcement.priority,
-                toWhom: announcement.toWhom || "All",
                 isActive: announcement.isActive
             });
             setIsEditing(true);
@@ -69,10 +67,9 @@ const AnnouncementManagement = () => {
         } else {
             setFormData({
                 title: "",
-                description: "",
+                content: "",
                 category: "General",
                 priority: "Low",
-                toWhom: "All",
                 isActive: true
             });
             setIsEditing(false);
@@ -86,12 +83,8 @@ const AnnouncementManagement = () => {
             showToast("error", "Announcement Title is required");
             return false;
         }
-        if (!formData.description.trim()) {
-            showToast("error", "Description body is required");
-            return false;
-        }
-        if (!formData.toWhom) {
-            showToast("error", "Please select a target audience");
+        if (!formData.content.trim()) {
+            showToast("error", "Content body is required");
             return false;
         }
         return true;
@@ -133,8 +126,8 @@ const AnnouncementManagement = () => {
     };
 
     const filteredAnnouncements = announcements.filter(ann => {
-        const descMatch = (ann.description || ann.content || "").toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesSearch = ann.title.toLowerCase().includes(searchQuery.toLowerCase()) || descMatch;
+        const matchesSearch = ann.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            ann.content.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = categoryFilter === "All" || ann.category === categoryFilter;
         return matchesSearch && matchesCategory;
     });
@@ -144,14 +137,6 @@ const AnnouncementManagement = () => {
             case "High": return "#ef4444";
             case "Medium": return "#f59e0b";
             default: return "#3b82f6";
-        }
-    };
-
-    const getToWhomBadgeStyle = (toWhom) => {
-        switch (toWhom) {
-            case "Student": return { background: "#ecfdf5", color: "#10b981", border: "1px solid #10b981" };
-            case "Lecture": return { background: "#eff6ff", color: "#3b82f6", border: "1px solid #3b82f6" };
-            default: return { background: "#fef2f2", color: "#ef4444", border: "1px solid #ef4444" };
         }
     };
 
@@ -243,7 +228,7 @@ const AnnouncementManagement = () => {
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden"
                         }}>
-                            {ann.description || ann.content}
+                            {ann.content}
                         </p>
 
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1.25rem", borderTop: "1px solid #f8fafc" }}>
@@ -271,49 +256,26 @@ const AnnouncementManagement = () => {
             {showModal && createPortal(
                 <div className="admin-modal-overlay">
                     <div className="admin-modal" style={{ maxWidth: "600px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                            <h2 style={{ margin: 0 }}>{isEditing ? "Edit Announcement" : "New Announcement"}</h2>
-                            <button onClick={() => setShowModal(false)} style={{ border: "none", background: "none", cursor: "pointer", color: "#64748b" }}>
-                                <X size={24} />
-                            </button>
-                        </div>
-
+                        <h2>{isEditing ? "Edit Announcement" : "Publish Announcement"}</h2>
                         <form onSubmit={handleSubmit} noValidate>
                             <div className="admin-form-group">
-                                <label>Target Audience (toWhom) <span style={{ color: "#ef4444" }}>*</span></label>
-                                <select
-                                    className="admin-input"
-                                    value={formData.toWhom}
-                                    onChange={(e) => setFormData({ ...formData, toWhom: e.target.value })}
-                                    style={{ border: "2px solid #e2e8f0" }}
-                                >
-                                    <option value="Student">Student</option>
-                                    <option value="Lecture">Lecture</option>
-                                    <option value="All">All</option>
-                                </select>
-                            </div>
-
-                            <div className="admin-form-group">
-                                <label>Headline <span style={{ color: "#ef4444" }}>*</span></label>
+                                <label>Title</label>
                                 <input
                                     className="admin-input"
-                                    placeholder="e.g. Mid-semester exam schedules updated"
+                                    placeholder="Enter announcement headline..."
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 />
                             </div>
-
                             <div className="admin-form-group">
-                                <label>Detailed Description <span style={{ color: "#ef4444" }}>*</span></label>
+                                <label>Content</label>
                                 <textarea
                                     className="admin-input"
-                                    placeholder="Write the full announcement details here..."
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    style={{ minHeight: "120px" }}
+                                    placeholder="Write the detailed announcement content here..."
+                                    value={formData.content}
+                                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                 ></textarea>
                             </div>
-
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                                 <div className="admin-form-group">
                                     <label>Category</label>
@@ -329,7 +291,7 @@ const AnnouncementManagement = () => {
                                     </select>
                                 </div>
                                 <div className="admin-form-group">
-                                    <label>Priority Level</label>
+                                    <label>Priority</label>
                                     <select
                                         className="admin-input"
                                         value={formData.priority}
@@ -341,18 +303,17 @@ const AnnouncementManagement = () => {
                                     </select>
                                 </div>
                             </div>
-
-                            <div style={{ display: "flex", gap: "1rem", marginTop: "2.5rem" }}>
-                                <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1, padding: "1rem" }}>
-                                    {isEditing ? "Save Changes" : "Publish Announcement"}
+                            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+                                <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1 }}>
+                                    {isEditing ? "Update Announcement" : "Publish Now"}
                                 </button>
                                 <button
                                     type="button"
                                     className="admin-btn admin-btn-ghost"
-                                    style={{ flex: 0.5 }}
+                                    style={{ flex: 1 }}
                                     onClick={() => setShowModal(false)}
                                 >
-                                    Dismiss
+                                    Cancel
                                 </button>
                             </div>
                         </form>
@@ -361,33 +322,35 @@ const AnnouncementManagement = () => {
                 document.body
             )}
 
-            {showConfirm && createPortal(
-                <div className="admin-modal-overlay">
-                    <div className="admin-confirm-modal">
-                        <div className="confirm-icon-container">
-                            <AlertTriangle size={32} />
+            {
+                showConfirm && createPortal(
+                    <div className="admin-modal-overlay">
+                        <div className="admin-confirm-modal">
+                            <div className="confirm-icon-container">
+                                <AlertTriangle size={32} />
+                            </div>
+                            <h3>Delete Announcement?</h3>
+                            <p>This news post will be permanently removed. This action cannot be undone.</p>
+                            <div className="confirm-actions">
+                                <button
+                                    className="admin-btn admin-btn-ghost"
+                                    onClick={() => setShowConfirm(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="admin-btn admin-btn-danger"
+                                    onClick={confirmDelete}
+                                >
+                                    Delete Now
+                                </button>
+                            </div>
                         </div>
-                        <h3>Remove Announcement?</h3>
-                        <p>Are you sure you want to delete this announcement? This action will remove it for all targeted users.</p>
-                        <div className="confirm-actions">
-                            <button
-                                className="admin-btn admin-btn-ghost"
-                                onClick={() => setShowConfirm(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="admin-btn admin-btn-danger"
-                                onClick={confirmDelete}
-                            >
-                                Confirm Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
-        </div>
+                    </div>,
+                    document.body
+                )
+            }
+        </div >
     );
 };
 

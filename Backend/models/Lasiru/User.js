@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    nicNumber: {
+    studentId: {
       type: String,
       unique: true,
       sparse: true,

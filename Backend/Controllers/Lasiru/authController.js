@@ -19,7 +19,7 @@ const generateToken = (user) => {
 
 export const register = async (req, res) => {
   try {
-    const { name, address, phone, email, password, role, nicNumber } = req.body;
+    const { name, address, phone, email, password, role, studentId } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -51,8 +51,8 @@ export const register = async (req, res) => {
       role: effectiveRole,
     };
 
-    if (effectiveRole === "Student" && nicNumber && nicNumber.trim()) {
-      newUserPayload.nicNumber = nicNumber.trim();
+    if (effectiveRole === "Student" && studentId && studentId.trim()) {
+      newUserPayload.studentId = studentId.trim();
     }
 
     const user = await User.create(newUserPayload);

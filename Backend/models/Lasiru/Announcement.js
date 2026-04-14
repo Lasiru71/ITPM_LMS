@@ -7,14 +7,9 @@ const announcementSchema = new mongoose.Schema(
       required: [true, "Title is required"],
       trim: true,
     },
-    description: {
+    content: {
       type: String,
-      required: [true, "Description is required"],
-    },
-    toWhom: {
-      type: String,
-      enum: ["Student", "Lecture", "All"],
-      required: [true, "Target audience is required"],
+      required: [true, "Content is required"],
     },
     category: {
       type: String,

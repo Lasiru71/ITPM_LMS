@@ -5,10 +5,11 @@ import Course from "../../models/Jeewani/Course.js";
 // Create a new review (Student)
 export const createReview = async (req, res) => {
     try {
-        const { courseName, rating, comment } = req.body;
+        const { courseId, courseName, rating, comment } = req.body;
         const studentId = req.user._id;
 
         const newReview = new Review({
+            courseId,
             courseName,
             studentId,
             rating,

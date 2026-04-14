@@ -333,8 +333,6 @@
     background: rgba(15, 23, 42, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 1.25rem;
-    width: 100%;
-    box-sizing: border-box;
 }
 
 /* Inputs */
@@ -370,8 +368,6 @@
     color: white;
     font-size: 1rem;
     font-weight: 600;
-    width: 100%;
-    box-sizing: border-box;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
