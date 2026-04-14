@@ -61,15 +61,18 @@ const StudentManagement = ({ onUpdate }) => {
     );
 
     return (
-        <div className="admin-content-card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                <h3 style={{ margin: 0 }}>Student Roster</h3>
-                <div className="admin-search-container">
-                    <Search size={18} className="search-icon" />
+        <div className="premium-management-card" style={{ animation: "fadeInUp 0.6s ease-out" }}>
+            <div className="management-header">
+                <div>
+                    <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1e293b", margin: 0 }}>Student Roster</h3>
+                    <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.25rem" }}>Monitor and manage student enrollment and accounts.</p>
+                </div>
+                <div className="modern-search-wrapper">
+                    <Search size={18} color="#94a3b8" />
                     <input
                         type="text"
                         placeholder="Search by name, email, or ID..."
-                        className="admin-input"
+                        className="modern-search-input"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -77,44 +80,44 @@ const StudentManagement = ({ onUpdate }) => {
             </div>
 
             <div className="admin-table-container">
-                <table className="admin-table">
+                <table className="premium-table">
                     <thead>
                         <tr>
                             <th>Student ID</th>
                             <th>Name</th>
-                            <th>Email</th>
+                            <th>Email Address</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th style={{ textAlign: "right" }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredStudents.map((std) => (
                             <tr key={std._id}>
-                                <td>{std.studentId || "N/A"}</td>
-                                <td>{std.name}</td>
-                                <td>{std.email}</td>
-                                <td>
-                                    <span className={`admin-badge ${std.isActive ? "badge-active" : "badge-inactive"}`}>
+                                <td style={{ color: "#64748b", fontSize: "0.85rem", fontFamily: "monospace" }}>{std.studentId || "N/A"}</td>
+                                <td style={{ fontWeight: 600, color: "#1e293b" }}>{std.name}</td>
+                                <td style={{ color: "#64748b" }}>{std.email}</td>                                <td>
+                                    <span className={`status-badge ${std.isActive ? "status-active" : "status-inactive"}`}>
+                                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
                                         {std.isActive ? "Active" : "Inactive"}
                                     </span>
                                 </td>
-                                <td className="admin-actions">
-                                    <button
-                                        className="admin-btn admin-btn-ghost"
-                                        onClick={() => handleToggleStatus(std._id)}
-                                        title={std.isActive ? "Deactivate" : "Activate"}
-                                    >
-                                        {std.isActive ? <PowerOff size={16} /> : <Power size={16} />}
-                                        {std.isActive ? "Deactivate" : "Activate"}
-                                    </button>
-                                    <button
-                                        className="admin-btn admin-btn-danger"
-                                        onClick={() => handleDeleteClick(std._id)}
-                                        title="Delete"
-                                    >
-                                        <Trash2 size={16} />
-                                        Delete
-                                    </button>
+                                <td>
+                                    <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                                        <button
+                                            className="action-icon-btn btn-toggle"
+                                            onClick={() => handleToggleStatus(std._id)}
+                                            title={std.isActive ? "Deactivate" : "Activate"}
+                                        >
+                                            {std.isActive ? <PowerOff size={18} /> : <Power size={18} />}
+                                        </button>
+                                        <button
+                                            className="action-icon-btn btn-delete"
+                                            onClick={() => handleDeleteClick(std._id)}
+                                            title="Delete Account"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -131,14 +134,14 @@ const StudentManagement = ({ onUpdate }) => {
                         <h3>Delete Student?</h3>
                         <p>This action cannot be undone. All data associated with this student will be permanently removed.</p>
                         <div className="confirm-actions">
-                            <button 
-                                className="admin-btn admin-btn-ghost" 
+                            <button
+                                className="admin-btn admin-btn-ghost"
                                 onClick={() => setShowConfirm(false)}
                             >
                                 Cancel
                             </button>
-                            <button 
-                                className="admin-btn admin-btn-danger" 
+                            <button
+                                className="admin-btn admin-btn-danger"
                                 onClick={confirmDelete}
                                 style={{ background: "#ef4444", color: "white" }}
                             >

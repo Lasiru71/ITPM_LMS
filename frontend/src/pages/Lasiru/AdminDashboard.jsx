@@ -170,7 +170,38 @@ const AdminDashboard = () => {
         ];
 
         return (
-            <div className="admin-overview">
+            <div className="admin-overview" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+                <div style={{
+                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                    padding: '2.5rem',
+                    borderRadius: '2rem',
+                    color: 'white',
+                    marginBottom: '2.5rem',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+                }}>
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                        <h1 style={{ fontSize: '2.5rem', margin: 0, fontWeight: 800 }}>Welcome back, {user.name || "Admin"}! 👋</h1>
+                        <p style={{ opacity: 0.8, fontSize: '1.1rem', marginTop: '0.5rem', maxWidth: '600px' }}>
+                            Here's what's happening with the platform today. You have {stats.totals.active} users active right now.
+                        </p>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                            <button className="admin-btn admin-btn-primary" onClick={() => setActiveTab('reports')}>
+                                <FileText size={18} /> View Reports
+                            </button>
+                            <button className="admin-btn admin-btn-ghost" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none' }} onClick={() => navigate("/")}>
+                                <Eye size={18} /> Preview Site
+                            </button>
+                        </div>
+                    </div>
+                    {/* Decorative element */}
+                    <div style={{
+                        position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px',
+                        background: 'rgba(16, 185, 129, 0.2)', borderRadius: '50%', filter: 'blur(40px)'
+                    }} />
+                </div>
+
                 <div className="stats-grid">
                     <div className="stat-card">
                         <div style={{ color: '#12b981', marginBottom: '1rem' }}><Users size={24} /></div>
@@ -211,16 +242,21 @@ const AdminDashboard = () => {
                         <div style={{ width: '100%', height: 300, marginTop: '1.5rem' }}>
                             <ResponsiveContainer>
                                 <AreaChart data={stats.growth}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                                    <Tooltip />
-                                    <Area type="monotone" dataKey="users" stroke="#12b981" fill="#12b981" fillOpacity={0.1} strokeWidth={3} />
+                                    <defs>
+                                        <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                                    <Area type="monotone" dataKey="users" stroke="#10b981" fill="url(#colorUsers)" strokeWidth={4} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
-
                     <div className="chart-card">
                         <h3>Distribution</h3>
                         <div style={{ width: '100%', height: 250, marginTop: '1.5rem' }}>
@@ -234,40 +270,72 @@ const AdminDashboard = () => {
                             </ResponsiveContainer>
                         </div>
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
         );
     };
 
     const renderReports = () => {
         const reports = [
-            { title: "System Overview", desc: "Overall platform statistics and performance metrics.", color: "#8b5cf6" },
-            { title: "Lecturer Directory", desc: "Complete list of all registered lecturers and their status.", color: "#12b981" },
-            { title: "Student Roster", desc: "Detailed list of enrolled students with IDs and contact info.", color: "#3b82f6" },
+            {
+                title: "System Overview",
+                desc: "Overall platform statistics and performance metrics.",
+                color: "#8b5cf6",
+                iconBg: "rgba(139, 92, 246, 0.1)",
+                icon: <Activity size={32} />
+            },
+            {
+                title: "Lecturer Directory",
+                desc: "Complete list of all registered lecturers and their status.",
+                color: "#12b981",
+                iconBg: "rgba(18, 185, 129, 0.1)",
+                icon: <Users size={32} />
+            },
+            {
+                title: "Student Roster",
+                desc: "Detailed list of enrolled students with IDs and contact info.",
+                color: "#3b82f6",
+                iconBg: "rgba(59, 130, 246, 0.1)",
+                icon: <School size={32} />
+            },
         ];
 
         return (
             <div className="admin-reports">
-                <div style={{ marginBottom: "2.5rem" }}>
-                    <h2 style={{ margin: 0 }}>Report Center</h2>
-                    <p style={{ color: "#64748b", marginTop: "0.5rem" }}>Generate professional PDF reports for your specific modules.</p>
+                <div style={{ marginBottom: "3rem", animation: "slideDown 0.5s ease-out" }}>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Report Center</h2>
+                    <p style={{ color: "#64748b", fontSize: '1.1rem', marginTop: "0.75rem", maxWidth: '600px' }}>
+                        Access comprehensive platform data and generate high-fidelity PDF reports for your specific needs.
+                    </p>
                 </div>
+
                 <div className="reports-grid">
-                    {reports.map((r) => (
-                        <div className="report-card" key={r.title}>
-                            <div style={{ color: r.color }}><FileText size={32} /></div>
-                            <div className="report-info">
-                                <h3 style={{ margin: 0 }}>{r.title}</h3>
-                                <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.5rem" }}>{r.desc}</p>
+                    {reports.map((r, idx) => (
+                        <div className="report-card premium-card" key={r.title} style={{ animation: `fadeInUp 0.6s ease-out ${idx * 0.1}s both` }}>
+                            <div className="report-card-icon-wrapper" style={{ background: r.iconBg, color: r.color }}>
+                                {r.icon}
                             </div>
-                            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
-                                <button className="admin-btn admin-btn-primary" style={{ flex: 1 }} onClick={() => generatePDFReport(r.title)}>
-                                    <Download size={18} /> Export PDF
+                            <div className="report-info">
+                                <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem' }}>{r.title}</h3>
+                                <p style={{ color: "#64748b", fontSize: "0.95rem", lineHeight: 1.6 }}>{r.desc}</p>
+                            </div>
+                            <div className="report-actions">
+                                <button
+                                    className="premium-action-btn"
+                                    onClick={() => generatePDFReport(r.title)}
+                                    style={{ '--accent-color': r.color }}
+                                >
+                                    <Download size={20} />
+                                    <span>Download Report</span>
                                 </button>
                             </div>
                         </div>
                     ))}
                 </div>
+                <style>{`
+                    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+                    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                `}</style>
             </div>
         );
     };
@@ -380,9 +448,9 @@ const AdminDashboard = () => {
             </aside>
 
             <main className="admin-main-content">
-                <DashboardHeader 
-                    title="Admin Dashboard" 
-                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'} 
+                <DashboardHeader
+                    title="Admin Dashboard"
+                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'}
                     onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
