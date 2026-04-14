@@ -11,7 +11,8 @@ import MainLayout from "./layouts/Home/MainLayout.jsx";
 import Home from "./pages/Home/Home.jsx";
 import About from "./pages/Home/About.jsx";
 import Contact from "./pages/Home/Contact.jsx";
-import ReviewManagement from "./components/Home/ReviewManagement.jsx";
+import ReviewsPage from "./pages/Lasiru/ReviewsPage.jsx";
+import NotificationsPage from "./pages/Lasiru/NotificationsPage.jsx";
 
 function App() {
   return (
@@ -21,7 +22,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/reviews" element={<ReviewManagement />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
 
       {/* Auth Routes */}
