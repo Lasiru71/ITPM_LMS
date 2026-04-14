@@ -15,7 +15,7 @@ const NotificationBell = () => {
 
     useEffect(() => {
         fetchNotifications();
-        
+
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsOpen(false);
@@ -41,7 +41,7 @@ const NotificationBell = () => {
         const date = new Date(dateString);
         const now = new Date();
         const diffInSeconds = Math.floor((now - date) / 1000);
-        
+
         if (diffInSeconds < 60) return "Just now";
         if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
@@ -50,16 +50,17 @@ const NotificationBell = () => {
 
     const getTargetBadgeStyle = (toWhom) => {
         switch (toWhom) {
-            case "Student": return { background: "#ecfdf5", color: "#10b981" };
-            case "Lecture": return { background: "#eff6ff", color: "#3b82f6" };
-            default: return { background: "#fef2f2", color: "#ef4444" };
+            case "Students": return { background: "#10b981", color: "#ffffff", border: "none" };
+            case "Lecturers": return { background: "#3b82f6", color: "#ffffff", border: "none" };
+            case "All": return { background: "#ef4444", color: "#ffffff", border: "none" };
+            default: return { background: "#6b7280", color: "#ffffff", border: "none" };
         }
     };
 
     return (
         <div className="dash-notif-container" ref={dropdownRef}>
-            <button 
-                className={`dash-header-icon-btn ${isOpen ? "active" : ""}`} 
+            <button
+                className={`dash-header-icon-btn ${isOpen ? "active" : ""}`}
                 onClick={() => setIsOpen(!isOpen)}
                 title="Notifications"
             >
@@ -87,8 +88,8 @@ const NotificationBell = () => {
                             </div>
                         ) : (
                             notifications.map((notif) => (
-                                <div 
-                                    key={notif._id} 
+                                <div
+                                    key={notif._id}
                                     className="notif-item"
                                     onClick={() => {
                                         setIsOpen(false);
@@ -118,7 +119,7 @@ const NotificationBell = () => {
                         )}
                     </div>
 
-                    <button 
+                    <button
                         className="notif-view-all-btn"
                         onClick={() => {
                             setIsOpen(false);
