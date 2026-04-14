@@ -1,9 +1,9 @@
-import jwt from "jsonwebtoken";
-import User from "../../models/Lasiru/User.js";
+const jwt = require("jsonwebtoken");
+const User = require("../../models/Lasiru/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 
-export const authenticate = async (req, res, next) => {
+exports.authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -25,7 +25,7 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
-export const authorizeRoles = (...allowedRoles) => {
+exports.authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user || !allowedRoles.includes(req.user.role)) {
       return res.status(403).json({ message: "Forbidden: insufficient role" });

@@ -1,16 +1,21 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   getAllAnnouncements,
   createAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
-} from "../../Controllers/Lasiru/announcementController.js";
+} = require("../../Controllers/Lasiru/announcementController");
+const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware");
 
 const router = express.Router();
 
+// Public routes (if any)
 router.get("/", getAllAnnouncements);
-router.post("/", createAnnouncement);
-router.put("/:id", updateAnnouncement);
-router.delete("/:id", deleteAnnouncement);
 
-export default router;
+// Protected routes
+router.use(authenticate);
+router.post("/", authorizeRoles("Admin"), createAnnouncement);
+router.put("/:id", authorizeRoles("Admin"), updateAnnouncement);
+router.delete("/:id", authorizeRoles("Admin"), deleteAnnouncement);
+
+module.exports = router;
