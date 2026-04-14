@@ -1,6 +1,6 @@
-import express from "express";
-import { register, login, getProfile, updateProfile, changePassword } from "../../Controllers/Lasiru/authController.js";
-import { authenticate, authorizeRoles } from "../../middleware/Lasiru/authMiddleware.js";
+const express = require("express");
+const { register, login, getProfile, updateProfile, changePassword } = require("../../Controllers/Lasiru/authController.js");
+const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware.js");
 
 const router = express.Router();
 
@@ -41,5 +41,4 @@ router.get(
   }
 );
 
-export default router;
-
+module.exports = router;

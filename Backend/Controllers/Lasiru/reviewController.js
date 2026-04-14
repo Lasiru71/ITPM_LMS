@@ -1,9 +1,9 @@
-import Review from "../../models/Lasiru/Review.js";
-import User from "../../models/Lasiru/User.js";
-import Course from "../../models/Jeewani/Course.js";
+const Review = require("../../models/Lasiru/Review.js");
+const User = require("../../models/Lasiru/User.js");
+const Course = require("../../models/Jeewani/Course.js");
 
 // Create a new review (Student)
-export const createReview = async (req, res) => {
+exports.createReview = async (req, res) => {
     try {
         const { courseId, courseName, rating, comment } = req.body;
         const studentId = req.user._id;
@@ -24,7 +24,7 @@ export const createReview = async (req, res) => {
 };
 
 // Get all reviews with course and student details (Admin)
-export const getAllReviews = async (req, res) => {
+exports.getAllReviews = async (req, res) => {
     try {
         const reviews = await Review.find()
             .populate("studentId", "name email nicNumber")
@@ -36,7 +36,7 @@ export const getAllReviews = async (req, res) => {
 };
 
 // Get reviews for a specific student (Student Dashboard)
-export const getStudentReviews = async (req, res) => {
+exports.getStudentReviews = async (req, res) => {
     try {
         const studentId = req.user._id;
         const reviews = await Review.find({ studentId })
@@ -48,7 +48,7 @@ export const getStudentReviews = async (req, res) => {
 };
 
 // Add admin reply to a review
-export const addAdminReply = async (req, res) => {
+exports.addAdminReply = async (req, res) => {
     try {
         const { id } = req.params;
         const { adminReply } = req.body;
@@ -74,7 +74,7 @@ export const addAdminReply = async (req, res) => {
 };
 
 // Delete a review (Student can delete own, Admin can delete any)
-export const deleteReview = async (req, res) => {
+exports.deleteReview = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user._id;
@@ -103,7 +103,7 @@ export const deleteReview = async (req, res) => {
 };
 
 // Update review status (Approved/Rejected)
-export const updateReviewStatus = async (req, res) => {
+exports.updateReviewStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;

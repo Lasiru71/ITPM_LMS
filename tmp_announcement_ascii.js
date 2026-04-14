@@ -1,8 +1,8 @@
-const Announcement = require("../../models/Lasiru/Announcement.js");
+import Announcement from "../../models/Lasiru/Announcement.js";
 
 // @desc    Get all announcements (Admin view)
 // @route   GET /api/announcements
-exports.getAllAnnouncements = async (req, res) => {
+export const getAllAnnouncements = async (req, res) => {
   try {
     const announcements = await Announcement.find().sort({ createdAt: -1 });
     res.status(200).json(announcements);
@@ -13,7 +13,7 @@ exports.getAllAnnouncements = async (req, res) => {
 
 // @desc    Get role-based notifications (Latest 5 for popup)
 // @route   GET /api/announcements/notifications/latest
-exports.getLatestNotifications = async (req, res) => {
+export const getLatestNotifications = async (req, res) => {
   const { role } = req.query; // role: Student, Lecture, Admin
   let filter = {};
 
@@ -37,7 +37,7 @@ exports.getLatestNotifications = async (req, res) => {
 
 // @desc    Get all notifications with pagination (Full page)
 // @route   GET /api/announcements/notifications/all
-exports.getPaginatedNotifications = async (req, res) => {
+export const getPaginatedNotifications = async (req, res) => {
   const { role, page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
   let filter = {};
@@ -70,7 +70,7 @@ exports.getPaginatedNotifications = async (req, res) => {
 
 // @desc    Create an announcement
 // @route   POST /api/announcements
-exports.createAnnouncement = async (req, res) => {
+export const createAnnouncement = async (req, res) => {
   const { title, description, toWhom, category, priority } = req.body;
 
   try {
@@ -90,7 +90,7 @@ exports.createAnnouncement = async (req, res) => {
 
 // @desc    Update an announcement
 // @route   PUT /api/announcements/:id
-exports.updateAnnouncement = async (req, res) => {
+export const updateAnnouncement = async (req, res) => {
   const { id } = req.params;
   const { title, description, toWhom, category, priority, isActive } = req.body;
 
@@ -111,7 +111,7 @@ exports.updateAnnouncement = async (req, res) => {
 
 // @desc    Delete an announcement
 // @route   DELETE /api/announcements/:id
-exports.deleteAnnouncement = async (req, res) => {
+export const deleteAnnouncement = async (req, res) => {
   const { id } = req.params;
 
   try {

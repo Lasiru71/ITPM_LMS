@@ -1,13 +1,13 @@
-import express from "express";
-import {
+const express = require("express");
+const {
     createReview,
     getAllReviews,
     getStudentReviews,
     addAdminReply,
     deleteReview,
     updateReviewStatus,
-} from "../../Controllers/Lasiru/reviewController.js";
-import { authenticate, authorizeRoles } from "../../middleware/Lasiru/authMiddleware.js";
+} = require("../../Controllers/Lasiru/reviewController.js");
+const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware.js");
 
 const router = express.Router();
 
@@ -25,4 +25,4 @@ router.patch("/reply/:id", authorizeRoles("Admin"), addAdminReply);
 router.delete("/delete/:id", deleteReview);
 router.patch("/status/:id", authorizeRoles("Admin"), updateReviewStatus);
 
-export default router;
+module.exports = router;

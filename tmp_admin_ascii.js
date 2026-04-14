@@ -1,10 +1,10 @@
-const User = require("../../models/Lasiru/User.js");
-const bcrypt = require("bcrypt");
+import User from "../../models/Lasiru/User.js";
+import bcrypt from "bcrypt";
 
 // --- Lecturer Management ---
 
 // Get all lecturers
-exports.getAllLecturers = async (req, res) => {
+export const getAllLecturers = async (req, res) => {
     try {
         const lecturers = await User.find({ role: "Lecturer" }).select("-password");
         res.status(200).json(lecturers);
@@ -14,7 +14,7 @@ exports.getAllLecturers = async (req, res) => {
 };
 
 // Create a new lecturer (Admin only)
-exports.createLecturer = async (req, res) => {
+export const createLecturer = async (req, res) => {
     try {
         const { name, email, password, address, phone } = req.body;
 
@@ -31,7 +31,7 @@ exports.createLecturer = async (req, res) => {
             address,
             phone,
             role: "Lecturer",
-            studentId: undefined, // Explicitly undefined to avoid indexing null/empty strings
+            nicNumber: undefined, // Explicitly undefined to avoid indexing null/empty strings
         });
 
         await newLecturer.save();
@@ -42,7 +42,7 @@ exports.createLecturer = async (req, res) => {
 };
 
 // Delete a lecturer
-exports.deleteLecturer = async (req, res) => {
+export const deleteLecturer = async (req, res) => {
     try {
         const { id } = req.params;
         await User.findByIdAndDelete(id);
@@ -55,7 +55,7 @@ exports.deleteLecturer = async (req, res) => {
 // --- Student Management ---
 
 // Get all students
-exports.getAllStudents = async (req, res) => {
+export const getAllStudents = async (req, res) => {
     try {
         const students = await User.find({ role: "Student" }).select("-password");
         res.status(200).json(students);
@@ -65,7 +65,7 @@ exports.getAllStudents = async (req, res) => {
 };
 
 // Delete a student
-exports.deleteStudent = async (req, res) => {
+export const deleteStudent = async (req, res) => {
     try {
         const { id } = req.params;
         await User.findByIdAndDelete(id);
@@ -78,7 +78,7 @@ exports.deleteStudent = async (req, res) => {
 // --- Common ---
 
 // Get Dashboard Stats
-exports.getDashboardStats = async (req, res) => {
+export const getDashboardStats = async (req, res) => {
     try {
         const totalStudents = await User.countDocuments({ role: "Student" });
         const totalLecturers = await User.countDocuments({ role: "Lecturer" });
@@ -132,7 +132,7 @@ exports.getDashboardStats = async (req, res) => {
 };
 
 // Toggle User Status (Activate/Deactivate)
-exports.toggleUserStatus = async (req, res) => {
+export const toggleUserStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findById(id);

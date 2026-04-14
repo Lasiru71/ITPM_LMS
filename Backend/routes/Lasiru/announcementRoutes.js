@@ -1,10 +1,12 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   getAllAnnouncements,
   createAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
-} from "../../Controllers/Lasiru/announcementController.js";
+  getLatestNotifications,
+  getPaginatedNotifications,
+} = require("../../Controllers/Lasiru/announcementController.js");
 
 const router = express.Router();
 
@@ -13,4 +15,8 @@ router.post("/", createAnnouncement);
 router.put("/:id", updateAnnouncement);
 router.delete("/:id", deleteAnnouncement);
 
-export default router;
+// Notification routes
+router.get("/notifications/latest", getLatestNotifications);
+router.get("/notifications/all", getPaginatedNotifications);
+
+module.exports = router;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, Bell, Menu, X, ChevronDown, LogOut, LayoutDashboard, User } from 'lucide-react';
 import { APP_NAME, NAV_LINKS } from '../../constants/Home/config';
+import NotificationBell from '../Lasiru/NotificationBell';
 
 /* ── tiny nav link helper with JS hover ─────────── */
 function NavLink({ to, children, style = {} }) {
@@ -123,9 +124,7 @@ export default function Navbar() {
             </>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Link to={getDashboardPath()}>
-                <IconBtn title="Notifications"><Bell style={{ width: 18, height: 18 }} /></IconBtn>
-              </Link>
+              <NotificationBell />
 
               {/* Profile dropdown */}
               <div style={{ position: 'relative' }}>
