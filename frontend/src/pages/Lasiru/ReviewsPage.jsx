@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Send, MessageSquare, Clock, CheckCircle, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import { getStudentReviews, createReview, deleteReview } from '../../api/Lasiru/reviewApi';
-import { getAllCourses } from '../../api/Jeewani/courseApi';
-import { MOCK_COURSES } from '../../constants/Home/mockData';
 import { useToast } from '../../components/Lasiru/ToastProvider';
 import '../../Styles/Lasiru/StudentDashboard.css';
+
+const PLATFORM_COURSES = [
+    { _id: 'course-1', title: 'React Fundamentals' },
+    { _id: 'course-2', title: 'Advanced JavaScript' },
+    { _id: 'course-3', title: 'Node.js & Express' },
+    { _id: 'course-4', title: 'MongoDB Database Design' },
+    { _id: 'course-5', title: 'UI/UX Design Principles' },
+    { _id: 'course-6', title: 'Python for Beginners' },
+    { _id: 'course-7', title: 'Machine Learning Basics' },
+    { _id: 'course-8', title: 'Data Structures & Algorithms' },
+    { _id: 'course-9', title: 'DevOps & CI/CD' },
+    { _id: 'course-10', title: 'Cybersecurity Essentials' },
+];
 
 // No hardcoded courses needed anymore
 
@@ -30,15 +41,16 @@ export default function ReviewsPage() {
 
     const fetchCourses = async () => {
         try {
-            const data = await getAllCourses();
-            const customCourses = Array.isArray(data) ? data : [];
-            setAvailableCourses([
-                ...customCourses,
-                ...MOCK_COURSES.map(c => ({ ...c, _id: String(c.id) }))
-            ]);
+            const response = await fetch('/api/courses', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+            if (response.ok) {
+                const data = await response.json();
+                const backendCourses = Array.isArray(data) ? data : [];
+                setAvailableCourses(backendCourses.length > 0 ? backendCourses : PLATFORM_COURSES);
+            } else {
+                setAvailableCourses(PLATFORM_COURSES);
+            }
         } catch (error) {
-            console.error("Error fetching courses:", error);
-            setAvailableCourses(MOCK_COURSES.map(c => ({ ...c, _id: String(c.id) })));
+            setAvailableCourses(PLATFORM_COURSES);
         }
     };
 
@@ -57,11 +69,11 @@ export default function ReviewsPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        
+
         if (name === "courseId") {
             const selectedCourse = availableCourses.find(c => (c._id || c.id) === value);
-            setFormData(prev => ({ 
-                ...prev, 
+            setFormData(prev => ({
+                ...prev,
                 courseId: value,
                 courseName: selectedCourse ? selectedCourse.title : ''
             }));
@@ -85,12 +97,17 @@ export default function ReviewsPage() {
 
         try {
             setIsSubmitting(true);
-            await createReview(formData);
+            // Send only courseName, rating, comment - courseId is an ObjectId and our IDs are strings
+            const payload = { courseName: formData.courseName, rating: formData.rating, comment: formData.comment };
+            await createReview(payload);
             setMessage({ type: 'success', text: 'Review submitted successfully!' });
-            setFormData({ courseName: '', rating: 5, comment: '' });
+            showToast('success', 'Your review has been posted!');
+            setFormData({ courseId: '', courseName: '', rating: 5, comment: '' });
             fetchReviews(); // Refresh history
         } catch (error) {
-            setMessage({ type: 'error', text: error.response?.data?.message || 'Error submitting review.' });
+            const msg = error.response?.data?.message || 'Error submitting review.';
+            setMessage({ type: 'error', text: msg });
+            showToast('error', msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -126,9 +143,9 @@ export default function ReviewsPage() {
             </header>
 
             {message.text && (
-                <div style={{ 
-                    padding: '1rem', 
-                    borderRadius: '0.75rem', 
+                <div style={{
+                    padding: '1rem',
+                    borderRadius: '0.75rem',
                     marginBottom: '2rem',
                     background: message.type === 'success' ? '#ecfdf5' : '#fef2f2',
                     color: message.type === 'success' ? '#065f46' : '#991b1b',
@@ -148,11 +165,11 @@ export default function ReviewsPage() {
                     <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Send size={20} style={{ color: '#10b981' }} /> Write a New Review
                     </h2>
-                    
+
                     <form onSubmit={handleSubmit}>
                         <div style={{ marginBottom: '1.25rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}>Select Course</label>
-                            <select 
+                            <select
                                 name="courseId"
                                 value={formData.courseId}
                                 onChange={handleInputChange}
@@ -169,7 +186,7 @@ export default function ReviewsPage() {
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}>Rating</label>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 {[1, 2, 3, 4, 5].map(star => (
-                                    <Star 
+                                    <Star
                                         key={star}
                                         size={24}
                                         style={{ cursor: 'pointer', fill: star <= formData.rating ? '#f59e0b' : 'none', color: star <= formData.rating ? '#f59e0b' : '#cbd5e1' }}
@@ -181,7 +198,7 @@ export default function ReviewsPage() {
 
                         <div style={{ marginBottom: '1.5rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600, color: '#475569' }}>Your Experience</label>
-                            <textarea 
+                            <textarea
                                 name="comment"
                                 value={formData.comment}
                                 onChange={handleInputChange}
@@ -192,17 +209,17 @@ export default function ReviewsPage() {
                             />
                         </div>
 
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             disabled={isSubmitting}
-                            style={{ 
-                                width: '100%', 
-                                background: '#10b981', 
-                                color: '#fff', 
-                                padding: '0.75rem', 
-                                borderRadius: '0.5rem', 
-                                border: 'none', 
-                                fontWeight: 700, 
+                            style={{
+                                width: '100%',
+                                background: '#10b981',
+                                color: '#fff',
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                border: 'none',
+                                fontWeight: 700,
                                 cursor: 'pointer',
                                 opacity: isSubmitting ? 0.7 : 1,
                                 transition: 'background 0.2s'
@@ -237,10 +254,10 @@ export default function ReviewsPage() {
                                             <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>{review.courseName}</h3>
                                             <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem' }}>
                                                 {[1, 2, 3, 4, 5].map(star => (
-                                                    <Star 
-                                                        key={star} 
-                                                        size={14} 
-                                                        style={{ fill: star <= review.rating ? '#f59e0b' : 'none', color: star <= review.rating ? '#f59e0b' : '#cbd5e1' }} 
+                                                    <Star
+                                                        key={star}
+                                                        size={14}
+                                                        style={{ fill: star <= review.rating ? '#f59e0b' : 'none', color: star <= review.rating ? '#f59e0b' : '#cbd5e1' }}
                                                     />
                                                 ))}
                                             </div>
@@ -249,8 +266,8 @@ export default function ReviewsPage() {
                                             <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                                 <Clock size={12} /> {new Date(review.createdAt).toLocaleDateString()}
                                             </span>
-                                            
-                                            <button 
+
+                                            <button
                                                 onClick={() => handleDelete(review._id)}
                                                 disabled={deletingIds.has(review._id)}
                                                 aria-label="Delete review"
