@@ -192,13 +192,14 @@ const AnnouncementManagement = () => {
             <div className="announcements-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "2rem" }}>
                 {filteredAnnouncements.map((ann, idx) => (
                     <div key={ann._id} className="premium-card" style={{
-                        background: "#fff",
+                        background: "linear-gradient(160deg, #ffffff 0%, #f8fafc 100%)",
                         borderRadius: "1.5rem",
                         padding: "2rem",
-                        border: "1px solid #f1f5f9",
+                        border: "1px solid rgba(226, 232, 240, 0.8)",
+                        borderTop: `4px solid ${getPriorityColor(ann.priority)}`,
                         position: "relative",
-                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02), 0 10px 15px -3px rgba(0,0,0,0.03)",
+                        transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                        boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.05)",
                         animation: `fadeInUp 0.6s ease-out ${idx * 0.05}s both`
                     }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>

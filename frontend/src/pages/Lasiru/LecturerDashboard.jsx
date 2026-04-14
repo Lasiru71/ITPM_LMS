@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-    LayoutDashboard, 
-    BookOpen, 
-    PlusCircle, 
-    Star, 
-    Settings, 
-    LogOut, 
-    Bell, 
+import {
+    LayoutDashboard,
+    BookOpen,
+    PlusCircle,
+    Star,
+    Settings,
+    LogOut,
+    Bell,
     ChevronRight,
     Search,
     User
@@ -37,14 +37,99 @@ const LecturerDashboard = () => {
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
+    const renderDashboardOverview = () => {
+        return (
+            <div className="overview-container">
+                <div className="welcome-banner">
+                    <div className="welcome-content">
+                        <h2>Welcome to EduVault Lecturer Studio</h2>
+                        <p>Manage your courses, track student progress, and monitor engagement all in one place. You have 2 new reviews pending your response.</p>
+                        <button className="primary-btn" onClick={() => setActiveTab('create-course')}>
+                            <PlusCircle size={18} /> Create New Course
+                        </button>
+                    </div>
+                    <div className="welcome-illustration">
+                        <div className="abstract-shape shape-1"></div>
+                        <div className="abstract-shape shape-2"></div>
+                        <BookOpen size={64} className="banner-icon" />
+                    </div>
+                </div>
+
+                <div className="metrics-grid">
+                    <div className="metric-card">
+                        <div className="metric-icon-wrap bg-blue">
+                            <BookOpen size={24} />
+                        </div>
+                        <div className="metric-info">
+                            <h3>Active Courses</h3>
+                            <div className="metric-value">12</div>
+                            <span className="metric-trend positive">+2 this month</span>
+                        </div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-icon-wrap bg-green">
+                            <User size={24} />
+                        </div>
+                        <div className="metric-info">
+                            <h3>Total Students</h3>
+                            <div className="metric-value">1,248</div>
+                            <span className="metric-trend positive">+15% vs last month</span>
+                        </div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-icon-wrap bg-purple">
+                            <Star size={24} />
+                        </div>
+                        <div className="metric-info">
+                            <h3>Average Rating</h3>
+                            <div className="metric-value">4.8</div>
+                            <span className="metric-trend positive">From 450 reviews</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="recent-activity-section">
+                    <h3>Recent Activity</h3>
+                    <div className="activity-list">
+                        <div className="activity-item">
+                            <div className="activity-icon bg-blue-light"><BookOpen size={16} /></div>
+                            <div className="activity-details">
+                                <p><strong>React Fundamentals</strong> published successfully</p>
+                                <span>2 hours ago</span>
+                            </div>
+                        </div>
+                        <div className="activity-item">
+                            <div className="activity-icon bg-yellow-light"><Star size={16} /></div>
+                            <div className="activity-details">
+                                <p>New 5-star review from <strong>Kamal Perera</strong></p>
+                                <span>5 hours ago</span>
+                            </div>
+                        </div>
+                        <div className="activity-item">
+                            <div className="activity-icon bg-green-light"><User size={16} /></div>
+                            <div className="activity-details">
+                                <p><strong>50 students</strong> enrolled in Node.js Masterclass</p>
+                                <span>Yesterday</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderContent = () => {
+        if (activeTab === "dashboard") {
+            return renderDashboardOverview();
+        }
+
         return (
             <div className="dashboard-placeholder">
                 <div className="placeholder-icon">
                     {navItems.find(item => item.id === activeTab)?.icon}
                 </div>
                 <h2>{navItems.find(item => item.id === activeTab)?.label}</h2>
-                <p>This section is under development.</p>
+                <p>This premium section is currently under construction. Check back soon for exciting updates!</p>
             </div>
         );
     };
@@ -58,13 +143,13 @@ const LecturerDashboard = () => {
                     </div>
                     <span>EduVault</span>
                 </div>
-                
+
                 <nav className="lecturer-nav">
                     <div className="nav-section-title">Menu</div>
                     {navItems.map((item) => (
-                        <div 
+                        <div
                             key={item.id}
-                            className={`nav-item ${activeTab === item.id ? "active" : ""}`} 
+                            className={`nav-item ${activeTab === item.id ? "active" : ""}`}
                             onClick={() => setActiveTab(item.id)}
                         >
                             <div className="nav-item-content">
@@ -93,9 +178,9 @@ const LecturerDashboard = () => {
             </aside>
 
             <main className="lecturer-main-content">
-                <DashboardHeader 
-                    showSearch={true} 
-                    onSearchChange={(val) => console.log("Searching for:", val)} 
+                <DashboardHeader
+                    showSearch={true}
+                    onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
                 <div className="lecturer-content-area">

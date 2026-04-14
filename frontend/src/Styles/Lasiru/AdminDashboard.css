@@ -187,10 +187,20 @@
 }
 
 .stat-card {
-    background: var(--card-bg);
-    padding: 1.75rem;
-    border-radius: 1.25rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.1);
+    border-color: rgba(18, 185, 129, 0.3);
 }
 
 .charts-container {
@@ -200,10 +210,23 @@
 }
 
 .chart-card {
-    background: var(--card-bg);
-    padding: 1.75rem;
-    border-radius: 1.25rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    padding: 2.25rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+    transition: all 0.3s ease;
+}
+
+.chart-card h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.chart-card:hover {
+    box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.08);
 }
 
 .reports-grid {
@@ -620,6 +643,7 @@
 .action-icon-btn {
     width: 36px;
     height: 36px;
+    padding: 0 !important;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -629,6 +653,16 @@
     transition: all 0.2s;
     background: #f1f5f9;
     color: #64748b;
+}
+
+.action-icon-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    display: block;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .action-icon-btn:hover {

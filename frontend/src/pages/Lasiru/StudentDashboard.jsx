@@ -36,14 +36,112 @@ const StudentDashboard = () => {
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
+    const renderDashboardOverview = () => {
+        return (
+            <div className="overview-container">
+                <div className="welcome-banner student-banner">
+                    <div className="welcome-content">
+                        <h2>Welcome Back, Learner!</h2>
+                        <p>You're making great progress. You have 2 assignments due this week and are halfway through your React Native course. Keep it up!</p>
+                        <button className="primary-btn pulse-btn" onClick={() => setActiveTab('browse')}>
+                            <Search size={18} /> Explore New Courses
+                        </button>
+                    </div>
+                    <div className="welcome-illustration">
+                        <div className="abstract-shape shape-1"></div>
+                        <div className="abstract-shape shape-2"></div>
+                        <Award size={64} className="banner-icon" />
+                    </div>
+                </div>
+
+                <div className="section-title-row">
+                    <h3>Continue Learning</h3>
+                    <span className="view-all">View All</span>
+                </div>
+
+                <div className="course-progress-grid">
+                    <div className="progress-card">
+                        <div className="course-image react-bg"></div>
+                        <div className="progress-content">
+                            <h4>Modern React with Hooks</h4>
+                            <span className="instructor">By Ajith Bandara</span>
+                            <div className="progress-bar-container">
+                                <div className="progress-bar-fill" style={{ width: '65%' }}></div>
+                            </div>
+                            <div className="progress-stats">
+                                <span>65% Completed</span>
+                                <span>12/18 Lessons</span>
+                            </div>
+                            <button className="continue-btn">
+                                <PlayCircle size={16} /> Continue
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="progress-card">
+                        <div className="course-image node-bg"></div>
+                        <div className="progress-content">
+                            <h4>Node.js API Masterclass</h4>
+                            <span className="instructor">By Kamal Perera</span>
+                            <div className="progress-bar-container">
+                                <div className="progress-bar-fill" style={{ width: '30%' }}></div>
+                            </div>
+                            <div className="progress-stats">
+                                <span>30% Completed</span>
+                                <span>4/12 Lessons</span>
+                            </div>
+                            <button className="continue-btn">
+                                <PlayCircle size={16} /> Continue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="metrics-grid">
+                    <div className="metric-card">
+                        <div className="metric-icon-wrap bg-blue-light">
+                            <BookOpen size={24} />
+                        </div>
+                        <div className="metric-info">
+                            <h3>Enrolled Courses</h3>
+                            <div className="metric-value">4</div>
+                        </div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-icon-wrap bg-yellow-light">
+                            <Award size={24} />
+                        </div>
+                        <div className="metric-info">
+                            <h3>Certificates Earned</h3>
+                            <div className="metric-value">2</div>
+                        </div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-icon-wrap bg-green-light">
+                            <ChevronRight size={24} />
+                        </div>
+                        <div className="metric-info">
+                            <h3>Assignments Pending</h3>
+                            <div className="metric-value">1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderContent = () => {
+        if (activeTab === "my-learning") {
+            return renderDashboardOverview();
+        }
+
         return (
             <div className="dashboard-placeholder">
                 <div className="placeholder-icon">
                     {navItems.find(item => item.id === activeTab)?.icon}
                 </div>
                 <h2>{navItems.find(item => item.id === activeTab)?.label}</h2>
-                <p>This section is under development.</p>
+                <p>This premium section is currently under construction. Check back soon for exciting updates!</p>
             </div>
         );
     };
@@ -92,9 +190,9 @@ const StudentDashboard = () => {
             </aside>
 
             <main className="student-main-content">
-                <DashboardHeader 
-                    showSearch={true} 
-                    onSearchChange={(val) => console.log("Searching for:", val)} 
+                <DashboardHeader
+                    showSearch={true}
+                    onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
                 <div className="student-content-area">
