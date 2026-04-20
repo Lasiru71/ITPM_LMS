@@ -308,7 +308,7 @@
   padding: 0.75rem 1.5rem;
   border-radius: 0.75rem;
   font-weight: 600;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
@@ -419,11 +419,11 @@
   height: 120px;
   background-size: cover;
   background-position: center;
-  position: relative;
 }
 
 .react-bg {
   background: linear-gradient(to right, #282c34, #1f232b);
+  position: relative;
 }
 
 .react-bg::after {
@@ -437,6 +437,7 @@
 
 .node-bg {
   background: linear-gradient(to right, #026e00, #014700);
+  position: relative;
 }
 
 .node-bg::after {
@@ -543,12 +544,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
-.bg-blue-light { background: #dbeafe; color: #2563eb; }
-.bg-yellow-light { background: #fef3c7; color: #d97706; }
-.bg-green-light { background: #dcfce7; color: #16a34a; }
+.bg-blue-light {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.bg-yellow-light {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.bg-green-light {
+  background: #dcfce7;
+  color: #16a34a;
+}
 
 .metric-info h3 {
   font-size: 0.875rem;

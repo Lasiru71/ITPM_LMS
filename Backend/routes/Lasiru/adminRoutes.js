@@ -7,8 +7,8 @@ const {
     deleteStudent,
     toggleUserStatus,
     getDashboardStats,
-} = require("../../Controllers/Lasiru/adminController.js");
-const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware.js");
+} = require("../../Controllers/Lasiru/adminController");
+const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware");
 
 const router = express.Router();
 

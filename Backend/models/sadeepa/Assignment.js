@@ -15,7 +15,7 @@ const assignmentSchema = new mongoose.Schema({
     correctAnswer: { type: String }, // For MCQ, exactly matches one option
     points: { type: Number, default: 10 } // Default 10 points per question
   }],
-  fileData: { 
+  fileData: {
     filename: { type: String },
     base64: { type: String } // Storing file as base64 string directly in Mongo for portability
   },

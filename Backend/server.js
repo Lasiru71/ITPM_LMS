@@ -8,7 +8,6 @@ const paymentRoutes = require("./routes/payment.routes");
 const attendanceRoutes = require("./routes/attendance.routes");
 const courseRoutes = require("./routes/course.routes");
 
-// Lasiru Routes
 const authRoutes = require("./routes/Lasiru/authRoutes");
 const adminRoutes = require("./routes/Lasiru/adminRoutes");
 const reviewRoutes = require("./routes/Lasiru/reviewRoutes");

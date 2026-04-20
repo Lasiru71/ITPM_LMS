@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-    LayoutDashboard, 
-    BookOpen, 
-    PlusCircle, 
-    Star, 
-    Settings, 
-    LogOut, 
-    Bell, 
+import {
+    LayoutDashboard,
+    BookOpen,
+    PlusCircle,
+    Star,
+    Settings,
+    LogOut,
+    Bell,
     ChevronRight,
     Search,
     User
@@ -143,13 +143,13 @@ const LecturerDashboard = () => {
                     </div>
                     <span>EduVault</span>
                 </div>
-                
+
                 <nav className="lecturer-nav">
                     <div className="nav-section-title">Menu</div>
                     {navItems.map((item) => (
-                        <div 
+                        <div
                             key={item.id}
-                            className={`nav-item ${activeTab === item.id ? "active" : ""}`} 
+                            className={`nav-item ${activeTab === item.id ? "active" : ""}`}
                             onClick={() => setActiveTab(item.id)}
                         >
                             <div className="nav-item-content">
@@ -178,9 +178,9 @@ const LecturerDashboard = () => {
             </aside>
 
             <main className="lecturer-main-content">
-                <DashboardHeader 
-                    showSearch={true} 
-                    onSearchChange={(val) => console.log("Searching for:", val)} 
+                <DashboardHeader
+                    showSearch={true}
+                    onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
                 <div className="lecturer-content-area">

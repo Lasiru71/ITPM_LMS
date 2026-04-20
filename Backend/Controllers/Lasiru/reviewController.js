@@ -1,6 +1,6 @@
-const Review = require("../../models/Lasiru/Review.js");
-const User = require("../../models/Lasiru/User.js");
-const Course = require("../../models/Jeewani/Course.js");
+const Review = require("../../models/Lasiru/Review");
+const User = require("../../models/Lasiru/User");
+const Course = require("../../models/Jeewani/Course");
 
 // Create a new review (Student)
 exports.createReview = async (req, res) => {
@@ -27,7 +27,7 @@ exports.createReview = async (req, res) => {
 exports.getAllReviews = async (req, res) => {
     try {
         const reviews = await Review.find()
-            .populate("studentId", "name email nicNumber")
+            .populate("studentId", "name email studentId")
             .sort({ createdAt: -1 });
         res.status(200).json(reviews);
     } catch (error) {
@@ -55,7 +55,7 @@ exports.addAdminReply = async (req, res) => {
 
         const updatedReview = await Review.findByIdAndUpdate(
             id,
-            { 
+            {
                 adminReply,
                 repliedAt: new Date(),
                 status: "Approved" // Automatically approve if replied
@@ -82,7 +82,7 @@ exports.deleteReview = async (req, res) => {
 
         // 1. Find the review first to check ownership
         const review = await Review.findById(id);
-        
+
         if (!review) {
             return res.status(404).json({ message: "Review not found" });
         }
@@ -94,7 +94,7 @@ exports.deleteReview = async (req, res) => {
 
         // 3. Perform deletion
         await Review.findByIdAndDelete(id);
-        
+
         res.status(200).json({ message: "Review deleted successfully" });
     } catch (error) {
         console.error("Delete review error:", error.message);
@@ -107,13 +107,13 @@ exports.updateReviewStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
-        
+
         const updatedReview = await Review.findByIdAndUpdate(id, { status }, { new: true });
-        
+
         if (!updatedReview) {
             return res.status(404).json({ message: "Review not found" });
         }
-        
+
         res.status(200).json(updatedReview);
     } catch (error) {
         res.status(500).json({ message: "Error updating review status", error: error.message });

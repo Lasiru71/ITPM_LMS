@@ -6,8 +6,8 @@ const {
     addAdminReply,
     deleteReview,
     updateReviewStatus,
-} = require("../../Controllers/Lasiru/reviewController.js");
-const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware.js");
+} = require("../../Controllers/Lasiru/reviewController");
+const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware");
 
 const router = express.Router();
 

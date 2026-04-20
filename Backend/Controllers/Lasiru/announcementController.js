@@ -72,12 +72,13 @@ exports.deleteAnnouncement = async (req, res) => {
 exports.getLatestNotifications = async (req, res) => {
   const { role } = req.query;
   try {
-    // Map role to accommodate all historical enums in the DB
-    const roleFilters = role === "Lecturer" ? ["Lecturers", "Lecturer", "Lecture", "All"]
-      : role === "Student" ? ["Students", "Student", "All"]
-        : ["All"];
-        
-    const filter = { toWhom: { $in: roleFilters }, isActive: { $ne: false } };
+    // Map role to the plural toWhom value stored in the DB
+    const roleToWhom = role === "Lecturer" ? "Lecturers"
+      : role === "Student" ? "Students"
+        : null;
+    const filter = roleToWhom
+      ? { toWhom: { $in: [roleToWhom, "All"] }, isActive: { $ne: false } }
+      : { isActive: { $ne: false } };
     const notifications = await Announcement.find(filter)
       .sort({ createdAt: -1 })
       .limit(5);
@@ -95,11 +96,12 @@ exports.getPaginatedNotifications = async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
   try {
-    const roleFilters = role === "Lecturer" ? ["Lecturers", "Lecturer", "Lecture", "All"]
-      : role === "Student" ? ["Students", "Student", "All"]
-        : ["All"];
-        
-    const filter = { toWhom: { $in: roleFilters }, isActive: { $ne: false } };
+    const roleToWhom = role === "Lecturer" ? "Lecturers"
+      : role === "Student" ? "Students"
+        : null;
+    const filter = roleToWhom
+      ? { toWhom: { $in: [roleToWhom, "All"] }, isActive: { $ne: false } }
+      : { isActive: { $ne: false } };
     const total = await Announcement.countDocuments(filter);
     const notifications = await Announcement.find(filter)
       .sort({ createdAt: -1 })

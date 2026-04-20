@@ -1,4 +1,4 @@
-const User = require("../../models/Lasiru/User.js");
+const User = require("../../models/Lasiru/User");
 const bcrypt = require("bcrypt");
 
 // --- Lecturer Management ---
@@ -83,7 +83,7 @@ exports.getDashboardStats = async (req, res) => {
         const totalStudents = await User.countDocuments({ role: "Student" });
         const totalLecturers = await User.countDocuments({ role: "Lecturer" });
         const activeUsers = await User.countDocuments({ isActive: true });
-        
+
         // Month-wise user growth (for the last 6 months)
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);

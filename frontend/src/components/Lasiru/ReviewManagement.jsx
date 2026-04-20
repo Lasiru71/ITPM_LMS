@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Search, Trash2, Star, CheckCircle, XCircle, AlertTriangle, MessageSquare, Reply } from "lucide-react";
+import { Search, Trash2, Star, CheckCircle, XCircle, AlertTriangle, MessageSquare, Reply, BookOpen } from "lucide-react";
 import { getAllReviews, deleteReview, updateReviewStatus, addAdminReply } from "../../api/Lasiru/reviewApi";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 
@@ -99,7 +99,7 @@ const ReviewManagement = () => {
         (rev) =>
             (rev.courseId?.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (rev.studentId?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-            (rev.studentId?.nicNumber?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (rev.studentId?.studentId?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (rev.comment?.toLowerCase() || "").includes(searchQuery.toLowerCase())
     );
 
@@ -129,92 +129,87 @@ const ReviewManagement = () => {
                     <p style={{ fontWeight: 500 }}>Syncing reviews...</p>
                 </div>
             ) : (
-                <div className="admin-table-container">
-                    <table className="premium-table">
-                        <thead>
-                            <tr>
-                                <th>Student & ID</th>
-                                <th>Course</th>
-                                <th>Rating</th>
-                                <th style={{ width: "25%" }}>Comment</th>
-                                <th>Status</th>
-                                <th style={{ textAlign: "right" }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredReviews.length > 0 ? (
-                                filteredReviews.map((rev) => (
-                                    <tr key={rev._id}>
-                                        <td>
-                                            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                                                <span style={{ fontWeight: 700, color: "#1e293b" }}>{rev.studentId?.name || "Unknown"}</span>
-                                                <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontFamily: "monospace" }}>ID: {rev.studentId?.nicNumber || "N/A"}</span>
-                                            </div>
-                                        </td>
-                                        <td style={{ fontWeight: 500, color: "#475569" }}>{rev.courseName || "N/A"}</td>
-                                        <td>
-                                            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                                                {renderStars(rev.rating)}
-                                                <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontWeight: 600 }}>{new Date(rev.createdAt).toLocaleDateString()}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <p style={{
-                                                fontSize: "0.9rem",
-                                                lineHeight: "1.5",
-                                                color: "#64748b",
-                                                margin: 0,
-                                                display: "-webkit-box",
-                                                WebkitLineClamp: "2",
-                                                WebkitBoxOrient: "vertical",
-                                                overflow: "hidden"
-                                            }}>
-                                                {rev.comment}
-                                            </p>
-                                        </td>
-                                        <td>
-                                            {!rev.adminReply ? (
-                                                <span className="status-badge" style={{ background: "#fef2f2", color: "#dc2626" }}>
-                                                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
-                                                    Pending
-                                                </span>
-                                            ) : (
-                                                <span className="status-badge status-active">
-                                                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
-                                                    Replied
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td>
-                                            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
-                                                <button
-                                                    className="action-icon-btn btn-toggle"
-                                                    onClick={() => handleReplyClick(rev)}
-                                                    title="Reply to Review"
-                                                >
-                                                    <Reply size={18} />
-                                                </button>
-                                                <button
-                                                    className="action-icon-btn btn-delete"
-                                                    onClick={() => handleDeleteClick(rev._id)}
-                                                    title="Delete Review"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="6" style={{ textAlign: "center", padding: "6rem", color: "#94a3b8" }}>
-                                        <div style={{ marginBottom: "1.5rem" }}><MessageSquare size={56} style={{ opacity: 0.1, margin: "0 auto" }} /></div>
-                                        <p style={{ fontSize: "1.1rem", fontWeight: 500 }}>No feedback discovered yet.</p>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "2rem" }}>
+                    {filteredReviews.length > 0 ? (
+                        filteredReviews.map((rev, idx) => (
+                            <div key={rev._id} className="premium-card" style={{
+                                background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+                                borderRadius: "1.5rem",
+                                padding: "2rem",
+                                border: "1px solid rgba(226, 232, 240, 0.8)",
+                                borderTop: rev.adminReply ? "4px solid #10b981" : "4px solid #ef4444",
+                                boxShadow: "0 10px 30px -5px rgba(15, 23, 42, 0.06)",
+                                position: "relative",
+                                transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                                animation: `fadeInUp 0.5s ease-out ${idx * 0.05}s both`
+                            }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                                        <div style={{
+                                            width: 46, height: 46, borderRadius: "14px",
+                                            background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                                            color: "white", display: "flex", alignItems: "center", justifyContent: "center",
+                                            fontWeight: 800, fontSize: "1.2rem", boxShadow: "0 4px 10px rgba(59, 130, 246, 0.3)"
+                                        }}>
+                                            {rev.studentId?.name ? rev.studentId.name.charAt(0).toUpperCase() : "S"}
+                                        </div>
+                                        <div>
+                                            <h4 style={{ margin: 0, color: "#1e293b", fontSize: "1.1rem", fontWeight: 800 }}>{rev.studentId?.name || "Unknown Student"}</h4>
+                                            <span style={{ fontSize: "0.8rem", color: "#64748b", fontFamily: "monospace" }}>ID: {rev.studentId?.studentId || "N/A"}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                                        <button className="action-icon-btn btn-toggle" onClick={() => handleReplyClick(rev)} title="Reply" style={{ width: 32, height: 32 }}>
+                                            <Reply size={15} />
+                                        </button>
+                                        <button className="action-icon-btn btn-delete" onClick={() => handleDeleteClick(rev._id)} title="Delete" style={{ width: 32, height: 32 }}>
+                                            <Trash2 size={15} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style={{ background: "rgba(241, 245, 249, 0.6)", padding: "0.75rem 1rem", borderRadius: "0.75rem", marginBottom: "1.25rem", display: "inline-block" }}>
+                                    <span style={{ color: "#3b82f6", fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                        <BookOpen size={14} /> {rev.courseName || "Unknown Course"}
+                                    </span>
+                                </div>
+
+                                <div style={{ marginBottom: "1.25rem" }}>
+                                    {renderStars(rev.rating)}
+                                </div>
+
+                                <p style={{
+                                    color: "#475569", fontSize: "0.95rem", lineHeight: 1.7, margin: "0 0 1.5rem",
+                                    display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden"
+                                }}>
+                                    "{rev.comment}"
+                                </p>
+
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #f1f5f9", paddingTop: "1.25rem" }}>
+                                    <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>
+                                        {new Date(rev.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    </span>
+                                    {!rev.adminReply ? (
+                                        <span className="status-badge" style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", padding: "0.4rem 0.8rem", fontSize: "0.75rem" }}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
+                                            Pending Reply
+                                        </span>
+                                    ) : (
+                                        <span className="status-badge" style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10b981", padding: "0.4rem 0.8rem", fontSize: "0.75rem" }}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
+                                            Replied
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "6rem", background: "white", borderRadius: "1.5rem", border: "1px dashed #cbd5e1" }}>
+                            <MessageSquare size={56} style={{ opacity: 0.1, margin: "0 auto 1.5rem", color: "#64748b" }} />
+                            <h3 style={{ margin: "0 0 0.5rem", color: "#1e293b", fontSize: "1.2rem" }}>No Reviews Found</h3>
+                            <p style={{ color: "#64748b" }}>Wait for students to drop some feedback.</p>
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../../models/Lasiru/User.js");
+const User = require("../../models/Lasiru/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 
@@ -33,3 +33,4 @@ exports.authorizeRoles = (...allowedRoles) => {
     next();
   };
 };
+
