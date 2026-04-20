@@ -44,10 +44,17 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
             </div>
 
             <div className="dash-header-right">
-                <Link to="/" className="dash-back-site-btn" title="Go to main website">
-                    <Globe size={18} />
-                    <span>Back to Site</span>
-                </Link>
+                {window.location.pathname === '/profile' ? (
+                    <Link to={getDashboardPath()} className="dash-back-site-btn" title="Go back to Dashboard" style={{ background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)', color: '#4f46e5', borderColor: '#c7d2fe' }}>
+                        <LayoutDashboard size={18} />
+                        <span>Dashboard</span>
+                    </Link>
+                ) : (
+                    <Link to="/" className="dash-back-site-btn" title="Go to main website">
+                        <Globe size={18} />
+                        <span>Back to Site</span>
+                    </Link>
+                )}
 
                 <NotificationBell />
 
