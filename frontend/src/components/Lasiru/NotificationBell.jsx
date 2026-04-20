@@ -64,7 +64,9 @@ const NotificationBell = () => {
                 onClick={() => setIsOpen(!isOpen)}
                 title="Notifications"
             >
-                <Bell size={22} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Bell size={26} strokeWidth={2.5} style={{ stroke: "#0f172a", fill: "none", zIndex: 100 }} />
+                </div>
                 {notifications.length > 0 && <span className="dash-notif-badge"></span>}
             </button>
 
@@ -97,7 +99,7 @@ const NotificationBell = () => {
                                     }}
                                 >
                                     <div className="notif-item-icon" style={getTargetBadgeStyle(notif.toWhom)}>
-                                        {notif.priority === "High" ? "!" : <Bell size={14} />}
+                                        {notif.priority === "High" ? "!" : <Bell size={20} strokeWidth={2.5} color="#ffffff" />}
                                     </div>
                                     <div className="notif-item-content">
                                         <div className="notif-item-top">

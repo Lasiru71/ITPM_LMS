@@ -163,8 +163,15 @@
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .dash-dropdown-user-info {
@@ -194,9 +201,20 @@
     letter-spacing: 0.05em;
 }
 
-.role-admin { background: #dcfce7; color: #15803d; }
-.role-lecturer { background: #dbeafe; color: #1e40af; }
-.role-student { background: #fef9c3; color: #854d0e; }
+.role-admin {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.role-lecturer {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.role-student {
+    background: #fef9c3;
+    color: #854d0e;
+}
 
 .dash-dropdown-divider {
     height: 1px;
@@ -235,9 +253,19 @@
 }
 
 @media (max-width: 768px) {
-    .dash-unified-header { padding: 0 1rem; height: 70px; }
-    .dash-user-name, .dash-back-site-btn span { display: none; }
-    .dash-back-site-btn { padding: 0.625rem; }
+    .dash-unified-header {
+        padding: 0 1rem;
+        height: 70px;
+    }
+
+    .dash-user-name,
+    .dash-back-site-btn span {
+        display: none;
+    }
+
+    .dash-back-site-btn {
+        padding: 0.625rem;
+    }
 }
 
 /* Dark Variant for User Profile */
@@ -312,64 +340,104 @@
 }
 
 /* ============================
-   Notification Bell Dropdown
+   Minimal Modern SaaS Notification Dropdown
    ============================ */
 .dash-notif-container {
     position: relative;
 }
 
+.dash-header-icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    cursor: pointer;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dash-header-icon-btn:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
 .dash-header-icon-btn.active {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.dash-notif-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background: #f43f5e;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    z-index: 10;
 }
 
 .dash-notif-dropdown {
     position: absolute;
     right: 0;
-    top: calc(100% + 1rem);
-    width: 360px;
+    top: calc(100% + 0.75rem);
+    width: 380px;
     background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    border-radius: 1.5rem;
-    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     z-index: 200;
-    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
+    animation: dropdownFade 0.2s ease-out forwards;
+}
+
+@keyframes dropdownFade {
+    0% { opacity: 0; transform: scale(0.97) translateY(-5px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .notif-dropdown-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.5rem;
+    padding: 1.25rem;
+    background: #ffffff;
     border-bottom: 1px solid #f1f5f9;
-    background: linear-gradient(135deg, #f8fafc, #ffffff);
 }
 
 .notif-dropdown-header h3 {
     margin: 0;
-    font-size: 1rem;
-    font-weight: 800;
+    font-size: 1.05rem;
+    font-weight: 700;
     color: #0f172a;
 }
 
 .notif-count {
     font-size: 0.75rem;
-    font-weight: 700;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
 }
 
 .notif-list-container {
-    max-height: 320px;
+    max-height: 380px;
     overflow-y: auto;
-    scroll-behavior: smooth;
 }
 
 .notif-list-container::-webkit-scrollbar {
-    width: 4px;
+    width: 5px;
 }
 
 .notif-list-container::-webkit-scrollbar-track {
@@ -377,8 +445,12 @@
 }
 
 .notif-list-container::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 4px;
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.notif-list-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .notif-empty-state {
@@ -387,49 +459,54 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    padding: 3rem 1.5rem;
-    color: #94a3b8;
+    padding: 3.5rem 1.5rem;
+    color: #64748b;
     text-align: center;
 }
 
 .notif-empty-state p {
     margin: 0;
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .notif-item {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
-    padding: 1rem 1.5rem;
+    padding: 1.1rem 1.25rem;
     cursor: pointer;
+    background: #ffffff;
     border-bottom: 1px solid #f8fafc;
-    transition: background 0.2s ease;
-}
-
-.notif-item:hover {
-    background: #f8fafc;
+    transition: background 0.15s ease;
 }
 
 .notif-item:last-child {
     border-bottom: none;
 }
 
+.notif-item:hover {
+    background: #f8fafc;
+}
+
 .notif-item-icon {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
-    font-weight: 800;
+    font-size: 1.1rem;
+    font-weight: 700;
 }
 
 .notif-item-content {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .notif-item-top {
@@ -437,13 +514,12 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    margin-bottom: 0.25rem;
 }
 
 .notif-item-top h4 {
     margin: 0;
-    font-size: 0.875rem;
-    font-weight: 700;
+    font-size: 0.9rem;
+    font-weight: 600;
     color: #1e293b;
     white-space: nowrap;
     overflow: hidden;
@@ -452,42 +528,44 @@
 
 .notif-time {
     font-size: 0.75rem;
+    font-weight: 500;
     color: #94a3b8;
-    white-space: nowrap;
     flex-shrink: 0;
 }
 
 .notif-preview {
-    margin: 0 0 0.5rem;
-    font-size: 0.8rem;
+    margin: 0 0 0.4rem 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
     color: #64748b;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .notif-item-footer {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
 }
 
 .notif-tag {
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
 }
 
 .notif-priority-tag {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #ef4444;
-    background: #fef2f2;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #b91c1c;
+    background: #fee2e2;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
 }
 
 .notif-view-all-btn {
@@ -497,17 +575,25 @@
     gap: 0.5rem;
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    background: #f8fafc;
     border: none;
     border-top: 1px solid #f1f5f9;
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: #10b981;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #3b82f6;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .notif-view-all-btn:hover {
-    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-    color: #059669;
+    background: #f1f5f9;
+    color: #2563eb;
+}
+
+.notif-view-all-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.notif-view-all-btn:hover svg {
+    transform: translateX(3px);
 }
