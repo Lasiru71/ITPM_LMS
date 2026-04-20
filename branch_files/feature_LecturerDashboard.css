@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --sidebar-bg: #0f172a;
   --sidebar-text: #94a3b8;
   --sidebar-text-active: #ffffff;
@@ -244,10 +244,7 @@
   color: #94a3b8;
 }
 
-/* =============================================
-   Premium Overview Styling (from Feature/Lasiru)
-   ============================================= */
-
+/* Premium Overview Styling */
 .overview-container {
   display: flex;
   flex-direction: column;
@@ -260,6 +257,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -357,7 +355,6 @@
   transform: scale(1.5);
 }
 
-/* Metrics Grid */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -444,7 +441,6 @@
   color: #10b981;
 }
 
-/* Recent Activity Section */
 .recent-activity-section {
   background: white;
   border-radius: 1rem;

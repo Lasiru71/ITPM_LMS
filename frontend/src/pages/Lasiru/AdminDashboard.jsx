@@ -5,7 +5,6 @@ import {
     Users,
     BookOpen,
     LogOut,
-    Bell,
     ChevronRight,
     TrendingUp,
     GraduationCap,
@@ -15,7 +14,8 @@ import {
     FileText,
     Download,
     Eye,
-    Megaphone
+    Megaphone,
+    Star
 } from "lucide-react";
 import {
     AreaChart,
