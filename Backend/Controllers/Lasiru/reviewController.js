@@ -23,10 +23,21 @@ exports.createReview = async (req, res) => {
     }
 };
 
-// Get all reviews with course and student details (Admin)
+// Get all reviews (Filtered by lecturer courses if role is Lecturer)
 exports.getAllReviews = async (req, res) => {
     try {
-        const reviews = await Review.find()
+        const userId = req.user._id;
+        const userRole = req.user.role;
+        let query = {};
+
+        // If Lecturer, only show reviews for their courses
+        if (userRole === "Lecturer") {
+            const lecturerCourses = await Course.find({ instructorId: userId.toString() });
+            const courseIds = lecturerCourses.map(c => c._id);
+            query = { courseId: { $in: courseIds } };
+        }
+
+        const reviews = await Review.find(query)
             .populate("studentId", "name email studentId")
             .sort({ createdAt: -1 });
         res.status(200).json(reviews);

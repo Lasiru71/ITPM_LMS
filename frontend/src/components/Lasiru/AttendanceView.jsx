@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Users, CheckCircle, XCircle, Clock, Save, Download, ChevronDown } from "lucide-react";
+import { Users, CheckCircle, XCircle, Clock, Save, Download, ChevronDown, BookOpen } from "lucide-react";
 import { useToast } from "./ToastProvider";
 import "../../Styles/Lasiru/AttendanceView.css";
 import { getAllStudents } from "../../api/Lasiru/adminApi";
@@ -9,45 +9,49 @@ const AttendanceView = ({ courses }) => {
     const [selectedCourseId, setSelectedCourseId] = useState("");
     const [attendanceData, setAttendanceData] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
+    const [demoId, setDemoId] = useState("");
 
-    // Mock students data for the selected course
+    // Set initial course
     useEffect(() => {
         if (courses && courses.length > 0 && !selectedCourseId) {
             setSelectedCourseId(courses[0]._id || courses[0].id);
         }
     }, [courses]);
 
+    // Fetch students and set default attendance
     useEffect(() => {
         if (selectedCourseId) {
             const fetchAndSetStudents = async () => {
                 try {
                     const data = await getAllStudents();
-                    // Map real db students to attendance structure
-                    const mappedStudents = data.map(std => {
-                        const nameParts = std.name ? std.name.split(" ") : ["U"];
-                        const avatar = nameParts.length > 1 
-                            ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase()
-                            : (std.name ? std.name.substring(0, 2).toUpperCase() : "UN");
-
-                        return {
-                            id: std._id,
-                            displayId: std.nicNumber || "N/A",
-                            name: std.name || "Unknown",
-                            email: std.email || "N/A",
-                            status: "Present", // default attendance status
-                            avatar: avatar
-                        };
-                    });
+                    const mappedStudents = data.map(std => ({
+                        id: std._id,
+                        displayId: std.studentId || std.nicNumber || "N/A",
+                        name: std.name || "Unknown",
+                        email: std.email || "N/A",
+                        status: "Present",
+                        avatar: std.name ? std.name.substring(0, 2).toUpperCase() : "ST"
+                    }));
                     setAttendanceData(mappedStudents);
                 } catch (error) {
-                    console.error("Error fetching students for attendance:", error);
                     showToast("error", "Failed to load students");
                 }
             };
-            
             fetchAndSetStudents();
         }
-    }, [selectedCourseId, showToast]);
+    }, [selectedCourseId]);
+
+    const handleSimulateScan = () => {
+        if (!demoId.trim()) return;
+        const student = attendanceData.find(s => s.displayId === demoId.trim());
+        if (student) {
+            handleStatusChange(student.id, "Present");
+            showToast("success", `Attendance marked for ${student.name}`);
+            setDemoId("");
+        } else {
+            showToast("error", "Student ID not found in roster");
+        }
+    };
 
     const handleStatusChange = (studentId, newStatus) => {
         setAttendanceData(prev => 
@@ -59,11 +63,10 @@ const AttendanceView = ({ courses }) => {
 
     const handleSaveAttendance = () => {
         setIsSaving(true);
-        // Simulate API call
         setTimeout(() => {
             setIsSaving(false);
-            showToast("success", "Attendance saved successfully!");
-        }, 800);
+            showToast("success", "Attendance record saved successfully");
+        }, 1000);
     };
 
     const getStatusClass = (status) => {
@@ -85,10 +88,10 @@ const AttendanceView = ({ courses }) => {
     if (!courses || courses.length === 0) {
         return (
             <div className="attendance-view-container animate-in fade-in duration-500">
-                <div className="empty-course-state bg-white rounded-2xl border border-dashed border-gray-300">
+                <div className="empty-course-state">
                     <Users size={48} />
-                    <h3>No Courses Available</h3>
-                    <p>Create a course first to manage its attendance.</p>
+                    <h3>No Courses Found</h3>
+                    <p>Create a course first to start managing attendance.</p>
                 </div>
             </div>
         );
@@ -101,7 +104,7 @@ const AttendanceView = ({ courses }) => {
             {/* Header & Controls */}
             <div className="attendance-header">
                 <div className="course-selector">
-                    <label>Select Course</label>
+                    <label>Active Course Session</label>
                     <select 
                         className="styled-select" 
                         value={selectedCourseId} 
@@ -115,14 +118,30 @@ const AttendanceView = ({ courses }) => {
                     </select>
                 </div>
 
-                <button 
-                    className="save-action-btn"
-                    onClick={handleSaveAttendance}
-                    disabled={isSaving}
-                >
-                    <Save size={18} />
-                    {isSaving ? "Saving..." : "Save Attendance"}
-                </button>
+                <div className="flex items-center gap-4">
+                    <div className="demo-scanner-box">
+                        <span className="flex h-2 w-2">
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
+                        <input 
+                            type="text" 
+                            placeholder="Scan Student ID..." 
+                            value={demoId}
+                            onChange={(e) => setDemoId(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSimulateScan()}
+                        />
+                        <button onClick={handleSimulateScan}>Scan</button>
+                    </div>
+
+                    <button 
+                        className="save-action-btn"
+                        onClick={handleSaveAttendance}
+                        disabled={isSaving}
+                    >
+                        <Save size={18} />
+                        {isSaving ? "Saving..." : "Save Record"}
+                    </button>
+                </div>
             </div>
 
             {/* Stats Row */}
@@ -133,7 +152,7 @@ const AttendanceView = ({ courses }) => {
                     </div>
                     <div className="stat-info">
                         <span className="stat-value">{stats.total}</span>
-                        <span className="stat-label">Total Enrolled</span>
+                        <span className="stat-label">Enrolled</span>
                     </div>
                 </div>
 
@@ -153,7 +172,7 @@ const AttendanceView = ({ courses }) => {
                     </div>
                     <div className="stat-info">
                         <span className="stat-value">{stats.late}</span>
-                        <span className="stat-label">Late</span>
+                        <span className="stat-label">Late Arrival</span>
                     </div>
                 </div>
 
@@ -171,17 +190,20 @@ const AttendanceView = ({ courses }) => {
             {/* Table Area */}
             <div className="attendance-table-card">
                 <div className="table-header-bar">
-                    <h3>Student Roster: {selectedCourse?.title}</h3>
+                    <h3>
+                        <BookOpen size={18} style={{marginRight: '8px'}} />
+                        Student Roster: <span className="highlight-course">{selectedCourse?.title}</span>
+                    </h3>
                 </div>
                 
                 <div className="attendance-table-wrap">
                     <table className="attendance-table">
                         <thead>
                             <tr>
-                                <th>Student</th>
+                                <th>Student Information</th>
                                 <th>Email</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>Attendance Status</th>
+                                <th>Academic Standing</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -210,13 +232,20 @@ const AttendanceView = ({ courses }) => {
                                     </td>
                                     <td>
                                         {student.status === "Absent" ? (
-                                            <span className="text-red-500 text-sm font-medium">Follow up required</span>
+                                            <span style={{ color: "#ef4444", fontSize: "0.85rem", fontWeight: 700 }}>Action Required</span>
+                                        ) : student.status === "Late" ? (
+                                            <span style={{ color: "#f59e0b", fontSize: "0.85rem", fontWeight: 700 }}>Late Arrival Warning</span>
                                         ) : (
-                                            <span className="text-emerald-500 text-sm font-medium">In good standing</span>
+                                            <span style={{ color: "#10b981", fontSize: "0.85rem", fontWeight: 700 }}>Satisfactory</span>
                                         )}
                                     </td>
                                 </tr>
                             ))}
+                            {attendanceData.length === 0 && (
+                                <tr>
+                                    <td colSpan="4" className="no-data-row">No students enrolled in this course yet.</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
