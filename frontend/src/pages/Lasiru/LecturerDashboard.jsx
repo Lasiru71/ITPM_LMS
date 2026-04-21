@@ -28,6 +28,7 @@ import { useLogout } from "../../hooks/Lasiru/useLogout";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import LecturerSettings from "../../components/Lasiru/LecturerSettings";
 import AttendanceView from "../../components/Lasiru/AttendanceView";
+import ReviewsView from "../../components/Lasiru/ReviewsView";
 import { getAllCourses, deleteCourse } from '../../api/Jeewani/courseApi';
 import { getAllReviews } from '../../api/Lasiru/reviewApi';
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
@@ -367,50 +368,7 @@ const LecturerDashboard = () => {
         if (activeTab === "reviews") {
             return (
                 <div className="reviews-section animate-in fade-in duration-500">
-                    <h2 className="text-2xl font-bold mb-6">Student Reviews</h2>
-
-                    {reviews.length === 0 ? (
-                        <div className="empty-state text-center py-12">
-                            <Star className="mx-auto mb-4 text-gray-300" size={48} />
-                            <h3 className="text-lg font-medium text-gray-500">No reviews yet</h3>
-                            <p className="text-sm text-gray-400">When students review your courses, they will appear here.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {reviews.map(review => {
-                                const matchedCourse = myCourses.find(c => c._id === review.courseId || c.id === review.courseId);
-                                const courseName = matchedCourse ? matchedCourse.title : "Unknown Course";
-
-                                return (
-                                    <Card key={review._id} className="relative overflow-hidden">
-                                        <CardHeader className="pb-2">
-                                            <div className="flex gap-4 justify-between items-start">
-                                                <div>
-                                                    <CardTitle className="text-lg">{review.studentName}</CardTitle>
-                                                    <CardDescription className="text-xs">{courseName}</CardDescription>
-                                                </div>
-                                                <div className="flex gap-1 text-amber-500 shrink-0">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <Star
-                                                            key={i}
-                                                            size={14}
-                                                            className={i < review.rating ? "fill-amber-500" : "fill-transparent text-gray-300"}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-sm text-gray-600 mt-2 italic">"{review.comment}"</p>
-                                            <p className="text-xs text-gray-400 mt-4 text-right">
-                                                {new Date(review.createdAt).toLocaleDateString()}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    )}
+                    <ReviewsView />
                 </div>
             );
         }
