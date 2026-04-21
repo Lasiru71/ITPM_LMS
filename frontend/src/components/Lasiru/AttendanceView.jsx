@@ -111,7 +111,6 @@ const AttendanceView = ({ courses }) => {
             setIsSaving(false);
         }
     };
-    };
 
     const getStatusClass = (status) => {
         switch (status) {
@@ -287,9 +286,4 @@ const AttendanceView = ({ courses }) => {
     );
 };
 
-const ChevronDown = ({ size, style }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
-        <path d="m6 9 6 6 6-6" />
-    </svg>
-);
 export default AttendanceView;
