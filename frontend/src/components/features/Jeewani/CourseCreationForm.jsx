@@ -272,7 +272,7 @@ export default function CourseCreationForm({ onSuccess }) {
       showToast('success', `"${newCourse.title}" has been saved successfully.`);
       setIsSuccess(true);
     } catch (err) {
-      showToast('error', 'Failed to create course. Please try again.');
+      showToast('error', err.message || 'Failed to create course. Please try again.');
     }
   };
 
