@@ -878,14 +878,14 @@ const CourseDetailPage = () => {
                                     title="Edit"
                                     onClick={() => handleEditLesson(mIndex, lIndex)}
                                   >
-                                    <Edit size={14} />
+                                    <Edit size={16} />
                                   </button>
                                   <button
                                     className="lesson-action-btn"
                                     title="Delete"
                                     onClick={() => handleDeleteLesson(mIndex, lIndex)}
                                   >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={16} />
                                   </button>
                                 </div>
                               </div>
