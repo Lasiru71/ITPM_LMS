@@ -4,11 +4,13 @@ const {
   getAllMaterials, 
   deleteMaterial 
 } = require('../../Controllers/sadeepa/materialController.js');
+const { authenticate } = require('../../middleware/Lasiru/authMiddleware');
 
 const router = express.Router();
 
-router.post('/upload', uploadMaterial);
-router.get('/', getAllMaterials);
-router.delete('/:id', deleteMaterial);
+router.post('/upload', authenticate, uploadMaterial);
+router.get('/', authenticate, getAllMaterials);
+router.delete('/:id', authenticate, deleteMaterial);
 
 module.exports = router;
+

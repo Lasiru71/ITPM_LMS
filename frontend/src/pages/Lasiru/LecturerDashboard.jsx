@@ -21,8 +21,10 @@ import {
     Pencil,
     Trash2,
     MessageSquare,
-    CornerUpRight
+    CornerUpRight,
+    FileText
 } from "lucide-react";
+
 
 
 import { useToast } from "../../components/Lasiru/ToastProvider";
@@ -34,7 +36,10 @@ import { getAllCourses, deleteCourse } from '../../api/Jeewani/courseApi';
 import { getAllReviews, addAdminReply, deleteReview as deleteReviewApi } from '../../api/Lasiru/reviewApi';
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
-import { MOCK_COURSES } from "../../constants/Home/mockData";
+import MaterialUpload from "../../components/sadeepa/MaterialUpload";
+
+
+
 
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card";
@@ -66,50 +71,45 @@ const LecturerDashboard = () => {
                 getAllReviews().catch(() => [])
             ]);
             
-            const combined = [
-                ...MOCK_COURSES.map(c => ({
-                    ...c,
-                    totalLessons: 12,
-                    duration: '4h 30m',
-                    language: 'English',
-                    updatedAt: new Date(2024, 0, 1).toISOString()
-                })),
-                ...customCourses.map(c => ({
-                    _id: c._id,
-                    id: c.id,
-                    title: c.title,
-                    description: c.description,
-                    shortDescription: c.shortDescription,
-                    instructor: c.instructorName || c.instructor || 'Lecturer',
-                    instructorId: c.instructorId,
-                    price: c.price,
-                    image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
-                    thumbnail: c.thumbnail,
-                    rating: 4.5,
-                    reviews: 10,
-                    category: c.category || 'General',
-                    level: c.level || 'Beginner',
-                    totalLessons: c.totalLessons || c.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0,
-                    duration: c.duration || '0m',
-                    language: c.language || 'English',
-                    updatedAt: c.updatedAt || c.lastUpdated || new Date().toISOString(),
-                    modules: c.modules || []
-                }))
-            ];
-            
-            setAllCourses(combined);
+            const currentUserId = String(user?.id || user?._id || "");
 
-            // Filter reviews for CURRENT lecturer's courses
+            // Map all DB courses with normalized fields
+            const dbCourses = customCourses.map(c => ({
+                _id: c._id,
+                id: c.id,
+                title: c.title,
+                description: c.description,
+                shortDescription: c.shortDescription,
+                instructor: c.instructorName || c.instructor || 'Lecturer',
+                instructorId: c.instructorId,
+                price: c.price,
+                image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
+                thumbnail: c.thumbnail,
+                rating: 4.5,
+                reviews: 10,
+                category: c.category || 'General',
+                level: c.level || 'Beginner',
+                totalLessons: c.totalLessons || c.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0,
+                duration: c.duration || '0m',
+                language: c.language || 'English',
+                updatedAt: c.updatedAt || c.lastUpdated || new Date().toISOString(),
+                modules: c.modules || []
+            }));
+
+            setAllCourses(dbCourses);
+
+            // Filter reviews for lecturer's own created courses
             const myCourseIds = new Set(
-                combined
-                    .filter(c => String(c.instructorId) === String(user?.id || user?._id))
+                dbCourses
+                    .filter(c => String(c.instructorId) === currentUserId)
                     .flatMap(c => [String(c._id), String(c.id)].filter(Boolean))
             );
 
             const filteredReviews = allReviews.filter(r => myCourseIds.has(String(r.courseId)));
             setReviews(filteredReviews);
         } catch (error) {
-            console.error("Error fetching dashboard data:", error);
+            console.error("Fetch error:", error);
+            showToast("error", "Failed to fetch dashboard data");
         } finally {
             setIsLoading(false);
         }
@@ -125,20 +125,17 @@ const LecturerDashboard = () => {
         showToast("success", "Dashboard updated");
     };
 
+    const currentUserId = String(user?.id || user?._id || "");
+
+    // Courses the lecturer themselves created
     const myCourses = allCourses
-        .filter(c => {
-            const userId = String(user?.id || user?._id || "");
-            const instructorId = String(c.instructorId || "");
-            
-            if (!userId || !instructorId) return instructorId === userId;
-            
-            return instructorId === userId;
-        })
-        .sort((a, b) => {
-            const dateA = new Date(a.updatedAt || a.lastUpdated || 0);
-            const dateB = new Date(b.updatedAt || b.lastUpdated || 0);
-            return dateB - dateA;
-        });
+        .filter(c => String(c.instructorId || "") === currentUserId)
+        .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+
+    // Courses assigned/created by admin (anyone else)
+    const adminCourses = allCourses
+        .filter(c => String(c.instructorId || "") !== currentUserId)
+        .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
 
 
 
@@ -170,14 +167,20 @@ const LecturerDashboard = () => {
     const handleDeleteCourse = async (courseId, courseTitle) => {
         if (window.confirm(`Are you sure you want to delete "${courseTitle}"?`)) {
             try {
-                await storeDeleteCourse(courseId);
+                // Only call API if it's a real course (string ID, not mock number ID)
+                if (isNaN(Number(courseId))) {
+                    await storeDeleteCourse(courseId);
+                }
+                
                 setAllCourses(prev => prev.filter(c => (c._id || c.id) !== courseId));
                 showToast("success", `Course "${courseTitle}" deleted successfully`);
-            } catch {
-                showToast("error", "Failed to delete course");
+            } catch (err) {
+                console.error("Delete error:", err);
+                showToast("error", err.message || "Failed to delete course");
             }
         }
     };
+
 
     const navItems = [
         { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
@@ -185,8 +188,10 @@ const LecturerDashboard = () => {
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
         { id: "attendance", label: "Attendance", icon: <Users size={20} /> },
+        { id: "materials", label: "Materials", icon: <FileText size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
+
 
     const renderContent = () => {
         if (isLoading) return <div className="loading-state">Loading your dashboard...</div>;
@@ -203,12 +208,12 @@ const LecturerDashboard = () => {
         }
 
         if (activeTab === "dashboard") {
-            // Sort courses by lastUpdated (newest first) or simply use reverse of array
-            // Now showing all courses from the system as requested
-            const filteredCourses = myCourses.filter(course =>
-                course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            // Dashboard shows only courses assigned/created by admin
+            const filteredCourses = adminCourses.filter(course =>
+                (course.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (course.category && course.category.toLowerCase().includes(searchQuery.toLowerCase()))
             );
+
 
             return (
                 <div className="dashboard-grid-v2">
@@ -221,9 +226,9 @@ const LecturerDashboard = () => {
                             </div>
                             <div className="stat-data">
                                 <div className="stat-value">
-                                    {myCourses.length}
+                                    {adminCourses.length}
                                 </div>
-                                <div className="stat-label">Total Courses</div>
+                                <div className="stat-label">Assigned Courses</div>
                             </div>
                         </div>
 
@@ -232,8 +237,8 @@ const LecturerDashboard = () => {
                                 <Clock className="stat-icon" />
                             </div>
                             <div className="stat-data">
-                                <div className="stat-value" title={myCourses.length > 0 ? myCourses[0].title : "No Course"}>
-                                    {myCourses.length > 0 ? myCourses[0].title : "No Course"}
+                                <div className="stat-value" title={adminCourses.length > 0 ? adminCourses[0].title : "No Course"}>
+                                    {adminCourses.length > 0 ? adminCourses[0].title : "No Course"}
                                 </div>
                                 <div className="stat-label">Recently Updated</div>
                             </div>
@@ -493,7 +498,16 @@ const LecturerDashboard = () => {
             );
         }
 
+        if (activeTab === "materials") {
+            return (
+                <div className="materials-section animate-in fade-in duration-500">
+                    <MaterialUpload />
+                </div>
+            );
+        }
+
         if (activeTab === "settings") {
+
             return (
                 <div className="settings-section animate-in fade-in duration-500">
                     <LecturerSettings onProfileUpdate={setUser} />
@@ -538,63 +552,80 @@ const LecturerDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {myCourses.map(course => (
                                 <Card
-                                    key={course._id}
-                                    className="overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-                                    onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}
+                                    key={course._id || course.id}
+                                    className="overflow-hidden hover:shadow-xl transition-all duration-300 group bg-white border-slate-100 flex flex-col"
                                 >
-                                    <div className="aspect-video relative group">
+                                    <div className="aspect-video relative overflow-hidden" onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}>
                                         <img
                                             src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
                                             alt={course.title}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
-                                        <Badge className="absolute top-3 right-3 bg-emerald-500/90 backdrop-blur-md">
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-300" />
+                                        <Badge className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-slate-800 border-none shadow-sm font-bold text-[10px]">
                                             {course.category || "General"}
                                         </Badge>
                                     </div>
 
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="leading-tight">{course.title}</CardTitle>
-                                        <CardDescription className="line-clamp-2 mt-1">
+                                    <CardHeader className="pb-2" onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}>
+                                        <CardTitle className="text-lg leading-tight group-hover:text-emerald-600 transition-colors line-clamp-1">{course.title}</CardTitle>
+                                        <CardDescription className="line-clamp-2 mt-1 text-xs">
                                             {course.shortDescription || course.description || "No description provided."}
                                         </CardDescription>
                                     </CardHeader>
 
-                                    <CardContent className="pt-0">
-                                        <div className="flex justify-between items-center mt-4">
+                                    <CardContent className="pt-0 flex-grow">
+                                        <div className="flex justify-between items-center mt-2 pb-4 border-b border-slate-50">
                                             <span className="text-xl font-black text-emerald-600">
                                                 ${course.price || "Free"}
                                             </span>
                                             <div className="flex flex-col items-end">
-                                                <div className="flex items-center gap-1 text-amber-500 text-sm font-bold">
-                                                    <Star size={14} className="fill-amber-500" />
-                                                    4.5
+                                                <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                                                    <Star size={12} className="fill-amber-500" />
+                                                    {course.rating || "4.5"}
                                                 </div>
-                                                {course.updatedAt && (
-                                                    <span className="text-[10px] text-slate-400 mt-1">
-                                                        Updated: {new Date(course.updatedAt).toLocaleDateString()}
-                                                    </span>
-                                                )}
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-slate-50">
-                                            <div className="flex items-center gap-2 text-slate-500">
-                                                <GraduationCap size={16} className="text-emerald-500" />
-                                                <span className="text-xs font-semibold">{course.level || 'Beginner'}</span>
+                                        <div className="grid grid-cols-2 gap-3 mt-4">
+                                            <div className="flex items-center gap-2 text-slate-400">
+                                                <GraduationCap size={14} />
+                                                <span className="text-[11px] font-bold uppercase tracking-wider">{course.level || 'Beginner'}</span>
                                             </div>
-                                            <div className="flex items-center gap-2 text-slate-500">
-                                                <BookOpen size={16} className="text-emerald-500" />
-                                                <span className="text-xs font-semibold">{course.totalLessons || '0'} Lessons</span>
+                                            <div className="flex items-center gap-2 text-slate-400">
+                                                <BookOpen size={14} />
+                                                <span className="text-[11px] font-bold uppercase tracking-wider">{course.totalLessons || '0'} Lessons</span>
                                             </div>
+                                        </div>
 
-                                            <div className="flex items-center gap-2 text-slate-500">
-                                                <Globe size={16} className="text-emerald-500" />
-                                                <span className="text-xs font-semibold">{course.language || 'English'}</span>
+                                        <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-50">
+                                            <div className="flex items-center gap-2">
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/lecturer/courses/${course._id || course.id}`); }}
+                                                    className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-500 transition-all flex items-center justify-center"
+                                                    title="View Course"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/edit-course/${course._id || course.id}`); }}
+                                                    className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500 transition-all flex items-center justify-center"
+                                                    title="Edit Course"
+                                                >
+                                                    <Pencil size={16} />
+                                                </button>
                                             </div>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course._id || course.id, course.title); }}
+                                                className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center justify-center"
+                                                title="Delete Course"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
                                         </div>
                                     </CardContent>
                                 </Card>
+
                             ))}
                         </div>
                     )}

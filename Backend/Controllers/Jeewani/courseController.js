@@ -5,7 +5,16 @@ const path = require('path');
 // Create a new course
 exports.createCourse = async (req, res) => {
   try {
-    const newCourse = new Course(req.body);
+    // Force instructorId to be the logged in user
+    const courseData = {
+      ...req.body,
+      instructorId: req.user._id,
+      instructor: req.user.name,
+      instructorAvatar: req.user.avatar,
+      instructorBio: req.user.bio || 'Instructor on EduVault'
+    };
+    
+    const newCourse = new Course(courseData);
     const savedCourse = await newCourse.save();
     res.status(201).json(savedCourse);
   } catch (error) {
@@ -38,12 +47,19 @@ exports.getCourseById = async (req, res) => {
 // Update course
 exports.updateCourse = async (req, res) => {
   try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+
+    // Check ownership
+    if (String(course.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this course' });
+    }
+
     const updated = await Course.findByIdAndUpdate(
       req.params.id,
       { ...req.body, updatedAt: new Date() },
       { new: true, runValidators: true }
     );
-    if (!updated) return res.status(404).json({ message: 'Course not found' });
     res.status(200).json(updated);
   } catch (error) {
     res.status(500).json({ message: 'Error updating course', error: error.message });
@@ -53,13 +69,21 @@ exports.updateCourse = async (req, res) => {
 // Delete course
 exports.deleteCourse = async (req, res) => {
   try {
-    const deleted = await Course.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: 'Course not found' });
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+
+    // Check ownership
+    if (String(course.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this course' });
+    }
+
+    await Course.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: 'Course deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting course', error: error.message });
   }
 };
+
 
 // Add module to course
 exports.addModule = async (req, res) => {
@@ -67,6 +91,11 @@ exports.addModule = async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     
+    // Check ownership
+    if (String(course.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this course' });
+    }
+
     const newModule = { title: req.body.title, lessons: [] };
     course.modules.push(newModule);
     await Course.updateOne({ _id: course._id }, { $push: { modules: newModule }, $set: { updatedAt: new Date() } });
@@ -82,6 +111,11 @@ exports.deleteModule = async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     
+    // Check ownership
+    if (String(course.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this course' });
+    }
+
     const moduleIndex = parseInt(req.params.moduleIndex);
     if (moduleIndex < 0 || moduleIndex >= course.modules.length) {
       return res.status(400).json({ message: 'Invalid module index' });
@@ -103,6 +137,11 @@ exports.updateModuleTitle = async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     
+    // Check ownership
+    if (String(course.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this course' });
+    }
+
     const moduleIndex = parseInt(req.params.moduleIndex);
     if (moduleIndex < 0 || moduleIndex >= course.modules.length) {
       return res.status(400).json({ message: 'Invalid module index' });
@@ -122,6 +161,11 @@ exports.addLesson = async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     
+    // Check ownership
+    if (String(course.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this course' });
+    }
+
     const moduleIndex = parseInt(req.params.moduleIndex);
     if (moduleIndex < 0 || moduleIndex >= course.modules.length) {
       return res.status(400).json({ message: 'Invalid module index' });
@@ -142,7 +186,6 @@ exports.addLesson = async (req, res) => {
       lessonData.fileUrl = req.body.fileUrl;
     }
 
-    // If file was uploaded via multer
     if (req.file) {
       lessonData.fileUrl = `/uploads/lessons/${req.file.filename}`;
     }
@@ -161,6 +204,11 @@ exports.deleteLesson = async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     
+    // Check ownership
+    if (String(course.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this course' });
+    }
+
     const moduleIndex = parseInt(req.params.moduleIndex);
     const lessonIndex = parseInt(req.params.lessonIndex);
     
@@ -187,6 +235,11 @@ exports.updateLesson = async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     
+    // Check ownership
+    if (String(course.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this course' });
+    }
+
     const moduleIndex = parseInt(req.params.moduleIndex);
     const lessonIndex = parseInt(req.params.lessonIndex);
     
@@ -218,9 +271,7 @@ exports.updateLesson = async (req, res) => {
       lesson.fileUrl = req.body.fileUrl;
     }
 
-    // If a new file was uploaded, delete the old one and update
     if (req.file) {
-      // Remove old file if it exists and wasn't a remote URL
       if (lesson.fileUrl && !lesson.fileUrl.startsWith('http')) {
         const relativePath = lesson.fileUrl.startsWith('/') ? lesson.fileUrl.substring(1) : lesson.fileUrl;
         const oldPath = path.join(process.cwd(), relativePath);
@@ -242,3 +293,4 @@ exports.updateLesson = async (req, res) => {
     res.status(500).json({ message: 'Error updating lesson', error: error.message });
   }
 };
+
