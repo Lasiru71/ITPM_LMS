@@ -151,3 +151,43 @@ exports.toggleUserStatus = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+// Update User (Admin Edit)
+exports.updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, email, studentId, address, phone } = req.body;
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (email && email.toLowerCase() !== user.email) {
+            const existingEmail = await User.findOne({ email: email.toLowerCase() });
+            if (existingEmail) {
+                return res.status(409).json({ message: "Email already in use by another account" });
+            }
+            user.email = email.toLowerCase();
+        }
+
+        if (studentId !== undefined && studentId !== user.studentId) {
+            if (studentId.trim() !== "") {
+               const existingStudentId = await User.findOne({ studentId: studentId.trim() });
+               if (existingStudentId && existingStudentId._id.toString() !== id) {
+                   return res.status(409).json({ message: "NIC Number/Student ID already registered" });
+               }
+            }
+            user.studentId = studentId.trim() || undefined;
+        }
+
+        if (name) user.name = name;
+        if (address !== undefined) user.address = address;
+        if (phone !== undefined) user.phone = phone;
+
+        await user.save();
+        res.status(200).json({ message: "User profile updated successfully", user });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};

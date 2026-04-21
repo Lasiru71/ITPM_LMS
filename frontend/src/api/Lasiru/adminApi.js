@@ -44,6 +44,11 @@ export const toggleUserStatus = async (id) => {
     return response.data;
 };
 
+export const updateUserByAdmin = async (id, data) => {
+    const response = await axios.put(`${API_URL}/users/${id}`, data, getAuthHeader());
+    return response.data;
+};
+
 // --- Dashboard Stats ---
 export const getDashboardStats = async () => {
     const response = await axios.get(`${API_URL}/stats`, getAuthHeader());

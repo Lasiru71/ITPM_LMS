@@ -7,6 +7,7 @@ const {
     deleteStudent,
     toggleUserStatus,
     getDashboardStats,
+    updateUser,
 } = require("../../Controllers/Lasiru/adminController");
 const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware");
 
@@ -27,6 +28,9 @@ router.delete("/students/:id", deleteStudent);
 
 // Toggle status for any user
 router.patch("/users/:id/toggle", toggleUserStatus);
+
+// Edit User Profiles
+router.put("/users/:id", updateUser);
 
 // Dashboard Stats
 router.get("/stats", getDashboardStats);
