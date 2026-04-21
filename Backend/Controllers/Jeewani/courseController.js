@@ -1,9 +1,9 @@
-import Course from "../../models/Jeewani/Course.js";
-import fs from 'fs';
-import path from 'path';
+const Course = require("../../models/Jeewani/Course");
+const fs = require('fs');
+const path = require('path');
 
 // Create a new course
-export const createCourse = async (req, res) => {
+exports.createCourse = async (req, res) => {
   try {
     const newCourse = new Course(req.body);
     const savedCourse = await newCourse.save();
@@ -15,7 +15,7 @@ export const createCourse = async (req, res) => {
 };
 
 // Get all courses
-export const getAllCourses = async (req, res) => {
+exports.getAllCourses = async (req, res) => {
   try {
     const courses = await Course.find();
     res.status(200).json(courses);
@@ -24,8 +24,18 @@ export const getAllCourses = async (req, res) => {
   }
 };
 
+// Get courses by lecturer
+exports.getCoursesByLecturer = async (req, res) => {
+  try {
+    const courses = await Course.find({ instructorId: req.params.lecturerId });
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching lecturer courses', error: error.message });
+  }
+};
+
 // Get course by ID
-export const getCourseById = async (req, res) => {
+exports.getCourseById = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
@@ -36,7 +46,7 @@ export const getCourseById = async (req, res) => {
 };
 
 // Update course
-export const updateCourse = async (req, res) => {
+exports.updateCourse = async (req, res) => {
   try {
     const updated = await Course.findByIdAndUpdate(
       req.params.id,
@@ -51,7 +61,7 @@ export const updateCourse = async (req, res) => {
 };
 
 // Delete course
-export const deleteCourse = async (req, res) => {
+exports.deleteCourse = async (req, res) => {
   try {
     const deleted = await Course.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: 'Course not found' });
@@ -62,7 +72,7 @@ export const deleteCourse = async (req, res) => {
 };
 
 // Add module to course
-export const addModule = async (req, res) => {
+exports.addModule = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
@@ -77,7 +87,7 @@ export const addModule = async (req, res) => {
 };
 
 // Delete module from course
-export const deleteModule = async (req, res) => {
+exports.deleteModule = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
@@ -98,7 +108,7 @@ export const deleteModule = async (req, res) => {
 };
 
 // Update module title
-export const updateModule = async (req, res) => {
+exports.updateModule = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
@@ -117,7 +127,7 @@ export const updateModule = async (req, res) => {
 };
 
 // Add lesson to module
-export const addLesson = async (req, res) => {
+exports.addLesson = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
@@ -156,7 +166,7 @@ export const addLesson = async (req, res) => {
 };
 
 // Delete lesson from module
-export const deleteLesson = async (req, res) => {
+exports.deleteLesson = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
@@ -182,7 +192,7 @@ export const deleteLesson = async (req, res) => {
 };
 
 // Update lesson
-export const updateLesson = async (req, res) => {
+exports.updateLesson = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });

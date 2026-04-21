@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
 const Tabs = ({ defaultValue, children, className }) => {
   const [activeTab, setActiveTab] = React.useState(defaultValue)

@@ -1,7 +1,7 @@
-import express from 'express';
+const express = require('express');
 const router = express.Router();
-import * as courseController from '../../Controllers/Jeewani/courseController.js';
-import upload from '../../middleware/Jeewani/upload.js';
+const courseController = require('../../Controllers/Jeewani/courseController');
+const upload = require('../../middleware/Jeewani/upload');
 
 // Course CRUD
 router.post('/', courseController.createCourse);
@@ -20,4 +20,4 @@ router.post('/:id/modules/:moduleIndex/lessons', upload.single('file'), courseCo
 router.put('/:id/modules/:moduleIndex/lessons/:lessonIndex', upload.single('file'), courseController.updateLesson);
 router.delete('/:id/modules/:moduleIndex/lessons/:lessonIndex', courseController.deleteLesson);
 
-export default router;
+module.exports = router;

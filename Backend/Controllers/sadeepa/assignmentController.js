@@ -1,9 +1,9 @@
-import Assignment from '../../models/sadeepa/Assignment.js';
-import Submission from '../../models/sadeepa/Submission.js';
+const Assignment = require('../../models/sadeepa/Assignment');
+const Submission = require('../../models/sadeepa/Submission');
 
 // --- LECTURER ENDPOINTS ---
 
-export const createAssignment = async (req, res) => {
+exports.createAssignment = async (req, res) => {
   try {
     const { title, type, description, startTime, deadline, timeLimit, endOfTime, questions, fileData, createdBy } = req.body;
     
@@ -28,7 +28,7 @@ export const createAssignment = async (req, res) => {
   }
 };
 
-export const getReports = async (req, res) => {
+exports.getReports = async (req, res) => {
   try {
     // Fetch all submissions and populate assignment title
     const submissions = await Submission.find()
@@ -42,7 +42,7 @@ export const getReports = async (req, res) => {
 
 // --- STUDENT ENDPOINTS ---
 
-export const getAssignmentsForStudent = async (req, res) => {
+exports.getAssignmentsForStudent = async (req, res) => {
   try {
     const { studentId, studentName } = req.query; // Passed from frontend auth
     
@@ -92,7 +92,7 @@ export const getAssignmentsForStudent = async (req, res) => {
   }
 };
 
-export const getAssignmentById = async (req, res) => {
+exports.getAssignmentById = async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
     if (!assignment) return res.status(404).json({ message: 'Not found' });
@@ -102,7 +102,7 @@ export const getAssignmentById = async (req, res) => {
   }
 };
 
-export const submitAssignment = async (req, res) => {
+exports.submitAssignment = async (req, res) => {
   try {
     const { assignmentId, studentId, studentName, answers } = req.body;
     
@@ -123,7 +123,6 @@ export const submitAssignment = async (req, res) => {
           }
         } else if (q.type === 'Essay') {
           // Assume essay gives partial random score for demo or 0 requiring manual.
-          // By req, let's just assume we auto-score the MCQ's natively.
           totalPossible += q.points;
         }
       }
@@ -159,7 +158,7 @@ export const submitAssignment = async (req, res) => {
   }
 };
 
-export const updateSubmissionGrade = async (req, res) => {
+exports.updateSubmissionGrade = async (req, res) => {
   try {
     const { id } = req.params;
     const { marks } = req.body;

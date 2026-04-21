@@ -1,6 +1,6 @@
-import StudentProject from '../../models/sadeepa/StudentProject.js';
+const StudentProject = require('../../models/sadeepa/StudentProject');
 
-export const uploadProject = async (req, res) => {
+exports.uploadProject = async (req, res) => {
   try {
     const { title, description, author, category, uploadDate, languages, fileData } = req.body;
     
@@ -21,7 +21,7 @@ export const uploadProject = async (req, res) => {
   }
 };
 
-export const getAllProjects = async (req, res) => {
+exports.getAllProjects = async (req, res) => {
   try {
     const projects = await StudentProject.find().sort({ createdAt: -1 });
     res.status(200).json(projects);
@@ -30,7 +30,7 @@ export const getAllProjects = async (req, res) => {
   }
 };
 
-export const incrementViews = async (req, res) => {
+exports.incrementViews = async (req, res) => {
   try {
     const { id } = req.params;
     const project = await StudentProject.findByIdAndUpdate(id, { $inc: { viewsCount: 1 } }, { new: true });
@@ -40,7 +40,7 @@ export const incrementViews = async (req, res) => {
   }
 };
 
-export const incrementDownloads = async (req, res) => {
+exports.incrementDownloads = async (req, res) => {
   try {
     const { id } = req.params;
     const project = await StudentProject.findByIdAndUpdate(id, { $inc: { downloadCount: 1 } }, { new: true });
@@ -50,7 +50,7 @@ export const incrementDownloads = async (req, res) => {
   }
 };
 
-export const deleteProject = async (req, res) => {
+exports.deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
     await StudentProject.findByIdAndDelete(id);

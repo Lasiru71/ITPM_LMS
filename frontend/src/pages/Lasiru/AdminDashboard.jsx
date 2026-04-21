@@ -33,11 +33,15 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import "../../Styles/Lasiru/AdminDashboard.css";
+import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
 import ReviewManagement from "../../components/Lasiru/ReviewManagement";
-import DashboardHeader from "../../components/Lasiru/DashboardHeader";
+import CourseManagement from "../../components/Lasiru/CourseManagement";
+import AttendanceView from "../../components/Lasiru/AttendanceView";
+import PaymentManagement from "../../components/Lasiru/PaymentManagement";
+import SystemSettings from "../../components/Lasiru/SystemSettings";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
 
 const COLORS = ['#12b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
@@ -385,9 +389,11 @@ const AdminDashboard = () => {
             case "lecturers": return <LectureManagement onUpdate={fetchStats} />;
             case "students": return <StudentManagement onUpdate={fetchStats} />;
             case "reports": return renderReports();
-            case "courses": return renderPlaceholder("All Courses", <BookOpen size={48} />);
+            case "courses": return <CourseManagement />;
+            case "payments": return <PaymentManagement />;
             case "announcement": return <AnnouncementManagement />;
             case "reviews": return <ReviewManagement />;
+            case "system": return <SystemSettings />;
             default: return renderOverview();
         }
     };
@@ -418,7 +424,6 @@ const AdminDashboard = () => {
                         <div className="nav-item-content"><School size={20} /> Students</div>
                         {activeTab === "students" && <ChevronRight size={16} />}
                     </div>
-
                     <div className="nav-section-title">Academic</div>
                     <div className={`admin-nav-item ${activeTab === "courses" ? "active" : ""}`} onClick={() => setActiveTab("courses")}>
                         <div className="nav-item-content"><BookOpen size={20} /> All Courses</div>
@@ -426,6 +431,10 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="nav-section-title">Business</div>
+                    <div className={`admin-nav-item ${activeTab === "payments" ? "active" : ""}`} onClick={() => setActiveTab("payments")}>
+                        <div className="nav-item-content"><DollarSign size={20} /> Payments</div>
+                        {activeTab === "payments" && <ChevronRight size={16} />}
+                    </div>
                     <div className={`admin-nav-item ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>
                         <div className="nav-item-content"><FileText size={20} /> Reports</div>
                         {activeTab === "reports" && <ChevronRight size={16} />}
@@ -437,8 +446,14 @@ const AdminDashboard = () => {
                         {activeTab === "announcement" && <ChevronRight size={16} />}
                     </div>
                     <div className={`admin-nav-item ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>
-                        <div className="nav-item-content"><Activity size={20} /> Reviews</div>
+                        <div className="nav-item-content"><Star size={20} /> Reviews</div>
                         {activeTab === "reviews" && <ChevronRight size={16} />}
+                    </div>
+
+                    <div className="nav-section-title">Maintenance</div>
+                    <div className={`admin-nav-item ${activeTab === "system" ? "active" : ""}`} onClick={() => setActiveTab("system")}>
+                        <div className="nav-item-content"><TrendingUp size={20} /> System Settings</div>
+                        {activeTab === "system" && <ChevronRight size={16} />}
                     </div>
                 </nav>
 

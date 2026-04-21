@@ -1,6 +1,6 @@
-import Material from '../../models/sadeepa/Material.js';
+const Material = require('../../models/sadeepa/Material');
 
-export const uploadMaterial = async (req, res) => {
+exports.uploadMaterial = async (req, res) => {
   try {
     const { title, description, category, type, image, fileData } = req.body;
     
@@ -21,7 +21,7 @@ export const uploadMaterial = async (req, res) => {
   }
 };
 
-export const getAllMaterials = async (req, res) => {
+exports.getAllMaterials = async (req, res) => {
   try {
     const materials = await Material.find().sort({ createdAt: -1 });
     res.status(200).json(materials);
@@ -30,7 +30,7 @@ export const getAllMaterials = async (req, res) => {
   }
 };
 
-export const deleteMaterial = async (req, res) => {
+exports.deleteMaterial = async (req, res) => {
   try {
     const { id } = req.params;
     await Material.findByIdAndDelete(id);

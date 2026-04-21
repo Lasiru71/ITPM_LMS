@@ -107,6 +107,58 @@ exports.getAttendanceByCourse = async (req, res) => {
   }
 };
 
+exports.getSessionsByCourse = async (req, res) => {
+  try {
+    const sessions = await AttendanceSession.find({ course: req.params.courseId })
+      .sort({ sessionDate: -1 });
+    res.json(sessions);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getAttendanceBySession = async (req, res) => {
+  try {
+    const records = await AttendanceRecord.find({ session: req.params.sessionId });
+    res.json(records);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.updateSessionAttendance = async (req, res) => {
+  try {
+    const { sessionId, records } = req.body; // records: [{ studentId, status }]
+
+    if (!sessionId || !records) {
+      return res.status(400).json({ message: 'Session ID and records are required' });
+    }
+
+    const session = await AttendanceSession.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found' });
+    }
+
+    // Bulk update approach
+    for (const rec of records) {
+      await AttendanceRecord.findOneAndUpdate(
+        { session: sessionId, studentId: rec.studentId },
+        { 
+          status: rec.status, 
+          course: session.course,
+          session: sessionId,
+          studentId: rec.studentId 
+        },
+        { upsert: true, new: true }
+      );
+    }
+
+    res.json({ message: 'Attendance updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getStudentMonthlyAttendance = async (req, res) => {
   try {
     const { studentId, courseId } = req.params;
@@ -141,7 +193,7 @@ exports.getStudentMonthlyAttendance = async (req, res) => {
       totalSessions,
       attendedSessions,
       percentage,
-      warning: Number(percentage) < 75 ? 'LOW_ATTENDANCE' : 'OK',
+      warning: Number(percentage) < 80,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -68,7 +68,7 @@ function App() {
       <Route path="/reports/attendance" element={<AttendanceReport />} />
       <Route path="/generate-qr" element={<GenerateQRPage />} />
       <Route path="/scan-attendance" element={<ScanAttendancePage />} />
-      <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/payment/:courseId?" element={<PaymentPage />} />
     </Routes>
   );
 }
