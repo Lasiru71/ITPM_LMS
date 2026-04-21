@@ -5,24 +5,27 @@ import AdminDashboard from "./pages/Lasiru/AdminDashboard.jsx";
 import UserProfile from "./pages/Lasiru/UserProfile.jsx";
 import LecturerDashboard from "./pages/Lasiru/LecturerDashboard.jsx";
 import StudentDashboard from "./pages/Lasiru/StudentDashboard.jsx";
+import EditCourse from "./pages/Lasiru/EditCourse.jsx";
+import CourseDetailPage from "./pages/Lasiru/CourseDetailPage.jsx";
+import ExamLogin from "./pages/sadeepa/ExamLogin.jsx";
+import AttendExam from "./pages/sadeepa/AttendExam.jsx";
+import Project from "./pages/sadeepa/Project.jsx";
+import ReviewsPage from "./pages/Lasiru/ReviewsPage.jsx";
 
 // Home imports
 import MainLayout from "./layouts/Home/MainLayout.jsx";
 import Home from "./pages/Home/Home.jsx";
 import About from "./pages/Home/About.jsx";
 import Contact from "./pages/Home/Contact.jsx";
-import ReviewsPage from "./pages/Lasiru/ReviewsPage.jsx";
+import Courses from "./pages/Home/Courses.jsx";
+import News from "./pages/Home/News.jsx";
+import FreeExam from "./pages/Home/FreeExam.jsx";
+import GptHelper from "./pages/Home/GptHelper.jsx";
+import PublicCourseDetail from "./pages/Home/PublicCourseDetail.jsx";
+
 import NotificationsPage from "./pages/Lasiru/NotificationsPage.jsx";
-
-// Course Management Imports
-import CourseDetailPage from "./pages/Lasiru/CourseDetailPage.jsx";
+import ProtectedRoute from "./components/Lasiru/ProtectedRoute.jsx";
 import CreateCourse from "./pages/Lasiru/CreateCourse.jsx";
-import EditCourse from "./pages/Lasiru/EditCourse.jsx";
-
-// Sadeepa Validation Imports
-import AttendExam from "./pages/sadeepa/AttendExam.jsx";
-import ExamLogin from "./pages/sadeepa/ExamLogin.jsx";
-import Project from "./pages/sadeepa/Project.jsx";
 
 // Financial and Attendance Imports
 import AdminPayments from "./pages/AdminPayments.jsx";
@@ -35,40 +38,46 @@ function App() {
   return (
     <Routes>
       {/* Home Routes */}
-      <Route element={<MainLayout />}>
+      <Route path="/" element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/courses/:id" element={<PublicCourseDetail />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/create-free-exam" element={<FreeExam />} />
+        <Route path="/gpt-helper" element={<GptHelper />} />
         <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
 
       {/* Auth Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Dashboard Routes */}
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      <Route path="/lecturer-dashboard" element={<LecturerDashboard />} />
-      <Route path="/student-dashboard" element={<StudentDashboard />} />
-      <Route path="/profile" element={<UserProfile />} />
+      {/* Dashboard Routes - PROTECTED */}
+      <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/lecturer-dashboard" element={<ProtectedRoute><LecturerDashboard /></ProtectedRoute>} />
+      <Route path="/student-dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+      
+      {/* Course Management Routes - PROTECTED */}
+      <Route path="/lecturer/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
+      <Route path="/create-course" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
+      <Route path="/edit-course/:id" element={<ProtectedRoute><EditCourse /></ProtectedRoute>} />
 
-      {/* Course Management Routes */}
-      <Route path="/courses/:id" element={<CourseDetailPage />} />
-      <Route path="/create-course" element={<CreateCourse />} />
-      <Route path="/edit-course/:id" element={<EditCourse />} />
+      {/* Sadeepa Routes - PROTECTED */}
+      <Route path="/attend-exam" element={<ProtectedRoute><AttendExam /></ProtectedRoute>} />
+      <Route path="/exam-login" element={<ProtectedRoute><ExamLogin /></ProtectedRoute>} />
+      <Route path="/exam-login/:id" element={<ProtectedRoute><AttendExam /></ProtectedRoute>} />
+      <Route path="/project" element={<ProtectedRoute><Project /></ProtectedRoute>} />
 
-      {/* Sadeepa Routes */}
-      <Route path="/attend-exam" element={<AttendExam />} />
-      <Route path="/exam-login" element={<ExamLogin />} />
-      <Route path="/project" element={<Project />} />
-
-      {/* Financial & Attendance Routes */}
-      <Route path="/admin/payments" element={<AdminPayments />} />
-      <Route path="/reports/attendance" element={<AttendanceReport />} />
-      <Route path="/generate-qr" element={<GenerateQRPage />} />
-      <Route path="/scan-attendance" element={<ScanAttendancePage />} />
-      <Route path="/payment/:courseId?" element={<PaymentPage />} />
+      {/* Financial & Attendance Routes - PROTECTED */}
+      <Route path="/admin/payments" element={<ProtectedRoute><AdminPayments /></ProtectedRoute>} />
+      <Route path="/reports/attendance" element={<ProtectedRoute><AttendanceReport /></ProtectedRoute>} />
+      <Route path="/generate-qr" element={<ProtectedRoute><GenerateQRPage /></ProtectedRoute>} />
+      <Route path="/scan-attendance" element={<ProtectedRoute><ScanAttendancePage /></ProtectedRoute>} />
+      <Route path="/payment/:courseId?" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
     </Routes>
   );
 }

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
 :root {
   --sidebar-bg: #0f172a;
   --sidebar-text: #94a3b8;
@@ -190,8 +192,10 @@
 
 .lecturer-content-area {
   flex: 1;
-  padding: 2rem;
+  padding: 2.5rem;
   overflow-y: auto;
+  background-color: #f8fafc;
+  scroll-behavior: smooth;
 }
 
 .content-header {
@@ -498,4 +502,515 @@
 .activity-details span {
   color: var(--text-muted);
   font-size: 0.75rem;
+}
+
+/* =============================================
+   Premium Dashboard v2 Styling (Upgraded)
+   ============================================= */
+
+.dashboard-grid-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding-bottom: 2rem;
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Stats Row - Upgraded with modern aesthetics */
+.premium-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.premium-stat-card {
+  background: white;
+  padding: 1.75rem;
+  border-radius: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #f1f5f9;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    opacity: 0.6;
+}
+
+.premium-stat-card.blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.premium-stat-card.orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.premium-stat-card.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+
+.premium-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border-color: #e2e8f0;
+}
+
+.stat-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.premium-stat-card:hover .stat-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.premium-stat-card.blue .stat-icon-wrapper { background: #eff6ff; color: #3b82f6; }
+.premium-stat-card.orange .stat-icon-wrapper { background: #fffbeb; color: #f59e0b; }
+.premium-stat-card.green .stat-icon-wrapper { background: #f0fdf4; color: #10b981; }
+
+.stat-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.stat-data {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Ensure children can ellipsis */
+  min-width: 0; /* Important for flex ellipsis */
+}
+
+.stat-value {
+  font-size: 1.35rem; /* Slightly smaller for better fit */
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.15rem;
+}
+
+/* Controls Row */
+.dashboard-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  background: white;
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.search-container-v2 {
+  position: relative;
+  flex: 1;
+  max-width: 500px;
+}
+
+.search-icon-v2 {
+  position: absolute;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.search-input-v2 {
+  width: 100%;
+  padding: 0.85rem 1rem 0.85rem 3.25rem;
+  border-radius: 1rem;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.search-input-v2:focus {
+  outline: none;
+  background: white;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.btn-refresh {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.btn-refresh:hover {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+    transform: scale(1.02);
+}
+
+/* Premium Table - Truly Premium Upgrades */
+.premium-table-container {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #eef2f6;
+  overflow-x: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  margin-top: 1rem;
+  scrollbar-width: thin;
+}
+
+.premium-table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.premium-table-container::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.premium-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.premium-table th {
+  background: #f8fafc;
+  padding: 1.25rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.premium-table td {
+  padding: 1.25rem 1rem;
+  font-size: 0.875rem;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.premium-table tr:hover td {
+  background: #fdfdfd;
+}
+
+.table-course-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 280px;
+}
+
+.course-mini-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f1f5f9;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 2px solid white;
+}
+
+.course-mini-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-name-text {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.category-badge {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  font-weight: 600 !important;
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 6px !important;
+  border: none !important;
+  font-size: 0.75rem !important;
+}
+
+.price-text {
+  font-weight: 800;
+  color: #0f172a;
+  font-family: 'Outfit', sans-serif;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.module-count {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.date-text {
+  color: #64748b;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Table Actions - Minimalist style */
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.action-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.03);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  border-color: #cbd5e1;
+}
+
+.action-btn svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+/* =============================================
+   Minimalist Rectangle Reviews UI (Refined)
+   ============================================= */
+
+.reviews-grid-container {
+  padding: 1rem 0;
+}
+
+.reviews-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 2rem;
+}
+
+.minimal-review-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.minimal-review-card:hover {
+  transform: translateY(-5px);
+  border-color: #e2e8f0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.card-header-v4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.user-profile-v4 {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-initial {
+  width: 40px;
+  height: 40px;
+  background: #f8fafc;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #64748b;
+  border: 1px solid #f1f5f9;
+}
+
+.user-info-v4 {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name-v4 {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.course-name-v4 {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+  background: #f1f5f9;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+  margin-top: 2px;
+}
+
+.rating-stars-v4 {
+  display: flex;
+  gap: 3px;
+  background: #fffbeb;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+}
+
+.card-body-v4 {
+  flex: 1;
+}
+
+.card-body-v4 p {
+  font-size: 0.95rem;
+  color: #475569;
+  line-height: 1.7;
+  font-style: italic;
+  margin: 0;
+}
+
+.reply-bubble-v4 {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #f0fdf4;
+  border-radius: 1rem;
+  border-left: 4px solid #10b981;
+}
+
+.reply-label-v4 {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #10b981;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.reply-bubble-v4 p {
+  font-size: 0.85rem;
+  color: #065f46;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.card-footer-v4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f8fafc;
+}
+
+.date-v4 {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.actions-v4 {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #f1f5f9;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.pill-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.reply-btn {
+  color: #2563eb;
+}
+
+.reply-btn:hover {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.delete-btn {
+  color: #ef4444;
+  padding: 0.6rem;
+}
+
+.delete-btn:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.empty-reviews-card {
+  text-align: center;
+  padding: 6rem 2rem;
+  background: white;
+  border-radius: 2rem;
+  border: 2px dashed #e2e8f0;
+}
+
+@media (max-width: 768px) {
+  .reviews-card-grid {
+    grid-template-columns: 1fr;
+  }
 }

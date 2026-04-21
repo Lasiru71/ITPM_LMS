@@ -16,10 +16,11 @@ import * as courseApi from '../../api/Jeewani/courseApi';
 
 const LESSON_TYPES = [
   { value: 'video', label: 'Video' },
-  { value: 'text', label: 'Text' },
+  { value: 'pdf', label: 'PDF/Text' },
   { value: 'ppt', label: 'PPT' },
   { value: 'assignment', label: 'Assignment' }
 ];
+
 
 const PLACEHOLDER_THUMBNAILS = [
   'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=450&fit=crop',
@@ -86,8 +87,17 @@ export default function EditCourse() {
           setLanguage(course.language || 'English');
           
           if (course.modules && course.modules.length > 0) {
-            setModules(course.modules.map(m => ({ ...m, isExpanded: false })));
+            setModules(course.modules.map(m => ({ 
+              ...m, 
+              id: m._id || m.id, 
+              isExpanded: false,
+              lessons: (m.lessons || []).map(l => ({
+                ...l,
+                id: l._id || l.id
+              }))
+            })));
           }
+
         } else {
           showToast('error', 'Course not found.');
           navigate('/lecturer-dashboard');
@@ -274,6 +284,8 @@ export default function EditCourse() {
       title: title.trim(),
       description: description.trim(),
       shortDescription: shortDescription.trim(),
+      instructor: user.name,
+      instructorId: user.id || user._id,
       thumbnail: thumbnailUrl.trim() || PLACEHOLDER_THUMBNAILS[Math.floor(Math.random() * PLACEHOLDER_THUMBNAILS.length)],
       category,
       level,
@@ -290,7 +302,7 @@ export default function EditCourse() {
       showToast('success', `"${updatedCourseData.title}" has been updated successfully.`);
       setIsSuccess(true);
     } catch (err) {
-      showToast('error', 'Failed to update course. Please try again.');
+      showToast('error', err.message || 'Failed to update course. Please try again.');
     }
   };
 

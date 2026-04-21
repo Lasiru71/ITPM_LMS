@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Users, CheckCircle, XCircle, Clock, Save, Search, Calendar, Filter, ChevronDown, Download } from "lucide-react";
+import { Users, CheckCircle, XCircle, Clock, Save, Search, Calendar, Filter, ChevronDown, Download, RefreshCw } from "lucide-react";
 import { useToast } from "./ToastProvider";
 import api from "../../services/api";
 import "../../Styles/Lasiru/AttendanceView.css";
@@ -13,6 +13,7 @@ const AttendanceView = ({ courses }) => {
     const [attendanceData, setAttendanceData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
     useEffect(() => {
         if (courses && courses.length > 0 && !selectedCourseId) {
             setSelectedCourseId(courses[0]._id || courses[0].id);
@@ -285,5 +286,4 @@ const AttendanceView = ({ courses }) => {
         </div>
     );
 };
-
 export default AttendanceView;

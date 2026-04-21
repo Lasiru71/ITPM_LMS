@@ -73,28 +73,54 @@ exports.addAdminReply = async (req, res) => {
     }
 };
 
-// Delete a review (Student can delete own, Admin can delete any)
+// Delete a review (Student can delete own, Admin/Lecturer can delete based on permissions)
 exports.deleteReview = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user._id;
         const userRole = req.user.role;
 
-        // 1. Find the review first to check ownership
         const review = await Review.findById(id);
-
         if (!review) {
             return res.status(404).json({ message: "Review not found" });
         }
 
-        // 2. Permission check: Admin or the student who wrote the review
-        if (userRole !== "Admin" && review.studentId.toString() !== userId.toString()) {
+        // Permission check
+        let hasPermission = false;
+
+        if (userRole === "Admin") {
+            hasPermission = true;
+        } else if (userRole === "Student" && review.studentId.toString() === userId.toString()) {
+            hasPermission = true;
+        } else if (userRole === "Lecturer") {
+            // Check if this lecturer owns the course
+            // First try finding by ObjectId
+            let course = null;
+            try {
+                course = await Course.findById(review.courseId);
+            } catch (e) {
+                // If not ObjectId, try finding by custom id string if your schema has one
+                course = await Course.findOne({ id: review.courseId });
+            }
+
+            if (course) {
+                if (String(course.instructorId) === String(userId) || String(course.instructor) === String(userId)) {
+                    hasPermission = true;
+                }
+            } else {
+                // Fallback: If course not in DB, maybe it's a mock course or deleted
+                // For now, if we can't verify ownership, we might need a safer fallback
+                // Let's assume if the review was filtered to them in UI, we should double check here
+                // BUT for safety, let's just log and deny if we can't prove it.
+                console.log(`Course not found for review ${id}, courseId: ${review.courseId}`);
+            }
+        }
+
+        if (!hasPermission) {
             return res.status(403).json({ message: "You don't have permission to delete this review." });
         }
 
-        // 3. Perform deletion
         await Review.findByIdAndDelete(id);
-
         res.status(200).json({ message: "Review deleted successfully" });
     } catch (error) {
         console.error("Delete review error:", error.message);

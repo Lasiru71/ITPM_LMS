@@ -6,11 +6,23 @@ import { useToast } from '../Lasiru/ToastProvider';
 const CATEGORIES = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Engineering', 'Business', 'Literature', 'History', 'Other'];
 const TYPES = ['Book', 'PDF', 'Document'];
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
 export default function MaterialUpload() {
   const { showToast } = useToast();
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Helper to get auth header
+  const getAuthHeader = () => {
+    const token = localStorage.getItem("token");
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  };
   
   const [formData, setFormData] = useState({
     title: '',
@@ -33,9 +45,10 @@ export default function MaterialUpload() {
   const fetchMaterials = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/sadeepa/materials');
+      const res = await axios.get(`${API_BASE_URL}/sadeepa/materials`, getAuthHeader());
       setMaterials(res.data);
     } catch (error) {
+      console.error("Fetch error:", error);
       showToast('error', 'Failed to fetch materials');
     } finally {
       setLoading(false);
@@ -68,7 +81,7 @@ export default function MaterialUpload() {
 
     setSubmitting(true);
     try {
-      await axios.post('http://localhost:5000/api/sadeepa/materials/upload', formData);
+      await axios.post(`${API_BASE_URL}/sadeepa/materials/upload`, formData, getAuthHeader());
       showToast('success', 'Material uploaded successfully!');
       setFormData({
         title: '',
@@ -81,6 +94,7 @@ export default function MaterialUpload() {
       setPreviews({ image: null, file: null });
       fetchMaterials();
     } catch (error) {
+      console.error("Upload error:", error);
       showToast('error', 'Failed to upload material');
     } finally {
       setSubmitting(false);
@@ -90,13 +104,15 @@ export default function MaterialUpload() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this material?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/sadeepa/materials/${id}`);
+      await axios.delete(`${API_BASE_URL}/sadeepa/materials/${id}`, getAuthHeader());
       showToast('success', 'Material deleted successfully');
       fetchMaterials();
     } catch (error) {
+      console.error("Delete error:", error);
       showToast('error', 'Failed to delete material');
     }
   };
+
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
