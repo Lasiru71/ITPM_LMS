@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { UserPlus, Search, Trash2, Power, PowerOff, X, AlertTriangle } from "lucide-react";
-import { getAllLecturers, createLecturer, deleteLecturer, toggleUserStatus } from "../../api/Lasiru/adminApi";
+import { UserPlus, Search, Trash2, Power, PowerOff, X, AlertTriangle, Edit3 } from "lucide-react";
+import { getAllLecturers, createLecturer, deleteLecturer, toggleUserStatus, updateUserByAdmin } from "../../api/Lasiru/adminApi";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 
 const LectureManagement = ({ onUpdate }) => {
@@ -9,6 +9,9 @@ const LectureManagement = ({ onUpdate }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editId, setEditId] = useState(null);
+    const [editData, setEditData] = useState({ name: "", email: "", address: "", phone: "" });
     const [deleteId, setDeleteId] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [formData, setFormData] = useState({
@@ -62,6 +65,36 @@ const LectureManagement = ({ onUpdate }) => {
             onUpdate();
         } catch (error) {
             showToast("error", "Failed to delete lecturer");
+        }
+    };
+
+    const handleEditClick = (lec) => {
+        setEditId(lec._id);
+        setEditData({ 
+            name: lec.name || "", 
+            email: lec.email || "", 
+            address: lec.address || "",
+            phone: lec.phone || ""
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        if (!editData.name.trim() || !editData.email.trim()) {
+            showToast("error", "Name and Email are required");
+            return;
+        }
+        
+        try {
+            await updateUserByAdmin(editId, editData);
+            showToast("success", "Lecturer details updated successfully");
+            setShowEditModal(false);
+            setEditId(null);
+            fetchLecturers();
+            onUpdate();
+        } catch (error) {
+            showToast("error", error.response?.data?.message || "Failed to update lecturer details");
         }
     };
 
@@ -170,6 +203,14 @@ const LectureManagement = ({ onUpdate }) => {
                                     <td>
                                         <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
                                             <button
+                                                className="action-icon-btn btn-edit"
+                                                style={{ color: "#3b82f6", background: "rgba(59, 130, 246, 0.1)" }}
+                                                onClick={() => handleEditClick(lec)}
+                                                title="Edit Lecturer details"
+                                            >
+                                                <Edit3 size={18} />
+                                            </button>
+                                            <button
                                                 className="action-icon-btn btn-toggle"
                                                 onClick={() => handleToggleStatus(lec._id)}
                                                 title={lec.isActive ? "Deactivate" : "Activate"}
@@ -248,6 +289,63 @@ const LectureManagement = ({ onUpdate }) => {
                                     className="admin-btn admin-btn-ghost"
                                     style={{ flex: 1 }}
                                     onClick={() => setShowModal(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {showEditModal && createPortal(
+                <div className="admin-modal-overlay">
+                    <div className="admin-modal">
+                        <h2>Edit Lecturer Details</h2>
+                        <form onSubmit={handleEditSubmit} noValidate>
+                            <div className="admin-form-group">
+                                <label>Full Name</label>
+                                <input
+                                    className="admin-input"
+                                    value={editData.name}
+                                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Email Address</label>
+                                <input
+                                    className="admin-input"
+                                    type="email"
+                                    value={editData.email}
+                                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Address</label>
+                                <input
+                                    className="admin-input"
+                                    value={editData.address}
+                                    onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Phone Number</label>
+                                <input
+                                    className="admin-input"
+                                    value={editData.phone}
+                                    onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                                />
+                            </div>
+                            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+                                <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1 }}>
+                                    Save Changes
+                                </button>
+                                <button
+                                    type="button"
+                                    className="admin-btn admin-btn-ghost"
+                                    style={{ flex: 1 }}
+                                    onClick={() => setShowEditModal(false)}
                                 >
                                     Cancel
                                 </button>

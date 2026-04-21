@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Search, Trash2, Power, PowerOff, AlertTriangle } from "lucide-react";
-import { getAllStudents, deleteStudent, toggleUserStatus } from "../../api/Lasiru/adminApi";
+import { Search, Trash2, Power, PowerOff, AlertTriangle, Edit3 } from "lucide-react";
+import { getAllStudents, deleteStudent, toggleUserStatus, updateUserByAdmin } from "../../api/Lasiru/adminApi";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 
 const StudentManagement = ({ onUpdate }) => {
     const [students, setStudents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editId, setEditId] = useState(null);
+    const [editData, setEditData] = useState({ name: "", email: "", studentId: "" });
     const [deleteId, setDeleteId] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const { showToast } = useToast();
@@ -42,6 +45,35 @@ const StudentManagement = ({ onUpdate }) => {
     const handleDeleteClick = (id) => {
         setDeleteId(id);
         setShowConfirm(true);
+    };
+
+    const handleEditClick = (std) => {
+        setEditId(std._id);
+        setEditData({ 
+            name: std.name || "", 
+            email: std.email || "", 
+            studentId: std.studentId || "" 
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        if (!editData.name.trim() || !editData.email.trim()) {
+            showToast("error", "Name and Email are required");
+            return;
+        }
+        
+        try {
+            await updateUserByAdmin(editId, editData);
+            showToast("success", "Student details updated successfully");
+            setShowEditModal(false);
+            setEditId(null);
+            fetchStudents();
+            onUpdate();
+        } catch (error) {
+            showToast("error", error.response?.data?.message || "Failed to update student details");
+        }
     };
 
     const confirmDelete = async () => {
@@ -118,6 +150,14 @@ const StudentManagement = ({ onUpdate }) => {
                                     <td>
                                         <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
                                             <button
+                                                className="action-icon-btn btn-edit"
+                                                style={{ color: "#3b82f6", background: "rgba(59, 130, 246, 0.1)" }}
+                                                onClick={() => handleEditClick(std)}
+                                                title="Edit Student details"
+                                            >
+                                                <Edit3 size={18} />
+                                            </button>
+                                            <button
                                                 className="action-icon-btn btn-toggle"
                                                 onClick={() => handleToggleStatus(std._id)}
                                                 title={std.isActive ? "Deactivate" : "Activate"}
@@ -139,6 +179,61 @@ const StudentManagement = ({ onUpdate }) => {
                     </table>
                 )}
             </div>
+
+            {showEditModal && createPortal(
+                <div className="admin-modal-overlay">
+                    <div className="admin-modal">
+                        <h2>Edit Student Details</h2>
+                        <form onSubmit={handleEditSubmit} noValidate>
+                            <div className="admin-form-group">
+                                <label>Full Name</label>
+                                <input
+                                    className="admin-input"
+                                    value={editData.name}
+                                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Email Address</label>
+                                <input
+                                    className="admin-input"
+                                    type="email"
+                                    value={editData.email}
+                                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>NIC Number (Optional)</label>
+                                <input
+                                    className="admin-input"
+                                    type="text"
+                                    placeholder="Enter 12-digit NIC"
+                                    maxLength="12"
+                                    value={editData.studentId}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        setEditData((prev) => ({ ...prev, studentId: val }));
+                                    }}
+                                />
+                            </div>
+                            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+                                <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1 }}>
+                                    Save Changes
+                                </button>
+                                <button
+                                    type="button"
+                                    className="admin-btn admin-btn-ghost"
+                                    style={{ flex: 1 }}
+                                    onClick={() => setShowEditModal(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {showConfirm && createPortal(
                 <div className="admin-modal-overlay">

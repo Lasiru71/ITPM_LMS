@@ -49,11 +49,20 @@ const NotificationBell = () => {
     };
 
     const getTargetBadgeStyle = (toWhom) => {
-        switch (toWhom) {
-            case "Students": return { background: "#10b981", color: "#ffffff", border: "none" };
-            case "Lecturers": return { background: "#3b82f6", color: "#ffffff", border: "none" };
-            case "All": return { background: "#ef4444", color: "#ffffff", border: "none" };
-            default: return { background: "#6b7280", color: "#ffffff", border: "none" };
+        // Handle variations (e.g., "Student" vs "Students")
+        const target = toWhom?.toLowerCase();
+        
+        switch (target) {
+            case "students":
+            case "student":
+                return { background: "rgba(16, 185, 129, 0.15)", color: "#047857", fontWeight: 600, border: "none" };
+            case "lecturers":
+            case "lecturer":
+                return { background: "rgba(59, 130, 246, 0.15)", color: "#1d4ed8", fontWeight: 600, border: "none" };
+            case "all":
+                return { background: "rgba(139, 92, 246, 0.15)", color: "#6d28d9", fontWeight: 600, border: "none" };
+            default:
+                return { background: "rgba(100, 116, 139, 0.15)", color: "#334155", fontWeight: 600, border: "none" };
         }
     };
 
@@ -99,7 +108,7 @@ const NotificationBell = () => {
                                     }}
                                 >
                                     <div className="notif-item-icon" style={getTargetBadgeStyle(notif.toWhom)}>
-                                        {notif.priority === "High" ? "!" : <Bell size={20} strokeWidth={2.5} color="#ffffff" />}
+                                        {notif.priority === "High" ? "!" : <Bell size={20} strokeWidth={2.5} color="currentColor" />}
                                     </div>
                                     <div className="notif-item-content">
                                         <div className="notif-item-top">
