@@ -39,4 +39,12 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/lecturer/:lecturerId", async (req, res) => {
+  try {
+    const courses = await Course.find({ instructorId: req.params.lecturerId });
+    res.json(courses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

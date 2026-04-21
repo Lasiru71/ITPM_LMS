@@ -251,7 +251,7 @@ export default function AttendanceReport() {
                         Warning
                       </p>
                       <p className="mt-2 text-3xl font-bold text-slate-900">
-                        {String(report.warning)}
+                        {report.warning ? "LOW" : "OK"}
                       </p>
                     </div>
                   </div>
@@ -358,12 +358,12 @@ export default function AttendanceReport() {
                           </span>
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              report.warning
+                               report.warning
                                 ? "bg-rose-100 text-rose-700"
                                 : "bg-emerald-100 text-emerald-700"
                             }`}
                           >
-                            {String(report.warning)}
+                            {report.warning ? "LOW" : "OK"}
                           </span>
                         </div>
                       </div>

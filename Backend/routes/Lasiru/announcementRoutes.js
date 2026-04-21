@@ -15,7 +15,7 @@ const router = express.Router();
 router.get("/notifications/latest", authenticate, getLatestNotifications);
 router.get("/notifications/all", authenticate, getPaginatedNotifications);
 
-// Public routes
+// Public routes (if any)
 router.get("/", getAllAnnouncements);
 
 // Protected routes

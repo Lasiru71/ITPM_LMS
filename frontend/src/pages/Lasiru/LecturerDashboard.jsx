@@ -4,7 +4,6 @@ import {
     Globe,
     Eye,
     Users,
-    Search,
     Calendar,
     CheckCircle,
     XCircle,
@@ -18,6 +17,10 @@ import {
     Settings,
     LogOut,
     ChevronRight,
+    Search,
+    User,
+    QrCode,
+    Activity,
     Pencil,
     Trash2,
     MessageSquare,
@@ -25,21 +28,18 @@ import {
     FileText
 } from "lucide-react";
 
-
-
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import { useLogout } from "../../hooks/Lasiru/useLogout";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
-import LecturerSettings from "../../components/Lasiru/LecturerSettings";
+import LecturerQRManager from "../../components/Lasiru/LecturerQRManager";
 import AttendanceView from "../../components/Lasiru/AttendanceView";
+import api from "../../services/api";
+import LecturerSettings from "../../components/Lasiru/LecturerSettings";
 import { getAllCourses, deleteCourse } from '../../api/Jeewani/courseApi';
 import { getAllReviews, addAdminReply, deleteReview as deleteReviewApi } from '../../api/Lasiru/reviewApi';
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
 import MaterialUpload from "../../components/sadeepa/MaterialUpload";
-
-
-
 
 import { Badge } from "../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card";
@@ -186,12 +186,34 @@ const LecturerDashboard = () => {
         { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
         { id: "my-courses", label: "My Courses", icon: <BookOpen size={20} /> },
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
+        { id: "qr-session", label: "QR Session", icon: <QrCode size={20} /> },
+        { id: "attendance", label: "Attendance Marking", icon: <Activity size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
-        { id: "attendance", label: "Attendance", icon: <Users size={20} /> },
         { id: "materials", label: "Materials", icon: <FileText size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
+    const [lecturerCourses, setLecturerCourses] = useState([]);
+    const [coursesLoading, setCoursesLoading] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === "attendance" || activeTab === "dashboard") {
+            fetchLecturerCourses();
+        }
+    }, [activeTab]);
+
+    const fetchLecturerCourses = async () => {
+        try {
+            setCoursesLoading(true);
+            const lecturerId = user.id || user._id;
+            const res = await api.get(`/courses/lecturer/${lecturerId}`);
+            setLecturerCourses(res.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setCoursesLoading(false);
+        }
+    };
 
     const renderContent = () => {
         if (isLoading) return <div className="loading-state">Loading your dashboard...</div>;
@@ -207,6 +229,14 @@ const LecturerDashboard = () => {
             );
         }
 
+        if (activeTab === "qr-session") {
+            return <LecturerQRManager />;
+        }
+
+        if (activeTab === "attendance") {
+            return <AttendanceView courses={lecturerCourses} />;
+        }
+
         if (activeTab === "dashboard") {
             // Dashboard shows only courses assigned/created by admin
             const filteredCourses = adminCourses.filter(course =>
@@ -214,10 +244,8 @@ const LecturerDashboard = () => {
                 (course.category && course.category.toLowerCase().includes(searchQuery.toLowerCase()))
             );
 
-
             return (
                 <div className="dashboard-grid-v2">
-
                     {/* STATS ROW */}
                     <div className="premium-stats-row">
                         <div className="premium-stat-card blue">
@@ -507,18 +535,9 @@ const LecturerDashboard = () => {
         }
 
         if (activeTab === "settings") {
-
             return (
                 <div className="settings-section animate-in fade-in duration-500">
                     <LecturerSettings onProfileUpdate={setUser} />
-                </div>
-            );
-        }
-
-        if (activeTab === "attendance") {
-            return (
-                <div className="attendance-section animate-in fade-in duration-500">
-                    <AttendanceView courses={myCourses} />
                 </div>
             );
         }
@@ -577,7 +596,7 @@ const LecturerDashboard = () => {
                                     <CardContent className="pt-0 flex-grow">
                                         <div className="flex justify-between items-center mt-2 pb-4 border-b border-slate-50">
                                             <span className="text-xl font-black text-emerald-600">
-                                                ${course.price || "Free"}
+                                                Rs. {course.price?.toLocaleString() || "Free"}
                                             </span>
                                             <div className="flex flex-col items-end">
                                                 <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
@@ -625,7 +644,6 @@ const LecturerDashboard = () => {
                                         </div>
                                     </CardContent>
                                 </Card>
-
                             ))}
                         </div>
                     )}
@@ -633,7 +651,6 @@ const LecturerDashboard = () => {
             );
         }
 
-        // ✅ NEW EMPTY STATE UI
         const activeItem = navItems.find(item => item.id === activeTab);
         return (
             <div className="empty-state-container animate-in fade-in duration-500">
@@ -641,11 +658,8 @@ const LecturerDashboard = () => {
                     <div className="empty-icon mb-4">
                         {activeItem?.icon && React.cloneElement(activeItem.icon, { size: 40 })}
                     </div>
-
                     <h2 className="text-xl font-bold">{activeItem?.label}</h2>
-                    <p className="text-gray-500 mt-2">
-                        This section is currently under development. Stay tuned!
-                    </p>
+                    <p className="text-gray-500 mt-2">Section under construction. Stay tuned!</p>
                 </div>
             </div>
         );

@@ -1,6 +1,6 @@
 export const MOCK_COURSES = [
     {
-        id: 1,
+        id: "69e7c6633c104e9b7b0c8923",
         title: "Complete Web Development Bootcamp",
         instructor: "Dr. Angela Yu",
         price: 19.99,
@@ -14,7 +14,7 @@ export const MOCK_COURSES = [
         level: "Beginner"
     },
     {
-        id: 2,
+        id: "69e7c6633c104e9b7b0c8924",
         title: "Machine Learning A-Z™: AI, Python & R",
         instructor: "Kirill Eremenko",
         price: 24.99,
@@ -28,7 +28,7 @@ export const MOCK_COURSES = [
         level: "Intermediate"
     },
     {
-        id: 3,
+        id: "69e7c6633c104e9b7b0c8925",
         title: "Graphic Design Masterclass",
         instructor: "Lindsay Marsh",
         price: 14.99,
@@ -42,7 +42,7 @@ export const MOCK_COURSES = [
         level: "All Levels"
     },
     {
-        id: 4,
+        id: "69e7c6633c104e9b7b0c8926",
         title: "The Business Strategy Game",
         instructor: "Philip Kotler",
         price: 29.99,
@@ -56,7 +56,7 @@ export const MOCK_COURSES = [
         level: "Advanced"
     },
     {
-        id: 5,
+        id: "69e7c6633c104e9b7b0c8927",
         title: "React & TypeScript — The Complete Guide",
         instructor: "Maximilian Schwarzmüller",
         price: 19.99,
@@ -70,7 +70,7 @@ export const MOCK_COURSES = [
         level: "Intermediate"
     },
     {
-        id: 6,
+        id: "69e7c6633c104e9b7b0c8928",
         title: "UI/UX Design Bootcamp 2026",
         instructor: "Sarah Johnson",
         price: 22.99,

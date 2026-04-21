@@ -1,7 +1,7 @@
-import Review from "../../models/Jeewani/Review.js";
+const Review = require("../../models/Jeewani/Review");
 
 // Create a new review
-export const createReview = async (req, res) => {
+exports.createReview = async (req, res) => {
   try {
     const newReview = new Review(req.body);
     const savedReview = await newReview.save();
@@ -13,7 +13,7 @@ export const createReview = async (req, res) => {
 };
 
 // Get all reviews
-export const getAllReviews = async (req, res) => {
+exports.getAllReviews = async (req, res) => {
   try {
     const reviews = await Review.find().sort({ createdAt: -1 });
     res.status(200).json(reviews);

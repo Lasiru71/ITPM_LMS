@@ -5,7 +5,7 @@ const {
   incrementViews, 
   incrementDownloads,
   deleteProject 
-} = require('../../Controllers/sadeepa/projectController.js');
+} = require('../../Controllers/sadeepa/projectController');
 
 const router = express.Router();
 

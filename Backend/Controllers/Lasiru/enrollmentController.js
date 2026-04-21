@@ -1,5 +1,5 @@
-const Enrollment = require("../../models/Lasiru/Enrollment.js");
-const Course = require("../../models/Jeewani/Course.js");
+const Enrollment = require("../../models/Lasiru/Enrollment");
+const Course = require("../../models/Jeewani/Course");
 
 // Enroll a student in a course
 exports.enrollInCourse = async (req, res) => {
@@ -45,5 +45,21 @@ exports.getStudentCourses = async (req, res) => {
     res.status(200).json(courses);
   } catch (error) {
     res.status(500).json({ message: "Error fetching student courses", error: error.message });
+  }
+};
+
+// Get all students enrolled in a specific course
+exports.getCourseStudents = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const enrollments = await Enrollment.find({ courseId }).populate("studentId");
+    
+    const students = enrollments
+      .filter(e => e.studentId)
+      .map(e => e.studentId);
+
+    res.status(200).json(students);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching course students", error: error.message });
   }
 };

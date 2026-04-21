@@ -1,5 +1,5 @@
-const Assignment = require('../../models/sadeepa/Assignment.js');
-const Submission = require('../../models/sadeepa/Submission.js');
+const Assignment = require('../../models/sadeepa/Assignment');
+const Submission = require('../../models/sadeepa/Submission');
 
 // --- LECTURER ENDPOINTS ---
 
@@ -123,7 +123,6 @@ exports.submitAssignment = async (req, res) => {
           }
         } else if (q.type === 'Essay') {
           // Assume essay gives partial random score for demo or 0 requiring manual.
-          // By req, let's just assume we auto-score the MCQ's natively.
           totalPossible += q.points;
         }
       }

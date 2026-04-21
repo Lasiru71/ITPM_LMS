@@ -4,14 +4,14 @@ import {
   Plus, Trash2, GripVertical, ChevronDown, ChevronUp,
   BookOpen, ImageIcon, DollarSign, Tag, Layers, ArrowLeft, Save, Eye, Upload, Loader2, CheckCircle2
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/stores/authStore';
-import { useCourseStore } from '@/stores/courseStore';
-import { CATEGORIES } from '@/constants/Home/mockData';
-import { LEVELS } from '@/constants/Home/config';
+import { Button } from '../../components/ui/button';
+import { useAuthStore } from '../../stores/authStore';
+import { useCourseStore } from '../../stores/courseStore';
+import { CATEGORIES } from '../../constants/Home/mockData';
+import { LEVELS } from '../../constants/Home/config';
 import { useToast } from '../../components/Lasiru/ToastProvider';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
+import { Badge } from '../../components/ui/badge';
 import * as courseApi from '../../api/Jeewani/courseApi';
 
 const LESSON_TYPES = [
