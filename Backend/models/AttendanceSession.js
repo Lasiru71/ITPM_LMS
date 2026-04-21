@@ -25,4 +25,4 @@ const attendanceSessionSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-module.exports = mongoose.model('AttendanceSession', attendanceSessionSchema);
+module.exports = mongoose.models.AttendanceSession || mongoose.model('AttendanceSession', attendanceSessionSchema);

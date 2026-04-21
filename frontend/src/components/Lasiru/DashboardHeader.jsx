@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Bell, Search, User, LogOut, LayoutDashboard, Settings, Globe } from "lucide-react";
+import { Search, User, LogOut, LayoutDashboard, Globe } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 import "../../Styles/Lasiru/DashboardHeader.css";
 
 const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = "light" }) => {
@@ -29,9 +30,9 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
                 {showSearch ? (
                     <div className="dash-search-box">
                         <Search size={18} className="dash-search-icon" />
-                        <input 
-                            type="text" 
-                            placeholder="Search everything..." 
+                        <input
+                            type="text"
+                            placeholder="Search everything..."
                             onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
                         />
                     </div>
@@ -43,19 +44,23 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
             </div>
 
             <div className="dash-header-right">
-                <Link to="/" className="dash-back-site-btn" title="Go to main website">
-                    <Globe size={18} />
-                    <span>Back to Site</span>
-                </Link>
+                {window.location.pathname === '/profile' ? (
+                    <Link to={getDashboardPath()} className="dash-back-site-btn" title="Go back to Dashboard" style={{ background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)', color: '#4f46e5', borderColor: '#c7d2fe' }}>
+                        <LayoutDashboard size={18} />
+                        <span>Dashboard</span>
+                    </Link>
+                ) : (
+                    <Link to="/" className="dash-back-site-btn" title="Go to main website">
+                        <Globe size={18} />
+                        <span>Back to Site</span>
+                    </Link>
+                )}
 
-                <div className="dash-header-icon-btn" title="Notifications">
-                    <Bell size={22} />
-                    <span className="dash-notif-badge"></span>
-                </div>
+                <NotificationBell />
 
                 <div className="dash-profile-dropdown-container">
-                    <button 
-                        className="dash-profile-trigger" 
+                    <button
+                        className="dash-profile-trigger"
                         onClick={() => setProfileOpen(!profileOpen)}
                     >
                         <div className="dash-user-avatar">

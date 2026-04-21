@@ -5,7 +5,6 @@ import {
     Users,
     BookOpen,
     LogOut,
-    Bell,
     ChevronRight,
     TrendingUp,
     GraduationCap,
@@ -15,7 +14,8 @@ import {
     FileText,
     Download,
     Eye,
-    Megaphone
+    Megaphone,
+    Star
 } from "lucide-react";
 import {
     AreaChart,
@@ -30,12 +30,13 @@ import {
     Cell
 } from "recharts";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import "../../Styles/Lasiru/AdminDashboard.css";
 import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
+import ReviewManagement from "../../components/Lasiru/ReviewManagement";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
 
@@ -107,7 +108,7 @@ const AdminDashboard = () => {
                     new Date(l.createdAt).toLocaleDateString()
                 ]);
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['#', 'Name', 'Email Address', 'Status', 'Joined Date']],
                     body: tableData,
@@ -125,7 +126,7 @@ const AdminDashboard = () => {
                     s.isActive ? "Active" : "Inactive"
                 ]);
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['#', 'Student ID', 'Full Name', 'Email Address', 'Status']],
                     body: tableData,
@@ -143,7 +144,7 @@ const AdminDashboard = () => {
                     ["Revenue Analysis", "$2.8M (Platform Growth Estimate)"]
                 ];
 
-                doc.autoTable({
+                autoTable(doc, {
                     startY: 60,
                     head: [['Metric', 'Value']],
                     body: tableData,
@@ -170,37 +171,82 @@ const AdminDashboard = () => {
         ];
 
         return (
-            <div className="admin-overview">
+            <div className="admin-overview" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+                <div style={{
+                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                    padding: '3rem',
+                    borderRadius: '2rem',
+                    color: 'white',
+                    marginBottom: '3rem',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                }}>
+                    <div style={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
+                        <h1 style={{ fontSize: '2.8rem', margin: 0, fontWeight: 800, background: 'linear-gradient(to right, #ffffff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Welcome back, {user.name || "Admin"}! 👋</h1>
+                        <p style={{ opacity: 0.8, fontSize: '1.1rem', marginTop: '1rem', lineHeight: 1.6 }}>
+                            Here's what's happening with the platform today. You have {stats.totals.active} users actively engaged right now. Keep up the great work!
+                        </p>
+                        <div style={{ display: 'flex', gap: '1.25rem', marginTop: '2.5rem' }}>
+                            <button className="admin-btn admin-btn-primary" onClick={() => setActiveTab('reports')} style={{ background: '#10b981', padding: '0.8rem 1.5rem', border: 'none', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)' }}>
+                                <FileText size={18} /> View Reports
+                            </button>
+                            <button className="admin-btn admin-btn-ghost" style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem 1.5rem', backdropFilter: 'blur(5px)' }} onClick={() => navigate("/")}>
+                                <Eye size={18} /> Preview Site
+                            </button>
+                        </div>
+                    </div>
+                    {/* Decorative elements */}
+                    <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '50%', background: 'radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', bottom: '-10%', right: '5%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 60%)', filter: 'blur(30px)' }} />
+                    <Activity size={180} color="rgba(255,255,255,0.05)" style={{ position: 'absolute', right: '10%', top: '50%', transform: 'translateY(-50%) rotate(15deg)' }} />
+                </div>
+
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div style={{ color: '#12b981', marginBottom: '1rem' }}><Users size={24} /></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(18, 185, 129, 0.1)', color: '#10b981' }}><Users size={22} /></div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '0.3rem 0.6rem', borderRadius: '2rem' }}>+12%</span>
+                        </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2rem' }}>{stats.totals.total}</h3>
-                            <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Total Users</p>
+                            <h3 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.total}</h3>
+                            <p style={{ margin: '0.4rem 0 0', color: '#64748b', fontWeight: 500 }}>Total Registered Users</p>
                         </div>
                     </div>
 
                     <div className="stat-card">
-                        <div style={{ color: '#3b82f6', marginBottom: '1rem' }}><BookOpen size={24} /></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}><BookOpen size={22} /></div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '0.3rem 0.6rem', borderRadius: '2rem' }}>+8.4%</span>
+                        </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2rem' }}>{stats.totals.lecturers + stats.totals.students}</h3>
-                            <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Total Enrollments</p>
+                            <h3 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.lecturers + stats.totals.students}</h3>
+                            <p style={{ margin: '0.4rem 0 0', color: '#64748b', fontWeight: 500 }}>Total Enrollments</p>
                         </div>
                     </div>
 
                     <div className="stat-card">
-                        <div style={{ color: '#8b5cf6', marginBottom: '1rem' }}><DollarSign size={24} /></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}><DollarSign size={22} /></div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', padding: '0.3rem 0.6rem', borderRadius: '2rem' }}>Stable</span>
+                        </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2rem' }}>$2.8M</h3>
-                            <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Revenue</p>
+                            <h3 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>$2.8M</h3>
+                            <p style={{ margin: '0.4rem 0 0', color: '#64748b', fontWeight: 500 }}>Platform Revenue</p>
                         </div>
                     </div>
 
                     <div className="stat-card">
-                        <div style={{ color: '#f59e0b', marginBottom: '1rem' }}><Activity size={24} /></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><Activity size={22} /></div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '0.3rem 0.6rem', borderRadius: '2rem' }}>Live</span>
+                        </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2rem' }}>{stats.totals.active}</h3>
-                            <p style={{ margin: '0.25rem 0', color: '#64748b' }}>Active Now</p>
+                            <h3 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.active}</h3>
+                            <p style={{ margin: '0.4rem 0 0', color: '#64748b', fontWeight: 500 }}>Active Sessions Now</p>
                         </div>
                     </div>
                 </div>
@@ -211,16 +257,21 @@ const AdminDashboard = () => {
                         <div style={{ width: '100%', height: 300, marginTop: '1.5rem' }}>
                             <ResponsiveContainer>
                                 <AreaChart data={stats.growth}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                                    <Tooltip />
-                                    <Area type="monotone" dataKey="users" stroke="#12b981" fill="#12b981" fillOpacity={0.1} strokeWidth={3} />
+                                    <defs>
+                                        <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                                    <Area type="monotone" dataKey="users" stroke="#10b981" fill="url(#colorUsers)" strokeWidth={4} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
-
                     <div className="chart-card">
                         <h3>Distribution</h3>
                         <div style={{ width: '100%', height: 250, marginTop: '1.5rem' }}>
@@ -234,40 +285,72 @@ const AdminDashboard = () => {
                             </ResponsiveContainer>
                         </div>
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
         );
     };
 
     const renderReports = () => {
         const reports = [
-            { title: "System Overview", desc: "Overall platform statistics and performance metrics.", color: "#8b5cf6" },
-            { title: "Lecturer Directory", desc: "Complete list of all registered lecturers and their status.", color: "#12b981" },
-            { title: "Student Roster", desc: "Detailed list of enrolled students with IDs and contact info.", color: "#3b82f6" },
+            {
+                title: "System Overview",
+                desc: "Overall platform statistics and performance metrics.",
+                color: "#8b5cf6",
+                iconBg: "rgba(139, 92, 246, 0.1)",
+                icon: <Activity size={32} />
+            },
+            {
+                title: "Lecturer Directory",
+                desc: "Complete list of all registered lecturers and their status.",
+                color: "#12b981",
+                iconBg: "rgba(18, 185, 129, 0.1)",
+                icon: <Users size={32} />
+            },
+            {
+                title: "Student Roster",
+                desc: "Detailed list of enrolled students with IDs and contact info.",
+                color: "#3b82f6",
+                iconBg: "rgba(59, 130, 246, 0.1)",
+                icon: <School size={32} />
+            },
         ];
 
         return (
             <div className="admin-reports">
-                <div style={{ marginBottom: "2.5rem" }}>
-                    <h2 style={{ margin: 0 }}>Report Center</h2>
-                    <p style={{ color: "#64748b", marginTop: "0.5rem" }}>Generate professional PDF reports for your specific modules.</p>
+                <div style={{ marginBottom: "3rem", animation: "slideDown 0.5s ease-out" }}>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Report Center</h2>
+                    <p style={{ color: "#64748b", fontSize: '1.1rem', marginTop: "0.75rem", maxWidth: '600px' }}>
+                        Access comprehensive platform data and generate high-fidelity PDF reports for your specific needs.
+                    </p>
                 </div>
+
                 <div className="reports-grid">
-                    {reports.map((r) => (
-                        <div className="report-card" key={r.title}>
-                            <div style={{ color: r.color }}><FileText size={32} /></div>
-                            <div className="report-info">
-                                <h3 style={{ margin: 0 }}>{r.title}</h3>
-                                <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.5rem" }}>{r.desc}</p>
+                    {reports.map((r, idx) => (
+                        <div className="report-card premium-card" key={r.title} style={{ animation: `fadeInUp 0.6s ease-out ${idx * 0.1}s both` }}>
+                            <div className="report-card-icon-wrapper" style={{ background: r.iconBg, color: r.color }}>
+                                {r.icon}
                             </div>
-                            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
-                                <button className="admin-btn admin-btn-primary" style={{ flex: 1 }} onClick={() => generatePDFReport(r.title)}>
-                                    <Download size={18} /> Export PDF
+                            <div className="report-info">
+                                <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem' }}>{r.title}</h3>
+                                <p style={{ color: "#64748b", fontSize: "0.95rem", lineHeight: 1.6 }}>{r.desc}</p>
+                            </div>
+                            <div className="report-actions">
+                                <button
+                                    className="premium-action-btn"
+                                    onClick={() => generatePDFReport(r.title)}
+                                    style={{ '--accent-color': r.color }}
+                                >
+                                    <Download size={20} />
+                                    <span>Download Report</span>
                                 </button>
                             </div>
                         </div>
                     ))}
                 </div>
+                <style>{`
+                    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+                    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                `}</style>
             </div>
         );
     };
@@ -303,8 +386,8 @@ const AdminDashboard = () => {
             case "students": return <StudentManagement onUpdate={fetchStats} />;
             case "reports": return renderReports();
             case "courses": return renderPlaceholder("All Courses", <BookOpen size={48} />);
-            case "attendance": return renderPlaceholder("Student Attendance", <Activity size={48} />);
             case "announcement": return <AnnouncementManagement />;
+            case "reviews": return <ReviewManagement />;
             default: return renderOverview();
         }
     };
@@ -341,10 +424,6 @@ const AdminDashboard = () => {
                         <div className="nav-item-content"><BookOpen size={20} /> All Courses</div>
                         {activeTab === "courses" && <ChevronRight size={16} />}
                     </div>
-                    <div className={`admin-nav-item ${activeTab === "attendance" ? "active" : ""}`} onClick={() => setActiveTab("attendance")}>
-                        <div className="nav-item-content"><Activity size={20} /> Attendance</div>
-                        {activeTab === "attendance" && <ChevronRight size={16} />}
-                    </div>
 
                     <div className="nav-section-title">Business</div>
                     <div className={`admin-nav-item ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>
@@ -356,6 +435,10 @@ const AdminDashboard = () => {
                     <div className={`admin-nav-item ${activeTab === "announcement" ? "active" : ""}`} onClick={() => setActiveTab("announcement")}>
                         <div className="nav-item-content"><Megaphone size={20} /> Announcement</div>
                         {activeTab === "announcement" && <ChevronRight size={16} />}
+                    </div>
+                    <div className={`admin-nav-item ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>
+                        <div className="nav-item-content"><Activity size={20} /> Reviews</div>
+                        {activeTab === "reviews" && <ChevronRight size={16} />}
                     </div>
                 </nav>
 
@@ -380,9 +463,9 @@ const AdminDashboard = () => {
             </aside>
 
             <main className="admin-main-content">
-                <DashboardHeader 
-                    title="Admin Dashboard" 
-                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'} 
+                <DashboardHeader
+                    title="Admin Dashboard"
+                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'}
                     onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 

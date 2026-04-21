@@ -1,10 +1,10 @@
-import User from "../../models/Lasiru/User.js";
-import bcrypt from "bcrypt";
+const User = require("../../models/Lasiru/User");
+const bcrypt = require("bcrypt");
 
 // --- Lecturer Management ---
 
 // Get all lecturers
-export const getAllLecturers = async (req, res) => {
+exports.getAllLecturers = async (req, res) => {
     try {
         const lecturers = await User.find({ role: "Lecturer" }).select("-password");
         res.status(200).json(lecturers);
@@ -14,7 +14,7 @@ export const getAllLecturers = async (req, res) => {
 };
 
 // Create a new lecturer (Admin only)
-export const createLecturer = async (req, res) => {
+exports.createLecturer = async (req, res) => {
     try {
         const { name, email, password, address, phone } = req.body;
 
@@ -42,7 +42,7 @@ export const createLecturer = async (req, res) => {
 };
 
 // Delete a lecturer
-export const deleteLecturer = async (req, res) => {
+exports.deleteLecturer = async (req, res) => {
     try {
         const { id } = req.params;
         await User.findByIdAndDelete(id);
@@ -55,7 +55,7 @@ export const deleteLecturer = async (req, res) => {
 // --- Student Management ---
 
 // Get all students
-export const getAllStudents = async (req, res) => {
+exports.getAllStudents = async (req, res) => {
     try {
         const students = await User.find({ role: "Student" }).select("-password");
         res.status(200).json(students);
@@ -65,7 +65,7 @@ export const getAllStudents = async (req, res) => {
 };
 
 // Delete a student
-export const deleteStudent = async (req, res) => {
+exports.deleteStudent = async (req, res) => {
     try {
         const { id } = req.params;
         await User.findByIdAndDelete(id);
@@ -78,12 +78,12 @@ export const deleteStudent = async (req, res) => {
 // --- Common ---
 
 // Get Dashboard Stats
-export const getDashboardStats = async (req, res) => {
+exports.getDashboardStats = async (req, res) => {
     try {
         const totalStudents = await User.countDocuments({ role: "Student" });
         const totalLecturers = await User.countDocuments({ role: "Lecturer" });
         const activeUsers = await User.countDocuments({ isActive: true });
-        
+
         // Month-wise user growth (for the last 6 months)
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
@@ -132,7 +132,7 @@ export const getDashboardStats = async (req, res) => {
 };
 
 // Toggle User Status (Activate/Deactivate)
-export const toggleUserStatus = async (req, res) => {
+exports.toggleUserStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findById(id);

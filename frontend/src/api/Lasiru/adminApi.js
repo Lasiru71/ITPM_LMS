@@ -44,6 +44,11 @@ export const toggleUserStatus = async (id) => {
     return response.data;
 };
 
+export const updateUserByAdmin = async (id, data) => {
+    const response = await axios.put(`${API_URL}/users/${id}`, data, getAuthHeader());
+    return response.data;
+};
+
 // --- Dashboard Stats ---
 export const getDashboardStats = async () => {
     const response = await axios.get(`${API_URL}/stats`, getAuthHeader());
@@ -88,5 +93,16 @@ export const updateAnnouncement = async (id, data) => {
 
 export const deleteAnnouncement = async (id) => {
     const response = await axios.delete(`${ANNOUNCE_URL}/${id}`, getAuthHeader());
+    return response.data;
+};
+
+// --- Notifications ---
+export const getLatestNotifications = async (role) => {
+    const response = await axios.get(`${ANNOUNCE_URL}/notifications/latest?role=${role}`, getAuthHeader());
+    return response.data;
+};
+
+export const getPaginatedNotifications = async (role, page = 1, limit = 10) => {
+    const response = await axios.get(`${ANNOUNCE_URL}/notifications/all?role=${role}&page=${page}&limit=${limit}`, getAuthHeader());
     return response.data;
 };

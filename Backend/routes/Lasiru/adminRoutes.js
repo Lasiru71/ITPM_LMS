@@ -1,5 +1,5 @@
-import express from "express";
-import {
+const express = require("express");
+const {
     getAllLecturers,
     createLecturer,
     deleteLecturer,
@@ -7,8 +7,8 @@ import {
     deleteStudent,
     toggleUserStatus,
     getDashboardStats,
-} from "../../controllers/Lasiru/adminController.js";
-import { authenticate, authorizeRoles } from "../../middleware/Lasiru/authMiddleware.js";
+} = require("../../Controllers/Lasiru/adminController");
+const { authenticate, authorizeRoles } = require("../../middleware/Lasiru/authMiddleware");
 
 const router = express.Router();
 
@@ -31,4 +31,4 @@ router.patch("/users/:id/toggle", toggleUserStatus);
 // Dashboard Stats
 router.get("/stats", getDashboardStats);
 
-export default router;
+module.exports = router;

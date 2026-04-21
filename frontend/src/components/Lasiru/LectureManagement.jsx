@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { UserPlus, Search, Trash2, Power, PowerOff, X, AlertTriangle } from "lucide-react";
-import { getAllLecturers, createLecturer, deleteLecturer, toggleUserStatus } from "../../api/Lasiru/adminApi";
+import { UserPlus, Search, Trash2, Power, PowerOff, X, AlertTriangle, Edit3 } from "lucide-react";
+import { getAllLecturers, createLecturer, deleteLecturer, toggleUserStatus, updateUserByAdmin } from "../../api/Lasiru/adminApi";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 
 const LectureManagement = ({ onUpdate }) => {
     const [lecturers, setLecturers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editId, setEditId] = useState(null);
+    const [editData, setEditData] = useState({ name: "", email: "", address: "", phone: "" });
     const [deleteId, setDeleteId] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [formData, setFormData] = useState({
@@ -25,11 +29,14 @@ const LectureManagement = ({ onUpdate }) => {
 
     const fetchLecturers = async () => {
         try {
+            setIsLoading(true);
             const data = await getAllLecturers();
             setLecturers(data);
         } catch (error) {
             console.error("Error fetching lecturers:", error);
             showToast("error", "Failed to load lecturers");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -61,6 +68,36 @@ const LectureManagement = ({ onUpdate }) => {
         }
     };
 
+    const handleEditClick = (lec) => {
+        setEditId(lec._id);
+        setEditData({ 
+            name: lec.name || "", 
+            email: lec.email || "", 
+            address: lec.address || "",
+            phone: lec.phone || ""
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        if (!editData.name.trim() || !editData.email.trim()) {
+            showToast("error", "Name and Email are required");
+            return;
+        }
+        
+        try {
+            await updateUserByAdmin(editId, editData);
+            showToast("success", "Lecturer details updated successfully");
+            setShowEditModal(false);
+            setEditId(null);
+            fetchLecturers();
+            onUpdate();
+        } catch (error) {
+            showToast("error", error.response?.data?.message || "Failed to update lecturer details");
+        }
+    };
+
     const validateForm = () => {
         if (!formData.name.trim()) {
             showToast("error", "Full Name is required");
@@ -87,7 +124,7 @@ const LectureManagement = ({ onUpdate }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) return;
 
         try {
@@ -109,68 +146,91 @@ const LectureManagement = ({ onUpdate }) => {
     );
 
     return (
-        <div className="admin-content-card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                <h3 style={{ margin: 0 }}>Lecturer Directory</h3>
+        <div className="premium-management-card" style={{ animation: "fadeInUp 0.6s ease-out" }}>
+            <div className="management-header">
+                <div>
+                    <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1e293b", margin: 0 }}>Lecturer Directory</h3>
+                    <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.25rem" }}>Manage and monitor all platform educators.</p>
+                </div>
                 <div style={{ display: "flex", gap: "1rem" }}>
-                    <div className="admin-search-container">
-                        <Search size={18} className="search-icon" />
+                    <div className="modern-search-wrapper">
+                        <Search size={18} color="#94a3b8" />
                         <input
                             type="text"
                             placeholder="Search by name or email..."
-                            className="admin-input"
+                            className="modern-search-input"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <button className="admin-btn admin-btn-primary" onClick={() => setShowModal(true)}>
-                        <UserPlus size={18} /> Add New Lecturer
+                    <button className="admin-btn admin-btn-primary" onClick={() => setShowModal(true)} style={{ padding: "0.85rem 1.5rem" }}>
+                        <UserPlus size={18} /> <span>Add New Lecturer</span>
                     </button>
                 </div>
             </div>
 
             <div className="admin-table-container">
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredLecturers.map((lec) => (
-                            <tr key={lec._id}>
-                                <td>{lec.name}</td>
-                                <td>{lec.email}</td>
-                                <td>
-                                    <span className={`admin-badge ${lec.isActive ? "badge-active" : "badge-inactive"}`}>
-                                        {lec.isActive ? "Active" : "Inactive"}
-                                    </span>
-                                </td>
-                                <td className="admin-actions">
-                                    <button
-                                        className="admin-btn admin-btn-ghost"
-                                        onClick={() => handleToggleStatus(lec._id)}
-                                        title={lec.isActive ? "Deactivate" : "Activate"}
-                                    >
-                                        {lec.isActive ? <PowerOff size={16} /> : <Power size={16} />}
-                                        {lec.isActive ? "Deactivate" : "Activate"}
-                                    </button>
-                                    <button
-                                        className="admin-btn admin-btn-danger"
-                                        onClick={() => handleDeleteClick(lec._id)}
-                                        title="Delete"
-                                    >
-                                        <Trash2 size={16} />
-                                        Delete
-                                    </button>
-                                </td>
+                {isLoading ? (
+                    <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#64748b" }}>
+                        <div style={{ width: '40px', height: '40px', border: '3px solid #f8fafc', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }}></div>
+                        <p style={{ margin: 0, fontWeight: 500 }}>Syncing lecturer database...</p>
+                    </div>
+                ) : lecturers.length === 0 ? (
+                    <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#64748b" }}>
+                        <p style={{ margin: 0 }}>No lecturers found in the system.</p>
+                    </div>
+                ) : (
+                    <table className="premium-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email Address</th>
+                                <th>Status</th>
+                                <th style={{ textAlign: "right" }}>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {filteredLecturers.map((lec) => (
+                                <tr key={lec._id}>
+                                    <td style={{ fontWeight: 600, color: "#1e293b" }}>{lec.name}</td>
+                                    <td style={{ color: "#64748b" }}>{lec.email}</td>
+                                    <td>
+                                        <span className={`status-badge ${lec.isActive ? "status-active" : "status-inactive"}`}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
+                                            {lec.isActive ? "Active" : "Inactive"}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                                            <button
+                                                className="action-icon-btn btn-edit"
+                                                style={{ color: "#3b82f6", background: "rgba(59, 130, 246, 0.1)" }}
+                                                onClick={() => handleEditClick(lec)}
+                                                title="Edit Lecturer details"
+                                            >
+                                                <Edit3 size={18} />
+                                            </button>
+                                            <button
+                                                className="action-icon-btn btn-toggle"
+                                                onClick={() => handleToggleStatus(lec._id)}
+                                                title={lec.isActive ? "Deactivate" : "Activate"}
+                                            >
+                                                {lec.isActive ? <PowerOff size={18} /> : <Power size={18} />}
+                                            </button>
+                                            <button
+                                                className="action-icon-btn btn-delete"
+                                                onClick={() => handleDeleteClick(lec._id)}
+                                                title="Delete Account"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             {showModal && createPortal(
@@ -239,6 +299,63 @@ const LectureManagement = ({ onUpdate }) => {
                 document.body
             )}
 
+            {showEditModal && createPortal(
+                <div className="admin-modal-overlay">
+                    <div className="admin-modal">
+                        <h2>Edit Lecturer Details</h2>
+                        <form onSubmit={handleEditSubmit} noValidate>
+                            <div className="admin-form-group">
+                                <label>Full Name</label>
+                                <input
+                                    className="admin-input"
+                                    value={editData.name}
+                                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Email Address</label>
+                                <input
+                                    className="admin-input"
+                                    type="email"
+                                    value={editData.email}
+                                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Address</label>
+                                <input
+                                    className="admin-input"
+                                    value={editData.address}
+                                    onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Phone Number</label>
+                                <input
+                                    className="admin-input"
+                                    value={editData.phone}
+                                    onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                                />
+                            </div>
+                            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+                                <button type="submit" className="admin-btn admin-btn-primary" style={{ flex: 1 }}>
+                                    Save Changes
+                                </button>
+                                <button
+                                    type="button"
+                                    className="admin-btn admin-btn-ghost"
+                                    style={{ flex: 1 }}
+                                    onClick={() => setShowEditModal(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>,
+                document.body
+            )}
+
             {showConfirm && createPortal(
                 <div className="admin-modal-overlay">
                     <div className="admin-confirm-modal">
@@ -248,14 +365,14 @@ const LectureManagement = ({ onUpdate }) => {
                         <h3>Delete Lecturer?</h3>
                         <p>This action cannot be undone. All data associated with this lecturer will be permanently removed.</p>
                         <div className="confirm-actions">
-                            <button 
-                                className="admin-btn admin-btn-ghost" 
+                            <button
+                                className="admin-btn admin-btn-ghost"
                                 onClick={() => setShowConfirm(false)}
                             >
                                 Cancel
                             </button>
-                            <button 
-                                className="admin-btn admin-btn-danger" 
+                            <button
+                                className="admin-btn admin-btn-danger"
                                 onClick={confirmDelete}
                                 style={{ background: "#ef4444", color: "white" }}
                             >

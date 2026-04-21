@@ -227,7 +227,7 @@ const UserProfile = () => {
                                     </div>
                                     {profile?.studentId && (
                                         <div className="up-info-item">
-                                            <label>Student ID</label>
+                                            <label>NIC Number</label>
                                             <p>{profile.studentId}</p>
                                         </div>
                                     )}

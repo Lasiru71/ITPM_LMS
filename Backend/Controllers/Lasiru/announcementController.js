@@ -1,8 +1,8 @@
-import Announcement from "../../models/Lasiru/Announcement.js";
+const Announcement = require("../../models/Lasiru/Announcement");
 
 // @desc    Get all announcements
 // @route   GET /api/announcements
-export const getAllAnnouncements = async (req, res) => {
+exports.getAllAnnouncements = async (req, res) => {
   try {
     const announcements = await Announcement.find().sort({ createdAt: -1 });
     res.status(200).json(announcements);
@@ -13,8 +13,8 @@ export const getAllAnnouncements = async (req, res) => {
 
 // @desc    Create an announcement
 // @route   POST /api/announcements
-export const createAnnouncement = async (req, res) => {
-  const { title, content, category, priority } = req.body;
+exports.createAnnouncement = async (req, res) => {
+  const { title, content, category, priority, toWhom } = req.body;
 
   try {
     const newAnnouncement = new Announcement({
@@ -22,6 +22,7 @@ export const createAnnouncement = async (req, res) => {
       content,
       category,
       priority,
+      toWhom,
     });
     await newAnnouncement.save();
     res.status(201).json(newAnnouncement);
@@ -32,14 +33,14 @@ export const createAnnouncement = async (req, res) => {
 
 // @desc    Update an announcement
 // @route   PUT /api/announcements/:id
-export const updateAnnouncement = async (req, res) => {
+exports.updateAnnouncement = async (req, res) => {
   const { id } = req.params;
-  const { title, content, category, priority, isActive } = req.body;
+  const { title, content, category, priority, isActive, toWhom } = req.body;
 
   try {
     const updatedAnnouncement = await Announcement.findByIdAndUpdate(
       id,
-      { title, content, category, priority, isActive },
+      { title, content, category, priority, isActive, toWhom },
       { new: true, runValidators: true }
     );
     if (!updatedAnnouncement) {
@@ -53,7 +54,7 @@ export const updateAnnouncement = async (req, res) => {
 
 // @desc    Delete an announcement
 // @route   DELETE /api/announcements/:id
-export const deleteAnnouncement = async (req, res) => {
+exports.deleteAnnouncement = async (req, res) => {
   const { id } = req.params;
 
   try {
