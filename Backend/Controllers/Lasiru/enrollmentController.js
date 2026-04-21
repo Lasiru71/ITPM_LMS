@@ -1,8 +1,8 @@
-import Enrollment from "../../models/Lasiru/Enrollment.js";
-import Course from "../../models/Jeewani/Course.js";
+const Enrollment = require("../../models/Lasiru/Enrollment.js");
+const Course = require("../../models/Jeewani/Course.js");
 
 // Enroll a student in a course
-export const enrollInCourse = async (req, res) => {
+exports.enrollInCourse = async (req, res) => {
   try {
     const { studentId, courseId, paymentAmount } = req.body;
 
@@ -27,7 +27,7 @@ export const enrollInCourse = async (req, res) => {
 };
 
 // Get all courses for a specific student
-export const getStudentCourses = async (req, res) => {
+exports.getStudentCourses = async (req, res) => {
   try {
     const { studentId } = req.params;
     const enrollments = await Enrollment.find({ studentId }).populate("courseId");

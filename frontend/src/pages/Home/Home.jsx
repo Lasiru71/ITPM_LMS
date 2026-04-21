@@ -4,7 +4,6 @@ import { ArrowRight, Play, Users, BookOpen, Award, Star, GraduationCap, Zap, Shi
 import { Button } from '../../components/Home/ui/Button';
 import { MOCK_COURSES } from '../../constants/Home/mockData';
 import CourseCard from '../../components/Home/CourseCard';
-import { useCourseStore } from '../../stores/courseStore';
 import heroImg from '../../assets/hero-illustration.jpg';
 import '../../Styles/Home/Home.css';
 
@@ -54,38 +53,8 @@ const FEATURES = [
 ];
 
 export default function Home() {
-  const { courses, fetchCourses } = useCourseStore();
-
-  useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
-
-  // Map backend courses to add necessary UI flags & fields
-  const mappedRealCourses = courses.map(c => ({
-    ...c,
-    id: c._id || c.id,
-    title: c.title,
-    instructor: c.instructorName || c.instructor || 'Lecturer',
-    price: c.price || 'Free',
-    image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
-    thumbnail: c.thumbnail,
-    rating: c.rating || 4.5,
-    reviews: c.reviews || 10,
-    category: c.category || 'General',
-    level: c.level || 'All Levels',
-    isBestseller: true, // Show real courses as bestseller to highlight them
-    isNew: true         // Show real courses as new
-  }));
-
-  const allCourses = [
-    ...mappedRealCourses,
-    ...MOCK_COURSES.filter(
-      (mock) => !mappedRealCourses.some((real) => real.id === mock.id)
-    ),
-  ];
-
-  const featuredCourses = allCourses.filter((c) => c.isBestseller).slice(0, 4);
-  const newCourses = allCourses.filter((c) => c.isNew).slice(0, 4);
+  const featuredCourses = MOCK_COURSES.filter((c) => c.isBestseller).slice(0, 4);
+  const newCourses = MOCK_COURSES.filter((c) => c.isNew);
 
   return (
     <div className="home-page-bg">

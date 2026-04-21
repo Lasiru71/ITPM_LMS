@@ -1,61 +1,59 @@
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import { PORT, MONGO_URI } from "./config.js";
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const path = require("path");
+require("dotenv").config();
 
-import authRoutes from "./routes/Lasiru/authRoutes.js";
-import adminRoutes from "./routes/Lasiru/adminRoutes.js";
-import announcementRoutes from "./routes/Lasiru/announcementRoutes.js";
-import reviewRoutes from "./routes/Lasiru/reviewRoutes.js";
+const paymentRoutes = require("./routes/payment.routes");
+const attendanceRoutes = require("./routes/attendance.routes");
+const courseRoutes = require("./routes/course.routes");
 
+const authRoutes = require("./routes/Lasiru/authRoutes");
+const adminRoutes = require("./routes/Lasiru/adminRoutes");
+const reviewRoutes = require("./routes/Lasiru/reviewRoutes");
 
-// Jeewani
-import jeewaniCourseRoutes from "./routes/Jeewani/courseRoutes.js";
-import jeewaniReviewRoutes from "./routes/Jeewani/reviewRoutes.js";
-
-// Sadeepa
-import assignmentRoutes from "./routes/sadeepa/assignmentRoutes.js";
-import materialRoutes from "./routes/sadeepa/materialRoutes.js";
-import projectRoutes from "./routes/sadeepa/projectRoutes.js";
-import enrollmentRoutes from "./routes/Lasiru/enrollmentRoutes.js";
+// Sadeepa Routes
+const assignmentRoutes = require("./routes/sadeepa/assignmentRoutes");
+const materialRoutes = require("./routes/sadeepa/materialRoutes");
+const projectRoutes = require("./routes/sadeepa/projectRoutes");
+const announcementRoutes = require("./routes/Lasiru/announcementRoutes");
+const enrollmentRoutes = require("./routes/Lasiru/enrollmentRoutes");
 
 const app = express();
 
-// Middlewares
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(express.json());
 
-// Serve uploaded files
-app.use("/uploads", express.static("uploads"));
+// serve uploaded files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Health check
-app.get("/", (req, res) => {
-  res.send("Backend Running");
-});
+app.use("/api/courses", courseRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/attendance", attendanceRoutes);
 
-// Auth & RBAC routes
+// Sadeepa Endpoints
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api/materials", materialRoutes);
+app.use("/api/projects", projectRoutes);
+
+// Lasiru Endpoints
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/announcements", announcementRoutes);
 app.use("/api/reviews", reviewRoutes);
-
-// Jeewani routes
-app.use("/api/jeewani/courses", jeewaniCourseRoutes);
-app.use("/api/courses", jeewaniCourseRoutes); // alias for easier access
-app.use("/api/jeewani/reviews", jeewaniReviewRoutes);
-
-// Sadeepa routes
-app.use("/api/sadeepa/assignments", assignmentRoutes);
-app.use("/api/sadeepa/materials", materialRoutes);
-app.use("/api/sadeepa/projects", projectRoutes);
+app.use("/api/announcements", announcementRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 
-// MongoDB connection
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://itpmsliit:ItpmSliit2026@itpm.fwhtwym.mongodb.net/ITPM_LMS?appName=ITPM";
+const PORT = process.env.PORT || 5000;
+
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.error(err));
-
-// Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });

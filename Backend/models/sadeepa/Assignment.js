@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const assignmentSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -15,13 +15,11 @@ const assignmentSchema = new mongoose.Schema({
     correctAnswer: { type: String }, // For MCQ, exactly matches one option
     points: { type: Number, default: 10 } // Default 10 points per question
   }],
-  fileData: { 
+  fileData: {
     filename: { type: String },
     base64: { type: String } // Storing file as base64 string directly in Mongo for portability
   },
   createdBy: { type: String, required: true } // Email or ID of the lecturer who created it
 }, { timestamps: true });
 
-const Assignment = mongoose.model('sadeepa_Assignment', assignmentSchema);
-
-export default Assignment;
+module.exports = mongoose.models.sadeepa_Assignment || mongoose.model('sadeepa_Assignment', assignmentSchema);

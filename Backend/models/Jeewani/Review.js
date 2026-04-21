@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const ReviewSchema = new mongoose.Schema({
   courseId: {
@@ -27,4 +27,4 @@ const ReviewSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-export default mongoose.models.ReviewJeewani || mongoose.model('ReviewJeewani', ReviewSchema);
+module.exports = mongoose.models.ReviewJeewani || mongoose.model('ReviewJeewani', ReviewSchema);

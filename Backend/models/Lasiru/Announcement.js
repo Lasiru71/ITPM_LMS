@@ -1,24 +1,20 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const announcementSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Title is required"],
+      required: true,
       trim: true,
     },
-    description: {
+    content: {
       type: String,
-      required: [true, "Description is required"],
-    },
-    toWhom: {
-      type: String,
-      enum: ["Student", "Lecture", "All"],
-      required: [true, "Target audience is required"],
+      required: true,
+      trim: true,
     },
     category: {
       type: String,
-      enum: ["General", "Academic", "Exam", "Event"],
+      enum: ["General", "Event", "Academic", "Urgent"],
       default: "General",
     },
     priority: {
@@ -30,6 +26,11 @@ const announcementSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    toWhom: {
+      type: String,
+      enum: ["All", "Students", "Lecturers"],
+      default: "All",
+    },
     createdBy: {
       type: String,
       default: "Admin",
@@ -38,5 +39,4 @@ const announcementSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Announcement = mongoose.model("Announcement", announcementSchema);
-export default Announcement;
+module.exports = mongoose.models.Announcement || mongoose.model("Announcement", announcementSchema);

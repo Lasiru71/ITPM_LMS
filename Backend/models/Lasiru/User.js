@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    nicNumber: {
+    studentId: {
       type: String,
       unique: true,
       sparse: true,
@@ -52,6 +52,4 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);

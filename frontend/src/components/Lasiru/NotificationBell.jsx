@@ -15,7 +15,7 @@ const NotificationBell = () => {
 
     useEffect(() => {
         fetchNotifications();
-        
+
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsOpen(false);
@@ -41,7 +41,7 @@ const NotificationBell = () => {
         const date = new Date(dateString);
         const now = new Date();
         const diffInSeconds = Math.floor((now - date) / 1000);
-        
+
         if (diffInSeconds < 60) return "Just now";
         if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
         if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
@@ -49,21 +49,33 @@ const NotificationBell = () => {
     };
 
     const getTargetBadgeStyle = (toWhom) => {
-        switch (toWhom) {
-            case "Student": return { background: "#ecfdf5", color: "#10b981" };
-            case "Lecture": return { background: "#eff6ff", color: "#3b82f6" };
-            default: return { background: "#fef2f2", color: "#ef4444" };
+        // Handle variations (e.g., "Student" vs "Students")
+        const target = toWhom?.toLowerCase();
+        
+        switch (target) {
+            case "students":
+            case "student":
+                return { background: "rgba(16, 185, 129, 0.15)", color: "#047857", fontWeight: 600, border: "none" };
+            case "lecturers":
+            case "lecturer":
+                return { background: "rgba(59, 130, 246, 0.15)", color: "#1d4ed8", fontWeight: 600, border: "none" };
+            case "all":
+                return { background: "rgba(139, 92, 246, 0.15)", color: "#6d28d9", fontWeight: 600, border: "none" };
+            default:
+                return { background: "rgba(100, 116, 139, 0.15)", color: "#334155", fontWeight: 600, border: "none" };
         }
     };
 
     return (
         <div className="dash-notif-container" ref={dropdownRef}>
-            <button 
-                className={`dash-header-icon-btn ${isOpen ? "active" : ""}`} 
+            <button
+                className={`dash-header-icon-btn ${isOpen ? "active" : ""}`}
                 onClick={() => setIsOpen(!isOpen)}
                 title="Notifications"
             >
-                <Bell size={22} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Bell size={26} strokeWidth={2.5} style={{ stroke: "#0f172a", fill: "none", zIndex: 100 }} />
+                </div>
                 {notifications.length > 0 && <span className="dash-notif-badge"></span>}
             </button>
 
@@ -87,8 +99,8 @@ const NotificationBell = () => {
                             </div>
                         ) : (
                             notifications.map((notif) => (
-                                <div 
-                                    key={notif._id} 
+                                <div
+                                    key={notif._id}
                                     className="notif-item"
                                     onClick={() => {
                                         setIsOpen(false);
@@ -96,7 +108,7 @@ const NotificationBell = () => {
                                     }}
                                 >
                                     <div className="notif-item-icon" style={getTargetBadgeStyle(notif.toWhom)}>
-                                        {notif.priority === "High" ? "!" : <Bell size={14} />}
+                                        {notif.priority === "High" ? "!" : <Bell size={20} strokeWidth={2.5} color="currentColor" />}
                                     </div>
                                     <div className="notif-item-content">
                                         <div className="notif-item-top">
@@ -118,7 +130,7 @@ const NotificationBell = () => {
                         )}
                     </div>
 
-                    <button 
+                    <button
                         className="notif-view-all-btn"
                         onClick={() => {
                             setIsOpen(false);

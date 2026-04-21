@@ -1,11 +1,11 @@
-import express from 'express';
-import { 
+const express = require('express');
+const { 
   uploadProject, 
   getAllProjects, 
   incrementViews, 
   incrementDownloads,
   deleteProject 
-} from '../../Controllers/sadeepa/projectController.js';
+} = require('../../Controllers/sadeepa/projectController.js');
 
 const router = express.Router();
 
@@ -15,4 +15,4 @@ router.patch('/:id/view', incrementViews);
 router.patch('/:id/download', incrementDownloads);
 router.delete('/:id', deleteProject);
 
-export default router;
+module.exports = router;

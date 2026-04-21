@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const studentProjectSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -12,6 +12,4 @@ const studentProjectSchema = new mongoose.Schema({
   fileData: { type: String, required: true }
 }, { timestamps: true });
 
-const StudentProject = mongoose.model('sadeepa_StudentProject', studentProjectSchema);
-
-export default StudentProject;
+module.exports = mongoose.models.sadeepa_StudentProject || mongoose.model('sadeepa_StudentProject', studentProjectSchema);

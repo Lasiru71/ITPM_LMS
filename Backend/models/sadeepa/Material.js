@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const materialSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -11,6 +11,4 @@ const materialSchema = new mongoose.Schema({
   fileData: { type: String, required: true } // Base64 or URL
 }, { timestamps: true });
 
-const Material = mongoose.model('sadeepa_Material', materialSchema);
-
-export default Material;
+module.exports = mongoose.models.sadeepa_Material || mongoose.model('sadeepa_Material', materialSchema);

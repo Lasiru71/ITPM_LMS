@@ -1,9 +1,9 @@
-import express from 'express';
-import { 
+const express = require('express');
+const { 
   uploadMaterial, 
   getAllMaterials, 
   deleteMaterial 
-} from '../../Controllers/sadeepa/materialController.js';
+} = require('../../Controllers/sadeepa/materialController.js');
 
 const router = express.Router();
 
@@ -11,4 +11,4 @@ router.post('/upload', uploadMaterial);
 router.get('/', getAllMaterials);
 router.delete('/:id', deleteMaterial);
 
-export default router;
+module.exports = router;

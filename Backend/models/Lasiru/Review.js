@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
   {
     courseId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Course",
-        required: false, // temporarily false to not break existing data
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: false, // temporarily false to not break existing data
     },
     courseName: {
       type: String,
@@ -44,4 +44,4 @@ const reviewSchema = new mongoose.Schema(
 );
 
 const ReviewValue = mongoose.models.ReviewLasiru || mongoose.model("ReviewLasiru", reviewSchema);
-export default ReviewValue;
+module.exports = ReviewValue;

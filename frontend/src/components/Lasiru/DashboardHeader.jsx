@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Bell, Search, User, LogOut, LayoutDashboard, Settings, Globe } from "lucide-react";
-import { useAuthStore } from "../../stores/authStore";
-import "../../Styles/Lasiru/DashboardHeader.css";
+import { Search, User, LogOut, LayoutDashboard, Globe } from "lucide-react";
 import NotificationBell from "./NotificationBell";
+import "../../Styles/Lasiru/DashboardHeader.css";
 
-const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = "light", user: userProp }) => {
+const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = "light" }) => {
     const navigate = useNavigate();
-    const { user: storeUser } = useAuthStore();
-    const user = userProp || storeUser || JSON.parse(localStorage.getItem("user") || "{}");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
     const [profileOpen, setProfileOpen] = useState(false);
 
     const handleLogout = () => {
@@ -22,7 +20,7 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
             case 'Admin': return '/admin-dashboard';
             case 'Lecturer': return '/lecturer-dashboard';
             case 'Student': return '/student-dashboard';
-            default: return '/';
+            default: return '/profile';
         }
     };
 
@@ -46,10 +44,17 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
             </div>
 
             <div className="dash-header-right">
-                <Link to="/" className="dash-back-site-btn" title="Go to main website">
-                    <Globe size={18} />
-                    <span>Back to Site</span>
-                </Link>
+                {window.location.pathname === '/profile' ? (
+                    <Link to={getDashboardPath()} className="dash-back-site-btn" title="Go back to Dashboard" style={{ background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)', color: '#4f46e5', borderColor: '#c7d2fe' }}>
+                        <LayoutDashboard size={18} />
+                        <span>Dashboard</span>
+                    </Link>
+                ) : (
+                    <Link to="/" className="dash-back-site-btn" title="Go to main website">
+                        <Globe size={18} />
+                        <span>Back to Site</span>
+                    </Link>
+                )}
 
                 <NotificationBell />
 
@@ -59,11 +64,7 @@ const DashboardHeader = ({ title, showSearch = false, onSearchChange, variant = 
                         onClick={() => setProfileOpen(!profileOpen)}
                     >
                         <div className="dash-user-avatar">
-                            {user.profileImage ? (
-                                <img src={user.profileImage} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                            ) : (
-                                user.name ? user.name.charAt(0).toUpperCase() : "U"
-                            )}
+                            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                         </div>
                         <span className="dash-user-name">{user.name?.split(' ')[0] || "User"}</span>
                     </button>

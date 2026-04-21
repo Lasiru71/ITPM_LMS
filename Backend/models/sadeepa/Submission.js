@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const submissionSchema = new mongoose.Schema({
   assignmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'sadeepa_Assignment', required: true },
@@ -16,6 +16,4 @@ const submissionSchema = new mongoose.Schema({
 // Prevent duplicate submissions per student per assignment
 submissionSchema.index({ assignmentId: 1, studentId: 1 }, { unique: true });
 
-const Submission = mongoose.model('sadeepa_Submission', submissionSchema);
-
-export default Submission;
+module.exports = mongoose.models.sadeepa_Submission || mongoose.model('sadeepa_Submission', submissionSchema);

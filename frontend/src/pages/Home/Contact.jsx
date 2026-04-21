@@ -4,9 +4,9 @@ import { Button } from '../../components/Home/ui/Button';
 import '../../Styles/Home/Home.css';
 
 const contactInfo = [
-  { icon: Mail, label: 'Email Us', value: 'eduvaultsupport@gmail.com', detail: 'We reply within 24 hours' },
-  { icon: Phone, label: 'Call Us', value: '011 2345678', detail: 'Mon–Fri, 9am–6pm EST' },
-  { icon: MapPin, label: 'Visit Us', value: '104/1, Kandy Road, Malabe', detail: 'Open for campus visits' },
+  { icon: Mail, label: 'Email Us', value: 'support@eduvault.com', detail: 'We reply within 24 hours' },
+  { icon: Phone, label: 'Call Us', value: '+1 (800) 123-4567', detail: 'Mon–Fri, 9am–6pm EST' },
+  { icon: MapPin, label: 'Visit Us', value: '123 Learning Ave, San Francisco, CA 94102', detail: 'Open for campus visits' },
   { icon: Clock, label: 'Business Hours', value: 'Mon–Fri: 9am–6pm EST', detail: 'Sat: 10am–4pm EST' },
 ];
 
@@ -142,7 +142,7 @@ export default function Contact() {
             <div style={{ marginTop: '3.5rem', height: 250, background: 'var(--green-50)', borderRadius: '2rem', border: '1.5px solid var(--green-100)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
               <MapPin style={{ width: 40, height: 40, color: 'var(--emerald)', marginBottom: '1rem' }} />
               <p style={{ margin: 0, fontWeight: 700, color: 'var(--navy)' }}>Find us at</p>
-              <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem' }}>104/1, Kandy Road, Malabe</p>
+              <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem' }}>123 Learning Ave, San Francisco, CA</p>
             </div>
           </div>
         </div>

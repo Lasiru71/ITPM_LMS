@@ -12,7 +12,7 @@ function RegisterPage() {
     name: "",
     email: "",
     password: "",
-    nicNumber: "",
+    studentId: "",
     role: "Student", // Default to Learn
   });
   const [loading, setLoading] = useState(false);
@@ -38,8 +38,13 @@ function RegisterPage() {
       return;
     }
 
-    if (!form.nicNumber.trim()) {
+    if (!form.studentId.trim()) {
       showToast("error", "NIC Number is required.");
+      return;
+    }
+
+    if (!/^\d{12}$/.test(form.studentId.trim())) {
+      showToast("error", "NIC Number must be exactly 12 digits.");
       return;
     }
 
@@ -115,18 +120,22 @@ function RegisterPage() {
         </div>
 
         <div className="lasiru-field">
-          <label htmlFor="nicNumber">NIC Number</label>
+          <label htmlFor="studentId">NIC Number</label>
           <div className="lasiru-input-wrapper">
             <span className="lasiru-input-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
             </span>
             <input
-              id="nicNumber"
-              name="nicNumber"
+              id="studentId"
+              name="studentId"
               type="text"
-              placeholder="Enter your NIC number"
-              value={form.nicNumber}
-              onChange={handleChange}
+              placeholder="Enter your 12-digit NIC"
+              maxLength="12"
+              value={form.studentId}
+              onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  setForm((prev) => ({ ...prev, studentId: val }));
+              }}
             />
           </div>
         </div>

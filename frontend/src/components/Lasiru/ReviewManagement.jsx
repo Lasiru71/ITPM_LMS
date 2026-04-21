@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Search, Trash2, Star, CheckCircle, XCircle, AlertTriangle, MessageSquare, Reply } from "lucide-react";
+import { Search, Trash2, Star, CheckCircle, XCircle, AlertTriangle, MessageSquare, Reply, BookOpen } from "lucide-react";
 import { getAllReviews, deleteReview, updateReviewStatus, addAdminReply } from "../../api/Lasiru/reviewApi";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 
@@ -84,10 +84,10 @@ const ReviewManagement = () => {
         return (
             <div style={{ display: "flex", gap: "2px", color: "#f59e0b" }}>
                 {[...Array(5)].map((_, i) => (
-                    <Star 
-                        key={i} 
-                        size={14} 
-                        fill={i < rating ? "#f59e0b" : "none"} 
+                    <Star
+                        key={i}
+                        size={14}
+                        fill={i < rating ? "#f59e0b" : "none"}
                         strokeWidth={2}
                     />
                 ))}
@@ -99,25 +99,24 @@ const ReviewManagement = () => {
         (rev) =>
             (rev.courseId?.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (rev.studentId?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-            (rev.studentId?.nicNumber?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (rev.studentId?.studentId?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
             (rev.comment?.toLowerCase() || "").includes(searchQuery.toLowerCase())
     );
 
     return (
-        <div className="admin-content-card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+        <div className="premium-management-card" style={{ animation: "fadeInUp 0.6s ease-out" }}>
+            <div className="management-header">
                 <div>
-                    <h3 style={{ margin: 0 }}>Reviews & Ratings</h3>
-                    <p style={{ color: "#64748b", fontSize: "0.85rem", marginTop: "0.25rem" }}>
-                        Manage student feedback and course ratings
-                    </p>
+                    <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1e293b", margin: 0 }}>Reviews & Ratings</h3>
+                    <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.25rem" }}>Monitor student feedback and manage course perceptions.</p>
                 </div>
-                <div className="admin-search-container" style={{ width: "350px" }}>
-                    <Search size={18} className="search-icon" />
+                <div className="modern-search-wrapper" style={{ width: "380px" }}>
+                    <Search size={18} color="#94a3b8" />
                     <input
                         type="text"
                         placeholder="Search by course, student or ID..."
-                        className="admin-input"
+                        className="modern-search-input"
+                        style={{ width: "100%" }}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -125,94 +124,92 @@ const ReviewManagement = () => {
             </div>
 
             {loading ? (
-                <div style={{ padding: "4rem", textAlign: "center", color: "#64748b" }}>
-                    Loading reviews...
+                <div style={{ padding: "6rem", textAlign: "center", color: "#94a3b8" }}>
+                    <div className="loading-spinner" style={{ marginBottom: "1rem" }}></div>
+                    <p style={{ fontWeight: 500 }}>Syncing reviews...</p>
                 </div>
             ) : (
-                <div className="admin-table-container">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Student & ID</th>
-                                <th>Course</th>
-                                <th>Date</th>
-                                <th>Rating</th>
-                                <th style={{ width: "25%" }}>Comment</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredReviews.length > 0 ? (
-                                filteredReviews.map((rev) => (
-                                    <tr key={rev._id}>
-                                        <td>
-                                            <div style={{ display: "flex", flexDirection: "column" }}>
-                                                <span style={{ fontWeight: 600 }}>{rev.studentId?.name || "Unknown"}</span>
-                                                <span style={{ fontSize: "0.75rem", color: "#64748b" }}>ID: {rev.studentId?.nicNumber || "N/A"}</span>
-                                            </div>
-                                        </td>
-                                        <td>{rev.courseName || "N/A"}</td>
-                                        <td style={{ fontSize: "0.85rem", color: "#64748b" }}>
-                                            {new Date(rev.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td>{renderStars(rev.rating)}</td>
-                                        <td>
-                                            <p style={{ 
-                                                fontSize: "0.85rem", 
-                                                lineHeight: "1.4", 
-                                                margin: 0,
-                                                display: "-webkit-box",
-                                                WebkitLineClamp: "2",
-                                                WebkitBoxOrient: "vertical",
-                                                overflow: "hidden"
-                                            }}>
-                                                {rev.comment}
-                                            </p>
-                                        </td>
-                                        <td>
-                                            {!rev.adminReply ? (
-                                                <span className="admin-badge" style={{ background: "#fef2f2", color: "#991b1b" }}>
-                                                    Pending
-                                                </span>
-                                            ) : (
-                                                <span className="admin-badge badge-active">
-                                                    Replied
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="admin-actions">
-                                            <div style={{ display: "flex", gap: "0.5rem" }}>
-                                                <button
-                                                    className="admin-btn admin-btn-ghost"
-                                                    style={{ color: "#10b981", padding: "0.4rem" }}
-                                                    onClick={() => handleReplyClick(rev)}
-                                                    title="Reply to Review"
-                                                >
-                                                    <Reply size={16} />
-                                                </button>
-                                                <button
-                                                    className="admin-btn admin-btn-ghost"
-                                                    style={{ color: "#ef4444", padding: "0.4rem" }}
-                                                    onClick={() => handleDeleteClick(rev._id)}
-                                                    title="Delete Review"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="7" style={{ textAlign: "center", padding: "4rem", color: "#64748b" }}>
-                                        <div style={{ marginBottom: "1rem" }}><MessageSquare size={48} style={{ opacity: 0.2, margin: "0 auto" }} /></div>
-                                        No reviews found matching your search.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "2rem" }}>
+                    {filteredReviews.length > 0 ? (
+                        filteredReviews.map((rev, idx) => (
+                            <div key={rev._id} className="premium-card" style={{
+                                background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+                                borderRadius: "1.5rem",
+                                padding: "2rem",
+                                border: "1px solid rgba(226, 232, 240, 0.8)",
+                                borderTop: rev.adminReply ? "4px solid #10b981" : "4px solid #ef4444",
+                                boxShadow: "0 10px 30px -5px rgba(15, 23, 42, 0.06)",
+                                position: "relative",
+                                transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                                animation: `fadeInUp 0.5s ease-out ${idx * 0.05}s both`
+                            }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                                        <div style={{
+                                            width: 46, height: 46, borderRadius: "14px",
+                                            background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                                            color: "white", display: "flex", alignItems: "center", justifyContent: "center",
+                                            fontWeight: 800, fontSize: "1.2rem", boxShadow: "0 4px 10px rgba(59, 130, 246, 0.3)"
+                                        }}>
+                                            {rev.studentId?.name ? rev.studentId.name.charAt(0).toUpperCase() : "S"}
+                                        </div>
+                                        <div>
+                                            <h4 style={{ margin: 0, color: "#1e293b", fontSize: "1.1rem", fontWeight: 800 }}>{rev.studentId?.name || "Unknown Student"}</h4>
+                                            <span style={{ fontSize: "0.8rem", color: "#64748b", fontFamily: "monospace" }}>ID: {rev.studentId?.studentId || "N/A"}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                                        <button className="action-icon-btn btn-toggle" onClick={() => handleReplyClick(rev)} title="Reply" style={{ width: 32, height: 32 }}>
+                                            <Reply size={15} />
+                                        </button>
+                                        <button className="action-icon-btn btn-delete" onClick={() => handleDeleteClick(rev._id)} title="Delete" style={{ width: 32, height: 32 }}>
+                                            <Trash2 size={15} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style={{ background: "rgba(241, 245, 249, 0.6)", padding: "0.75rem 1rem", borderRadius: "0.75rem", marginBottom: "1.25rem", display: "inline-block" }}>
+                                    <span style={{ color: "#3b82f6", fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                        <BookOpen size={14} /> {rev.courseName || "Unknown Course"}
+                                    </span>
+                                </div>
+
+                                <div style={{ marginBottom: "1.25rem" }}>
+                                    {renderStars(rev.rating)}
+                                </div>
+
+                                <p style={{
+                                    color: "#475569", fontSize: "0.95rem", lineHeight: 1.7, margin: "0 0 1.5rem",
+                                    display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden"
+                                }}>
+                                    "{rev.comment}"
+                                </p>
+
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #f1f5f9", paddingTop: "1.25rem" }}>
+                                    <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>
+                                        {new Date(rev.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    </span>
+                                    {!rev.adminReply ? (
+                                        <span className="status-badge" style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", padding: "0.4rem 0.8rem", fontSize: "0.75rem" }}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
+                                            Pending Reply
+                                        </span>
+                                    ) : (
+                                        <span className="status-badge" style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10b981", padding: "0.4rem 0.8rem", fontSize: "0.75rem" }}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }}></div>
+                                            Replied
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "6rem", background: "white", borderRadius: "1.5rem", border: "1px dashed #cbd5e1" }}>
+                            <MessageSquare size={56} style={{ opacity: 0.1, margin: "0 auto 1.5rem", color: "#64748b" }} />
+                            <h3 style={{ margin: "0 0 0.5rem", color: "#1e293b", fontSize: "1.2rem" }}>No Reviews Found</h3>
+                            <p style={{ color: "#64748b" }}>Wait for students to drop some feedback.</p>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -223,7 +220,7 @@ const ReviewManagement = () => {
                         <p style={{ fontSize: "0.875rem", color: "#64748b", marginBottom: "1.5rem" }}>
                             Your reply will be visible to the student on their reviews page.
                         </p>
-                        
+
                         <div style={{ background: "#f8fafc", padding: "1rem", borderRadius: "0.75rem", marginBottom: "1.5rem", borderLeft: "4px solid #10b981" }}>
                             <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 600 }}>{activeReview.studentId?.name}:</p>
                             <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#475569" }}>"{activeReview.comment}"</p>
@@ -238,14 +235,14 @@ const ReviewManagement = () => {
                         />
 
                         <div className="confirm-actions" style={{ justifyContent: "flex-end" }}>
-                            <button 
-                                className="admin-btn admin-btn-ghost" 
+                            <button
+                                className="admin-btn admin-btn-ghost"
                                 onClick={() => setShowReplyModal(false)}
                             >
                                 Cancel
                             </button>
-                            <button 
-                                className="admin-btn" 
+                            <button
+                                className="admin-btn"
                                 onClick={submitReply}
                                 style={{ background: "#10b981", color: "white" }}
                             >
@@ -266,14 +263,14 @@ const ReviewManagement = () => {
                         <h3>Delete Review?</h3>
                         <p>Are you sure you want to permanently delete this student review? This action cannot be undone.</p>
                         <div className="confirm-actions">
-                            <button 
-                                className="admin-btn admin-btn-ghost" 
+                            <button
+                                className="admin-btn admin-btn-ghost"
                                 onClick={() => setShowConfirm(false)}
                             >
                                 Cancel
                             </button>
-                            <button 
-                                className="admin-btn admin-btn-danger" 
+                            <button
+                                className="admin-btn admin-btn-danger"
                                 onClick={confirmDelete}
                                 style={{ background: "#ef4444", color: "white" }}
                             >

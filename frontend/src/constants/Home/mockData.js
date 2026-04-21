@@ -85,11 +85,11 @@ export const MOCK_COURSES = [
     }
 ];
 
-
 export const CATEGORIES = [
-  "Web Development",
-  "Data Science",
-  "Mobile Development",
-  "Design",
-  "Business"
+    "Web Development",
+    "Data Science",
+    "Design",
+    "Business",
+    "Marketing",
+    "Personal Development"
 ];

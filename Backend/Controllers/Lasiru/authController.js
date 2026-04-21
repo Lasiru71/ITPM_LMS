@@ -1,6 +1,6 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import User from "../../models/Lasiru/User.js";
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("../../models/Lasiru/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1d";
@@ -17,9 +17,9 @@ const generateToken = (user) => {
   );
 };
 
-export const register = async (req, res) => {
+exports.register = async (req, res) => {
   try {
-    const { name, address, phone, email, password, role, nicNumber } = req.body;
+    const { name, address, phone, email, password, role, studentId } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -51,8 +51,8 @@ export const register = async (req, res) => {
       role: effectiveRole,
     };
 
-    if (effectiveRole === "Student" && nicNumber && nicNumber.trim()) {
-      newUserPayload.nicNumber = nicNumber.trim();
+    if (effectiveRole === "Student" && studentId && studentId.trim()) {
+      newUserPayload.studentId = studentId.trim();
     }
 
     const user = await User.create(newUserPayload);
@@ -76,7 +76,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -117,11 +117,11 @@ export const login = async (req, res) => {
   }
 };
 
-export const getProfile = async (req, res) => {
+exports.getProfile = async (req, res) => {
   return res.json({ user: req.user });
 };
 
-export const updateProfile = async (req, res) => {
+exports.updateProfile = async (req, res) => {
   try {
     const { name, address, phone, profileImage } = req.body;
     const userId = req.user._id;
@@ -142,7 +142,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-export const changePassword = async (req, res) => {
+exports.changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const userId = req.user._id;

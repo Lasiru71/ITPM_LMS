@@ -5,7 +5,6 @@ import {
     Users,
     BookOpen,
     LogOut,
-    Bell,
     ChevronRight,
     TrendingUp,
     GraduationCap,
@@ -16,9 +15,7 @@ import {
     Download,
     Eye,
     Megaphone,
-    Upload,
-    Star,
-    Settings
+    Star
 } from "lucide-react";
 import {
     AreaChart,
@@ -40,10 +37,8 @@ import LectureManagement from "../../components/Lasiru/LectureManagement";
 import StudentManagement from "../../components/Lasiru/StudentManagement";
 import AnnouncementManagement from "../../components/Lasiru/AnnouncementManagement";
 import ReviewManagement from "../../components/Lasiru/ReviewManagement";
-import MaterialUpload from "../../components/sadeepa/MaterialUpload";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import { getDashboardStats, getAllLecturers, getAllStudents } from "../../api/Lasiru/adminApi";
-import { useLogout } from "../../hooks/Lasiru/useLogout";
 
 const COLORS = ['#12b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
 
@@ -56,7 +51,6 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const { handleLogout } = useLogout();
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -77,6 +71,12 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        showToast("success", "Logged out successfully");
+        navigate("/login");
+    };
 
     // --- PDF Report Generation ---
     const generatePDFReport = async (type) => {
@@ -120,7 +120,7 @@ const AdminDashboard = () => {
                 const data = await getAllStudents();
                 const tableData = data.map((s, index) => [
                     index + 1,
-                    s.nicNumber || "N/A",
+                    s.studentId || "N/A",
                     s.name,
                     s.email,
                     s.isActive ? "Active" : "Inactive"
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
 
                 autoTable(doc, {
                     startY: 60,
-                    head: [['#', 'NIC Number', 'Full Name', 'Email Address', 'Status']],
+                    head: [['#', 'Student ID', 'Full Name', 'Email Address', 'Status']],
                     body: tableData,
                     theme: 'grid',
                     headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255] },
@@ -172,108 +172,95 @@ const AdminDashboard = () => {
 
         return (
             <div className="admin-overview" style={{ animation: 'fadeIn 0.5s ease-out' }}>
-                <div style={{ 
-                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
-                    padding: '2.5rem', 
-                    borderRadius: '2rem', 
-                    color: 'white', 
-                    marginBottom: '2.5rem',
+                <div style={{
+                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                    padding: '3rem',
+                    borderRadius: '2rem',
+                    color: 'white',
+                    marginBottom: '3rem',
                     position: 'relative',
                     overflow: 'hidden',
-                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+                    boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
                 }}>
-                    <div style={{ position: 'relative', zIndex: 1 }}>
-                        <h1 style={{ fontSize: '2.5rem', margin: 0, fontWeight: 800 }}>Welcome back, {user.name || "Admin"}! 👋</h1>
-                        <p style={{ opacity: 0.8, fontSize: '1.1rem', marginTop: '0.5rem', maxWidth: '600px' }}>
-                            Here's what's happening with the platform today. You have {stats.totals.active} users active right now.
+                    <div style={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
+                        <h1 style={{ fontSize: '2.8rem', margin: 0, fontWeight: 800, background: 'linear-gradient(to right, #ffffff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Welcome back, {user.name || "Admin"}! 👋</h1>
+                        <p style={{ opacity: 0.8, fontSize: '1.1rem', marginTop: '1rem', lineHeight: 1.6 }}>
+                            Here's what's happening with the platform today. You have {stats.totals.active} users actively engaged right now. Keep up the great work!
                         </p>
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-                            <button className="admin-btn admin-btn-primary" onClick={() => setActiveTab('reports')}>
+                        <div style={{ display: 'flex', gap: '1.25rem', marginTop: '2.5rem' }}>
+                            <button className="admin-btn admin-btn-primary" onClick={() => setActiveTab('reports')} style={{ background: '#10b981', padding: '0.8rem 1.5rem', border: 'none', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)' }}>
                                 <FileText size={18} /> View Reports
                             </button>
-                            <button className="admin-btn admin-btn-ghost" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none' }} onClick={() => navigate("/")}>
+                            <button className="admin-btn admin-btn-ghost" style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem 1.5rem', backdropFilter: 'blur(5px)' }} onClick={() => navigate("/")}>
                                 <Eye size={18} /> Preview Site
                             </button>
                         </div>
                     </div>
-                    {/* Decorative element */}
-                    <div style={{ 
-                        position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', 
-                        background: 'rgba(16, 185, 129, 0.2)', borderRadius: '50%', filter: 'blur(40px)' 
-                    }} />
+                    {/* Decorative elements */}
+                    <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '50%', background: 'radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', bottom: '-10%', right: '5%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 60%)', filter: 'blur(30px)' }} />
+                    <Activity size={180} color="rgba(255,255,255,0.05)" style={{ position: 'absolute', right: '10%', top: '50%', transform: 'translateY(-50%) rotate(15deg)' }} />
                 </div>
 
                 <div className="stats-grid">
-                    <div className="stat-card" style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                            <Users size={24} />
+                    <div className="stat-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(18, 185, 129, 0.1)', color: '#10b981' }}><Users size={22} /></div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '0.3rem 0.6rem', borderRadius: '2rem' }}>+12%</span>
                         </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.total}</h3>
-                            <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontWeight: 500, fontSize: '0.95rem' }}>Total Users</p>
-                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#10b981' }}>
-                                <TrendingUp size={16} /> <span>12% growth</span>
-                            </div>
+                            <h3 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.total}</h3>
+                            <p style={{ margin: '0.4rem 0 0', color: '#64748b', fontWeight: 500 }}>Total Registered Users</p>
                         </div>
                     </div>
 
-                    <div className="stat-card" style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                            <BookOpen size={24} />
+                    <div className="stat-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}><BookOpen size={22} /></div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '0.3rem 0.6rem', borderRadius: '2rem' }}>+8.4%</span>
                         </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.lecturers + stats.totals.students}</h3>
-                            <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontWeight: 500, fontSize: '0.95rem' }}>Total Enrollments</p>
-                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#3b82f6' }}>
-                                <GraduationCap size={16} /> <span>New courses active</span>
-                            </div>
+                            <h3 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.lecturers + stats.totals.students}</h3>
+                            <p style={{ margin: '0.4rem 0 0', color: '#64748b', fontWeight: 500 }}>Total Enrollments</p>
                         </div>
                     </div>
 
-                    <div className="stat-card" style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#f5f3ff', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                            <DollarSign size={24} />
+                    <div className="stat-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}><DollarSign size={22} /></div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)', padding: '0.3rem 0.6rem', borderRadius: '2rem' }}>Stable</span>
                         </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 800, color: '#1e293b' }}>$2.8M</h3>
-                            <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontWeight: 500, fontSize: '0.95rem' }}>Revenue</p>
-                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8b5cf6' }}>
-                                <Activity size={16} /> <span>8.2% vs last month</span>
-                            </div>
+                            <h3 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>$2.8M</h3>
+                            <p style={{ margin: '0.4rem 0 0', color: '#64748b', fontWeight: 500 }}>Platform Revenue</p>
                         </div>
                     </div>
 
-                    <div className="stat-card" style={{ transition: 'transform 0.3s ease', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#fff7ed', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                            <Activity size={24} />
+                    <div className="stat-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                            <div style={{ width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><Activity size={22} /></div>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '0.3rem 0.6rem', borderRadius: '2rem' }}>Live</span>
                         </div>
                         <div className="stat-info">
-                            <h3 style={{ margin: 0, fontSize: '2.25rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.active}</h3>
-                            <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontWeight: 500, fontSize: '0.95rem' }}>Active Now</p>
-                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#f59e0b' }}>
-                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', animation: 'pulse 2s infinite' }}></div>
-                                <span>Real-time tracking</span>
-                            </div>
+                            <h3 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.active}</h3>
+                            <p style={{ margin: '0.4rem 0 0', color: '#64748b', fontWeight: 500 }}>Active Sessions Now</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="charts-container">
-                    <div className="chart-card" style={{ borderRadius: '1.5rem', padding: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>User Growth Trend</h3>
-                            <select style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0', fontSize: '0.85rem' }}>
-                                <option>Last 30 Days</option>
-                                <option>Last 6 Months</option>
-                            </select>
-                        </div>
-                        <div style={{ width: '100%', height: 300, marginTop: '2rem' }}>
+                    <div className="chart-card">
+                        <h3>User Growth Trend</h3>
+                        <div style={{ width: '100%', height: 300, marginTop: '1.5rem' }}>
                             <ResponsiveContainer>
                                 <AreaChart data={stats.growth}>
                                     <defs>
                                         <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -285,70 +272,85 @@ const AdminDashboard = () => {
                             </ResponsiveContainer>
                         </div>
                     </div>
-
-                    <div className="chart-card" style={{ borderRadius: '1.5rem', padding: '2rem' }}>
-                        <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Enrollment Distribution</h3>
-                        <div style={{ width: '100%', height: 250, marginTop: '2rem', position: 'relative' }}>
+                    <div className="chart-card">
+                        <h3>Distribution</h3>
+                        <div style={{ width: '100%', height: 250, marginTop: '1.5rem' }}>
                             <ResponsiveContainer>
                                 <PieChart>
-                                    <Pie data={donutData} innerRadius={70} outerRadius={90} paddingAngle={8} dataKey="value" stroke="none">
+                                    <Pie data={donutData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
                                         {donutData.map((e, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                                     </Pie>
-                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                                    <Tooltip />
                                 </PieChart>
                             </ResponsiveContainer>
-                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                                <span style={{ display: 'block', fontSize: '1.5rem', fontWeight: 800, color: '#1e293b' }}>{stats.totals.total}</span>
-                                <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Total</span>
-                            </div>
-                        </div>
-                        <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-                            {donutData.map((d, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: COLORS[i % COLORS.length] }}></div>
-                                    <span style={{ color: '#64748b' }}>{d.name}</span>
-                                </div>
-                            ))}
                         </div>
                     </div>
-                </div>
-                <style>{`
-                    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-                    @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
-                `}</style>
-            </div>
+                </div >
+            </div >
         );
     };
 
     const renderReports = () => {
         const reports = [
-            { title: "System Overview", desc: "Overall platform statistics and performance metrics.", color: "#8b5cf6" },
-            { title: "Lecturer Directory", desc: "Complete list of all registered lecturers and their status.", color: "#12b981" },
-            { title: "Student Roster", desc: "Detailed list of enrolled students with IDs and contact info.", color: "#3b82f6" },
+            {
+                title: "System Overview",
+                desc: "Overall platform statistics and performance metrics.",
+                color: "#8b5cf6",
+                iconBg: "rgba(139, 92, 246, 0.1)",
+                icon: <Activity size={32} />
+            },
+            {
+                title: "Lecturer Directory",
+                desc: "Complete list of all registered lecturers and their status.",
+                color: "#12b981",
+                iconBg: "rgba(18, 185, 129, 0.1)",
+                icon: <Users size={32} />
+            },
+            {
+                title: "Student Roster",
+                desc: "Detailed list of enrolled students with IDs and contact info.",
+                color: "#3b82f6",
+                iconBg: "rgba(59, 130, 246, 0.1)",
+                icon: <School size={32} />
+            },
         ];
 
         return (
             <div className="admin-reports">
-                <div style={{ marginBottom: "2.5rem" }}>
-                    <h2 style={{ margin: 0 }}>Report Center</h2>
-                    <p style={{ color: "#64748b", marginTop: "0.5rem" }}>Generate professional PDF reports for your specific modules.</p>
+                <div style={{ marginBottom: "3rem", animation: "slideDown 0.5s ease-out" }}>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Report Center</h2>
+                    <p style={{ color: "#64748b", fontSize: '1.1rem', marginTop: "0.75rem", maxWidth: '600px' }}>
+                        Access comprehensive platform data and generate high-fidelity PDF reports for your specific needs.
+                    </p>
                 </div>
+
                 <div className="reports-grid">
-                    {reports.map((r) => (
-                        <div className="report-card" key={r.title}>
-                            <div style={{ color: r.color }}><FileText size={32} /></div>
-                            <div className="report-info">
-                                <h3 style={{ margin: 0 }}>{r.title}</h3>
-                                <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "0.5rem" }}>{r.desc}</p>
+                    {reports.map((r, idx) => (
+                        <div className="report-card premium-card" key={r.title} style={{ animation: `fadeInUp 0.6s ease-out ${idx * 0.1}s both` }}>
+                            <div className="report-card-icon-wrapper" style={{ background: r.iconBg, color: r.color }}>
+                                {r.icon}
                             </div>
-                            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
-                                <button className="admin-btn admin-btn-primary" style={{ flex: 1 }} onClick={() => generatePDFReport(r.title)}>
-                                    <Download size={18} /> Export PDF
+                            <div className="report-info">
+                                <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.75rem' }}>{r.title}</h3>
+                                <p style={{ color: "#64748b", fontSize: "0.95rem", lineHeight: 1.6 }}>{r.desc}</p>
+                            </div>
+                            <div className="report-actions">
+                                <button
+                                    className="premium-action-btn"
+                                    onClick={() => generatePDFReport(r.title)}
+                                    style={{ '--accent-color': r.color }}
+                                >
+                                    <Download size={20} />
+                                    <span>Download Report</span>
                                 </button>
                             </div>
                         </div>
                     ))}
                 </div>
+                <style>{`
+                    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+                    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                `}</style>
             </div>
         );
     };
@@ -383,13 +385,10 @@ const AdminDashboard = () => {
             case "lecturers": return <LectureManagement onUpdate={fetchStats} />;
             case "students": return <StudentManagement onUpdate={fetchStats} />;
             case "reports": return renderReports();
-            case "materials": return <MaterialUpload />;
-            case 'announcement':
-                return <AnnouncementManagement />;
-            case "reviews":
-                return <ReviewManagement />;
-            default:
-                return renderOverview();
+            case "courses": return renderPlaceholder("All Courses", <BookOpen size={48} />);
+            case "announcement": return <AnnouncementManagement />;
+            case "reviews": return <ReviewManagement />;
+            default: return renderOverview();
         }
     };
 
@@ -421,9 +420,9 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="nav-section-title">Academic</div>
-                    <div className={`admin-nav-item ${activeTab === "materials" ? "active" : ""}`} onClick={() => setActiveTab("materials")}>
-                        <div className="nav-item-content"><Upload size={20} /> Materials</div>
-                        {activeTab === "materials" && <ChevronRight size={16} />}
+                    <div className={`admin-nav-item ${activeTab === "courses" ? "active" : ""}`} onClick={() => setActiveTab("courses")}>
+                        <div className="nav-item-content"><BookOpen size={20} /> All Courses</div>
+                        {activeTab === "courses" && <ChevronRight size={16} />}
                     </div>
 
                     <div className="nav-section-title">Business</div>
@@ -437,10 +436,8 @@ const AdminDashboard = () => {
                         <div className="nav-item-content"><Megaphone size={20} /> Announcement</div>
                         {activeTab === "announcement" && <ChevronRight size={16} />}
                     </div>
-
-                    <div className="nav-section-title">Feedback</div>
                     <div className={`admin-nav-item ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>
-                        <div className="nav-item-content"><Star size={20} /> Reviews</div>
+                        <div className="nav-item-content"><Activity size={20} /> Reviews</div>
                         {activeTab === "reviews" && <ChevronRight size={16} />}
                     </div>
                 </nav>
@@ -468,7 +465,7 @@ const AdminDashboard = () => {
             <main className="admin-main-content">
                 <DashboardHeader
                     title="Admin Dashboard"
-                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement' || activeTab === 'reviews'}
+                    showSearch={activeTab === 'lecturers' || activeTab === 'students' || activeTab === 'announcement'}
                     onSearchChange={(val) => console.log("Searching for:", val)}
                 />
 
