@@ -38,5 +38,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
+  },
+  "overrides": {
+    "react-qr-reader": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
