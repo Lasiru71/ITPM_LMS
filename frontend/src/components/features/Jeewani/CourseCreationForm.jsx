@@ -12,10 +12,11 @@ import { Badge } from '@/components/ui/badge';
 
 const LESSON_TYPES = [
   { value: 'video', label: 'Video' },
-  { value: 'text', label: 'Text' },
+  { value: 'pdf', label: 'PDF/Text' },
   { value: 'ppt', label: 'PPT' },
   { value: 'assignment', label: 'Assignment' }
 ];
+
 
 const PLACEHOLDER_THUMBNAILS = [
   'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=450&fit=crop',
@@ -240,14 +241,9 @@ export default function CourseCreationForm({ onSuccess }) {
     }));
 
     const newCourse = {
-      id: `custom-${Date.now()}`,
-      instructorId: user.id || user._id,
       title: title.trim(),
       description: description.trim(),
       shortDescription: shortDescription.trim(),
-      instructor: user.name,
-      instructorAvatar: user.avatar,
-      instructorBio: user.bio || 'Instructor on EduVault',
       thumbnail: thumbnailUrl.trim() || PLACEHOLDER_THUMBNAILS[Math.floor(Math.random() * PLACEHOLDER_THUMBNAILS.length)],
       category,
       level,
@@ -259,10 +255,10 @@ export default function CourseCreationForm({ onSuccess }) {
       duration: `${totalLessons * 10}m`,
       totalLessons,
       language,
-      lastUpdated: new Date().toISOString().split('T')[0],
       isNew: true,
       modules: courseModules
     };
+
 
     try {
       await addCourse(newCourse);

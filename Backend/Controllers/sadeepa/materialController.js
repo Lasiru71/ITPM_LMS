@@ -10,7 +10,8 @@ exports.uploadMaterial = async (req, res) => {
       category,
       type,
       image,
-      fileData
+      fileData,
+      instructorId: req.user._id // Set from authenticated user
     });
 
     await newMaterial.save();
@@ -23,7 +24,8 @@ exports.uploadMaterial = async (req, res) => {
 
 exports.getAllMaterials = async (req, res) => {
   try {
-    const materials = await Material.find().sort({ createdAt: -1 });
+    // Only fetch materials for the logged in lecturer
+    const materials = await Material.find({ instructorId: req.user._id }).sort({ createdAt: -1 });
     res.status(200).json(materials);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch materials', error: error.message });
@@ -33,6 +35,15 @@ exports.getAllMaterials = async (req, res) => {
 exports.deleteMaterial = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Check ownership
+    const material = await Material.findById(id);
+    if (!material) return res.status(404).json({ message: 'Material not found' });
+    
+    if (String(material.instructorId) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden: You do not own this material' });
+    }
+
     await Material.findByIdAndDelete(id);
     res.status(200).json({ message: 'Material deleted successfully' });
   } catch (error) {
