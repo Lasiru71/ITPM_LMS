@@ -660,11 +660,13 @@ const CourseDetailPage = () => {
                             <><PlusCircle size={14} /> Add Lesson</>
                           )}
                         </button>
-                        <button className="btn-edit" onClick={() => handleEditModule(mIndex)}>
-                          <Edit size={14} />
+                        <button className="btn-edit" onClick={() => handleEditModule(mIndex)} title="Edit Module">
+                          <Edit size={16} />
+                          <span>Edit</span>
                         </button>
-                        <button className="btn-danger" onClick={() => handleDeleteModule(mIndex)}>
-                          <Trash2 size={14} />
+                        <button className="btn-danger" onClick={() => handleDeleteModule(mIndex)} title="Delete Module">
+                          <Trash2 size={16} />
+                          <span>Delete</span>
                         </button>
                       </div>
                     )}
@@ -875,17 +877,19 @@ const CourseDetailPage = () => {
                                 <div className="lesson-actions">
                                   <button
                                     className="lesson-action-btn edit-lesson"
-                                    title="Edit"
+                                    title="Edit Lesson"
                                     onClick={() => handleEditLesson(mIndex, lIndex)}
                                   >
-                                    <Edit size={16} />
+                                    <Edit size={14} />
+                                    <span>Edit</span>
                                   </button>
                                   <button
-                                    className="lesson-action-btn"
-                                    title="Delete"
+                                    className="lesson-action-btn delete-lesson"
+                                    title="Delete Lesson"
                                     onClick={() => handleDeleteLesson(mIndex, lIndex)}
                                   >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={14} />
+                                    <span>Delete</span>
                                   </button>
                                 </div>
                               </div>

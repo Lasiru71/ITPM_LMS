@@ -20,9 +20,9 @@ router.get("/my-reviews", getStudentReviews);
 
 // Admin & Lecturer routes
 router.get("/all", authorizeRoles("Admin", "Lecturer"), getAllReviews);
-router.patch("/reply/:id", authorizeRoles("Admin"), addAdminReply);
-// Admin & Student delete route (Security handled in controller)
-router.delete("/delete/:id", deleteReview);
+router.patch("/reply/:id", authorizeRoles("Admin", "Lecturer"), addAdminReply);
+// Admin, Lecturer & Student delete route (Security handled in controller)
+router.delete("/delete/:id", authorizeRoles("Admin", "Lecturer", "Student"), deleteReview);
 router.patch("/status/:id", authorizeRoles("Admin"), updateReviewStatus);
 
 module.exports = router;

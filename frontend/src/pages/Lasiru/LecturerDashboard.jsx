@@ -19,7 +19,9 @@ import {
     LogOut,
     ChevronRight,
     Pencil,
-    Trash2
+    Trash2,
+    MessageSquare,
+    CornerUpRight
 } from "lucide-react";
 
 
@@ -28,9 +30,8 @@ import { useLogout } from "../../hooks/Lasiru/useLogout";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
 import LecturerSettings from "../../components/Lasiru/LecturerSettings";
 import AttendanceView from "../../components/Lasiru/AttendanceView";
-import ReviewsView from "../../components/Lasiru/ReviewsView";
 import { getAllCourses, deleteCourse } from '../../api/Jeewani/courseApi';
-import { getAllReviews } from '../../api/Lasiru/reviewApi';
+import { getAllReviews, addAdminReply, deleteReview as deleteReviewApi } from '../../api/Lasiru/reviewApi';
 import CourseCreationForm from "../../components/features/Jeewani/CourseCreationForm";
 import { useCourseStore } from "../../stores/courseStore";
 import { MOCK_COURSES } from "../../constants/Home/mockData";
@@ -95,8 +96,18 @@ const LecturerDashboard = () => {
                     modules: c.modules || []
                 }))
             ];
+            
             setAllCourses(combined);
-            setReviews(allReviews);
+
+            // Filter reviews for CURRENT lecturer's courses
+            const myCourseIds = new Set(
+                combined
+                    .filter(c => String(c.instructorId) === String(user?.id || user?._id))
+                    .flatMap(c => [String(c._id), String(c.id)].filter(Boolean))
+            );
+
+            const filteredReviews = allReviews.filter(r => myCourseIds.has(String(r.courseId)));
+            setReviews(filteredReviews);
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
         } finally {
@@ -318,7 +329,7 @@ const LecturerDashboard = () => {
                                                                 navigate(`/lecturer/courses/${course._id || course.id}`);
                                                             }}
                                                         >
-                                                            <Eye strokeWidth={2.5} />
+                                                            <Eye size={26} strokeWidth={2.5} color="#059669" />
                                                         </button>
                                                         <button
                                                             type="button"
@@ -329,7 +340,7 @@ const LecturerDashboard = () => {
                                                                 handleEditCourse(course._id || course.id);
                                                             }}
                                                         >
-                                                            <Pencil strokeWidth={2.5} />
+                                                            <Pencil size={26} strokeWidth={2.5} color="#2563eb" />
                                                         </button>
                                                         <button
                                                             type="button"
@@ -340,7 +351,7 @@ const LecturerDashboard = () => {
                                                                 handleDeleteCourse(course._id || course.id, course.title);
                                                             }}
                                                         >
-                                                            <Trash2 strokeWidth={2.5} />
+                                                            <Trash2 size={26} strokeWidth={2.5} color="#dc2626" />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -366,9 +377,118 @@ const LecturerDashboard = () => {
         }
 
         if (activeTab === "reviews") {
+            const handleReply = async (id, replyText) => {
+                if (!replyText.trim()) return;
+                try {
+                    await addAdminReply(id, replyText);
+                    showToast("success", "Reply added successfully");
+                    fetchAllData();
+                } catch (error) {
+                    showToast("error", "Failed to add reply");
+                }
+            };
+
+            const handleDeleteReview = async (id) => {
+                if (!id) return;
+                if (window.confirm("Are you sure you want to delete this review?")) {
+                    try {
+                        await deleteReviewApi(id);
+                        showToast("success", "Review deleted successfully");
+                        fetchAllData();
+                    } catch (error) {
+                        console.error("Delete review error:", error);
+                        showToast("error", "Failed to delete review. Please try again.");
+                    }
+                }
+            };
+
             return (
-                <div className="reviews-section animate-in fade-in duration-500">
-                    <ReviewsView />
+                <div className="reviews-grid-container animate-in fade-in duration-500">
+                    <div className="flex justify-between items-center mb-8">
+                        <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800">
+                            <Star className="text-amber-500 fill-amber-500" size={24} />
+                            Student Reviews
+                        </h2>
+                        <div className="flex items-center gap-3">
+                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 px-4 py-1.5 text-sm font-bold">
+                                {reviews.length} Feedbacks
+                            </Badge>
+                        </div>
+                    </div>
+
+                    {reviews.length === 0 ? (
+                        <div className="empty-reviews-card">
+                            <Star size={48} className="text-slate-200 mb-4" />
+                            <h3>No reviews yet</h3>
+                            <p>Student feedback for your courses will appear here.</p>
+                        </div>
+                    ) : (
+                        <div className="reviews-card-grid">
+                                {reviews.map((review) => {
+                                    const matchedCourse = allCourses.find(c => String(c._id) === String(review.courseId) || String(c.id) === String(review.courseId));
+                                    const courseTitle = matchedCourse ? matchedCourse.title : (review.courseName || "General Course");
+                                    const studentName = review.studentId?.name || review.studentName || "Student";
+
+                                    return (
+                                        <div key={review._id} className="minimal-review-card">
+                                            <div className="card-header-v4">
+                                                <div className="user-profile-v4">
+                                                    <div className="user-initial">{studentName.charAt(0)}</div>
+                                                    <div className="user-info-v4">
+                                                        <span className="user-name-v4">{studentName}</span>
+                                                        <span className="course-name-v4">{courseTitle}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="rating-stars-v4">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star 
+                                                            key={i} 
+                                                            size={12} 
+                                                            className={i < review.rating ? "fill-amber-400 text-amber-400" : "text-slate-200"} 
+                                                            strokeWidth={2.5}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="card-body-v4">
+                                                <p>"{review.comment}"</p>
+                                                
+                                                {review.adminReply && (
+                                                    <div className="reply-bubble-v4">
+                                                        <div className="reply-label-v4">LECTURER RESPONSE</div>
+                                                        <p>{review.adminReply}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="card-footer-v4">
+                                                <span className="date-v4">{new Date(review.createdAt).toLocaleDateString()}</span>
+                                                <div className="actions-v4">
+                                                    <button 
+                                                        className="pill-btn reply-btn" 
+                                                        onClick={() => {
+                                                            const reply = window.prompt("Reply to student:", review.adminReply || "");
+                                                            if (reply !== null) handleReply(review._id, reply);
+                                                        }}
+                                                    >
+                                                        <MessageSquare size={18} strokeWidth={2} />
+                                                        <span>Reply</span>
+                                                    </button>
+                                                    <button 
+                                                        className="pill-btn delete-btn" 
+                                                        onClick={() => handleDeleteReview(review._id)}
+                                                        title="Delete Review"
+                                                    >
+                                                        <Trash2 size={18} strokeWidth={2} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    )}
                 </div>
             );
         }
