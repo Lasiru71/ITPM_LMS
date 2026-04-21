@@ -38,17 +38,17 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/attendance", attendanceRoutes);
 
+// Sadeepa Endpoints
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api/materials", materialRoutes);
+app.use("/api/projects", projectRoutes);
+
 // Lasiru Endpoints
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
-
-// Sadeepa Endpoints
-app.use("/api/assignments", assignmentRoutes);
-app.use("/api/materials", materialRoutes);
-app.use("/api/projects", projectRoutes);
 
 // Jeewani Endpoints
 app.use("/api/jeewani/courses", jeewaniCourseRoutes);

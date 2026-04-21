@@ -53,7 +53,7 @@ export default function AttendanceReport() {
       };
     }
 
-    if (report.warning === true) {
+    if (report.warning) {
       return {
         label: "Warning",
         badge: "bg-rose-50 text-rose-700 border-rose-200",

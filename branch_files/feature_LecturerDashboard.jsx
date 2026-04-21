@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
@@ -10,16 +10,10 @@ import {
     Bell,
     ChevronRight,
     Search,
-    User,
-    QrCode,
-    FileText,
-    Activity
+    User
 } from "lucide-react";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
-import LecturerQRManager from "../../components/Lasiru/LecturerQRManager";
-import AttendanceView from "../../components/Lasiru/AttendanceView";
-import api from "../../services/api";
 import "../../Styles/Lasiru/LecturerDashboard.css";
 
 const LecturerDashboard = () => {
@@ -37,35 +31,12 @@ const LecturerDashboard = () => {
 
     const navItems = [
         { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
-        { id: "my-courses", label: "My Course", icon: <BookOpen size={20} /> },
+        { id: "my-courses", label: "MyCourse", icon: <BookOpen size={20} /> },
         { id: "create-course", label: "Create Course", icon: <PlusCircle size={20} /> },
-        { id: "qr-session", label: "QR Session", icon: <QrCode size={20} /> },
-        { id: "attendance", label: "Attendance Marking", icon: <Activity size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
-    const [lecturerCourses, setLecturerCourses] = useState([]);
-    const [coursesLoading, setCoursesLoading] = useState(false);
-
-    useEffect(() => {
-        if (activeTab === "attendance" || activeTab === "dashboard") {
-            fetchLecturerCourses();
-        }
-    }, [activeTab]);
-
-    const fetchLecturerCourses = async () => {
-        try {
-            setCoursesLoading(true);
-            const lecturerId = user.id || user._id;
-            const res = await api.get(`/courses/lecturer/${lecturerId}`);
-            setLecturerCourses(res.data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setCoursesLoading(false);
-        }
-    };
     const renderDashboardOverview = () => {
         return (
             <div className="overview-container">
@@ -152,20 +123,15 @@ const LecturerDashboard = () => {
             return renderDashboardOverview();
         }
 
-        switch (activeTab) {
-            case "qr-session": return <LecturerQRManager />;
-            case "attendance": return <AttendanceView courses={lecturerCourses} />;
-            default:
-                return (
-                    <div className="dashboard-placeholder">
-                        <div className="placeholder-icon">
-                            {navItems.find(item => item.id === activeTab)?.icon}
-                        </div>
-                        <h2>{navItems.find(item => item.id === activeTab)?.label}</h2>
-                        <p>This premium section is currently under construction. Check back soon for exciting updates!</p>
-                    </div>
-                );
-        }
+        return (
+            <div className="dashboard-placeholder">
+                <div className="placeholder-icon">
+                    {navItems.find(item => item.id === activeTab)?.icon}
+                </div>
+                <h2>{navItems.find(item => item.id === activeTab)?.label}</h2>
+                <p>This premium section is currently under construction. Check back soon for exciting updates!</p>
+            </div>
+        );
     };
 
     return (

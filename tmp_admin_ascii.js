@@ -1,10 +1,10 @@
-const User = require("../../models/Lasiru/User");
-const bcrypt = require("bcrypt");
+import User from "../../models/Lasiru/User.js";
+import bcrypt from "bcrypt";
 
 // --- Lecturer Management ---
 
 // Get all lecturers
-exports.getAllLecturers = async (req, res) => {
+export const getAllLecturers = async (req, res) => {
     try {
         const lecturers = await User.find({ role: "Lecturer" }).select("-password");
         res.status(200).json(lecturers);
@@ -14,7 +14,7 @@ exports.getAllLecturers = async (req, res) => {
 };
 
 // Create a new lecturer (Admin only)
-exports.createLecturer = async (req, res) => {
+export const createLecturer = async (req, res) => {
     try {
         const { name, email, password, address, phone } = req.body;
 
@@ -31,7 +31,7 @@ exports.createLecturer = async (req, res) => {
             address,
             phone,
             role: "Lecturer",
-            studentId: undefined, // Explicitly undefined to avoid indexing null/empty strings
+            nicNumber: undefined, // Explicitly undefined to avoid indexing null/empty strings
         });
 
         await newLecturer.save();
@@ -42,7 +42,7 @@ exports.createLecturer = async (req, res) => {
 };
 
 // Delete a lecturer
-exports.deleteLecturer = async (req, res) => {
+export const deleteLecturer = async (req, res) => {
     try {
         const { id } = req.params;
         await User.findByIdAndDelete(id);
@@ -55,7 +55,7 @@ exports.deleteLecturer = async (req, res) => {
 // --- Student Management ---
 
 // Get all students
-exports.getAllStudents = async (req, res) => {
+export const getAllStudents = async (req, res) => {
     try {
         const students = await User.find({ role: "Student" }).select("-password");
         res.status(200).json(students);
@@ -65,7 +65,7 @@ exports.getAllStudents = async (req, res) => {
 };
 
 // Delete a student
-exports.deleteStudent = async (req, res) => {
+export const deleteStudent = async (req, res) => {
     try {
         const { id } = req.params;
         await User.findByIdAndDelete(id);
@@ -78,12 +78,12 @@ exports.deleteStudent = async (req, res) => {
 // --- Common ---
 
 // Get Dashboard Stats
-exports.getDashboardStats = async (req, res) => {
+export const getDashboardStats = async (req, res) => {
     try {
         const totalStudents = await User.countDocuments({ role: "Student" });
         const totalLecturers = await User.countDocuments({ role: "Lecturer" });
         const activeUsers = await User.countDocuments({ isActive: true });
-
+        
         // Month-wise user growth (for the last 6 months)
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
@@ -132,7 +132,7 @@ exports.getDashboardStats = async (req, res) => {
 };
 
 // Toggle User Status (Activate/Deactivate)
-exports.toggleUserStatus = async (req, res) => {
+export const toggleUserStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findById(id);
@@ -147,46 +147,6 @@ exports.toggleUserStatus = async (req, res) => {
             message: `User ${user.isActive ? "activated" : "deactivated"} successfully`,
             isActive: user.isActive,
         });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-
-// Update User (Admin Edit)
-exports.updateUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, email, studentId, address, phone } = req.body;
-
-        const user = await User.findById(id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        if (email && email.toLowerCase() !== user.email) {
-            const existingEmail = await User.findOne({ email: email.toLowerCase() });
-            if (existingEmail) {
-                return res.status(409).json({ message: "Email already in use by another account" });
-            }
-            user.email = email.toLowerCase();
-        }
-
-        if (studentId !== undefined && studentId !== user.studentId) {
-            if (studentId.trim() !== "") {
-               const existingStudentId = await User.findOne({ studentId: studentId.trim() });
-               if (existingStudentId && existingStudentId._id.toString() !== id) {
-                   return res.status(409).json({ message: "NIC Number/Student ID already registered" });
-               }
-            }
-            user.studentId = studentId.trim() || undefined;
-        }
-
-        if (name) user.name = name;
-        if (address !== undefined) user.address = address;
-        if (phone !== undefined) user.phone = phone;
-
-        await user.save();
-        res.status(200).json({ message: "User profile updated successfully", user });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }

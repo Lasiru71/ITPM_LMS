@@ -193,7 +193,7 @@ exports.getStudentMonthlyAttendance = async (req, res) => {
       totalSessions,
       attendedSessions,
       percentage,
-      warning: Number(percentage) < 80,
+      warning: Number(percentage) < 75 ? 'LOW_ATTENDANCE' : 'OK',
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
