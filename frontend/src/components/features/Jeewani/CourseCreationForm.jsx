@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {
-  Plus, Trash2, GripVertical, ChevronDown, ChevronUp,
-  BookOpen, ImageIcon, DollarSign, Tag, Layers, ArrowLeft, Save, Eye, Upload, Loader2, CheckCircle2 } from
-'lucide-react';
+import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, BookOpen, ImageIcon, DollarSign, Tag, Layers, ArrowLeft, Save, Eye, Upload, Loader2, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/authStore';
 import { useCourseStore } from '@/stores/courseStore';
@@ -572,22 +569,27 @@ export default function CourseCreationForm({ onSuccess }) {
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                         <Button
+                        <Button
                           variant="ghost" 
                           size="icon"
                           onClick={() => removeModule(mod.id)}
-                          className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full"
+                          className="text-red-600 bg-red-50 hover:bg-red-100 rounded-xl border border-red-200 transition-all shadow-sm w-14 h-14 flex items-center justify-center"
                           title="Delete Module"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={28} strokeWidth={2.5} color="#dc2626" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => toggleModuleExpand(mod.id)}
-                          className="text-slate-400 hover:text-emerald-500 rounded-full"
+                          className="text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-200 transition-all shadow-sm w-14 h-14 flex items-center justify-center"
+                          title={mod.isExpanded ? "Collapse" : "Expand"}
                         >
-                          {mod.isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                          {mod.isExpanded ? (
+                            <ChevronUp size={32} strokeWidth={2.5} color="#059669" />
+                          ) : (
+                            <ChevronDown size={32} strokeWidth={2.5} color="#059669" />
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -640,9 +642,10 @@ export default function CourseCreationForm({ onSuccess }) {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => removeLesson(mod.id, lesson.id)}
-                                    className="text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full"
+                                    className="text-red-500 bg-white hover:bg-red-50 rounded-lg border border-slate-200 hover:border-red-200 transition-all shadow-sm h-12 w-12 flex items-center justify-center"
+                                    title="Delete Lesson"
                                   >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={24} strokeWidth={2.5} color="#dc2626" />
                                   </Button>
                                </div>
                             </div>
