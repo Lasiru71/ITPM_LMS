@@ -32,9 +32,17 @@ export const createCourse = async (course) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(course),
     });
-    if (!response.ok) throw new Error("Failed to create course");
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `Failed to create course (Status: ${response.status})`);
+    }
+    
     return await response.json();
   } catch (error) {
+    if (error.message === 'Failed to fetch') {
+      throw new Error("Unable to connect to the server. Please ensure the backend is running on port 5000.");
+    }
     console.error("Create error:", error);
     throw error;
   }
@@ -57,7 +65,6 @@ export const deleteCourse = async (id) => {
 // 🟡 UPDATE COURSE
 export const updateCourse = async (id, updatedData) => {
   try {
-    // Sanitize data: remove _id and id from the body if they exist
     const { _id, id: someId, ...sanitizedData } = updatedData;
 
     const response = await fetch(`${API_BASE_URL}/courses/${id}`, {
@@ -65,7 +72,12 @@ export const updateCourse = async (id, updatedData) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(sanitizedData),
     });
-    if (!response.ok) throw new Error(`Failed to update course (Status: ${response.status})`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `Failed to update course (Status: ${response.status})`);
+    }
+    
     return await response.json();
   } catch (error) {
     console.error("Update error:", error);
