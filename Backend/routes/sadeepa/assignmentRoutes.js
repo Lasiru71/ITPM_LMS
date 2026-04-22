@@ -6,7 +6,7 @@ const {
   getAssignmentById, 
   submitAssignment,
   updateSubmissionGrade
-} = require('../../Controllers/sadeepa/assignmentController.js');
+} = require('../../Controllers/sadeepa/assignmentController');
 
 const router = express.Router();
 

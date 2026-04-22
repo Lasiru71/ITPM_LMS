@@ -32,6 +32,14 @@ import AttendanceReport from "./pages/AttendanceReport";
 
 import NotificationsPage from "./pages/Lasiru/NotificationsPage.jsx";
 import ProtectedRoute from "./components/Lasiru/ProtectedRoute.jsx";
+import CreateCourse from "./pages/Lasiru/CreateCourse.jsx";
+
+// Financial and Attendance Imports
+import AdminPayments from "./pages/AdminPayments.jsx";
+import AttendanceReport from "./pages/AttendanceReport.jsx";
+import GenerateQRPage from "./pages/GenerateQRPage.jsx";
+import PaymentPage from "./pages/PaymentPage.jsx";
+import ScanAttendancePage from "./pages/ScanAttendancePage.jsx";
 
 function App() {
   return (
@@ -65,13 +73,26 @@ function App() {
       <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       <Route path="/lecturer-dashboard" element={<ProtectedRoute><LecturerDashboard /></ProtectedRoute>} />
       <Route path="/student-dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
-      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-      <Route path="/edit-course/:id" element={<ProtectedRoute><EditCourse /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+      
+      {/* Course Management Routes - PROTECTED */}
       <Route path="/lecturer/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
+      <Route path="/create-course" element={<ProtectedRoute><CreateCourse /></ProtectedRoute>} />
+      <Route path="/edit-course/:id" element={<ProtectedRoute><EditCourse /></ProtectedRoute>} />
+
+      {/* Sadeepa Routes - PROTECTED */}
+      <Route path="/attend-exam" element={<ProtectedRoute><AttendExam /></ProtectedRoute>} />
       <Route path="/exam-login" element={<ProtectedRoute><ExamLogin /></ProtectedRoute>} />
       <Route path="/exam-login/:id" element={<ProtectedRoute><AttendExam /></ProtectedRoute>} />
       <Route path="/project" element={<ProtectedRoute><Project /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+
+      {/* Financial & Attendance Routes - PROTECTED */}
+      <Route path="/admin/payments" element={<ProtectedRoute><AdminPayments /></ProtectedRoute>} />
+      <Route path="/reports/attendance" element={<ProtectedRoute><AttendanceReport /></ProtectedRoute>} />
+      <Route path="/generate-qr" element={<ProtectedRoute><GenerateQRPage /></ProtectedRoute>} />
+      <Route path="/scan-attendance" element={<ProtectedRoute><ScanAttendancePage /></ProtectedRoute>} />
+      <Route path="/payment/:courseId?" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
     </Routes>
   );
 }

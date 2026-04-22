@@ -1,4 +1,4 @@
-const Material = require('../../models/sadeepa/Material.js');
+const Material = require('../../models/sadeepa/Material');
 
 exports.uploadMaterial = async (req, res) => {
   try {

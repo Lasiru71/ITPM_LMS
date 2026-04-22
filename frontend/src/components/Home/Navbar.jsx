@@ -67,6 +67,8 @@ export default function Navbar() {
 
   /* ── EXTRA links shown right of left nav ─────── */
   const EXTRA_LINKS = [
+    { label: 'Scan QR Code',     href: '/scan-attendance',            external: false },
+    { label: 'Attendance Report',href: '/reports/attendance',         external: false },
     { label: 'Exam Login',       href: 'http://localhost:8081/login', external: true },
     { label: 'Books & Projects', href: 'http://localhost:8082/',       external: true },
     { label: 'Reviews & Ratings',href: '/reviews',                     external: false },

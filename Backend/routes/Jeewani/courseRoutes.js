@@ -22,4 +22,3 @@ router.put('/:id/modules/:moduleIndex/lessons/:lessonIndex', authenticate, autho
 router.delete('/:id/modules/:moduleIndex/lessons/:lessonIndex', authenticate, authorizeRoles('Lecturer'), courseController.deleteLesson);
 
 module.exports = router;
-

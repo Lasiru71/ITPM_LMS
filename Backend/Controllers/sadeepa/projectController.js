@@ -1,4 +1,4 @@
-const StudentProject = require('../../models/sadeepa/StudentProject.js');
+const StudentProject = require('../../models/sadeepa/StudentProject');
 
 exports.uploadProject = async (req, res) => {
   try {

@@ -3,7 +3,7 @@ const {
   uploadMaterial, 
   getAllMaterials, 
   deleteMaterial 
-} = require('../../Controllers/sadeepa/materialController.js');
+} = require('../../Controllers/sadeepa/materialController');
 const { authenticate } = require('../../middleware/Lasiru/authMiddleware');
 
 const router = express.Router();
