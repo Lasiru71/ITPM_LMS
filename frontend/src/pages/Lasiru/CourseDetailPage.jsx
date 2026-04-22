@@ -43,6 +43,16 @@ const CourseDetailPage = () => {
   const [activeTab, setActiveTab] = useState("modules");
   const [reviews, setReviews] = useState([]);
 
+  // Helper for Auth Header
+  const getAuthHeader = () => {
+    const token = localStorage.getItem("token");
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  };
+
   // State for Add Module
   const [isAddingModule, setIsAddingModule] = useState(false);
   const [newModuleTitle, setNewModuleTitle] = useState("");
@@ -122,7 +132,7 @@ const CourseDetailPage = () => {
         return;
       }
 
-      const response = await axios.get(`${API_BASE}/${courseId}`);
+      const response = await axios.get(`${API_BASE}/${courseId}`, getAuthHeader());
       setCourse(response.data);
       setLoading(false);
     } catch (error) {
@@ -159,7 +169,7 @@ const CourseDetailPage = () => {
         setCourse(updated);
         showToast("success", "Updated successfully!");
       } else {
-        const response = await axios.put(`${API_BASE}/${courseId}`, updatedCourse);
+        const response = await axios.put(`${API_BASE}/${courseId}`, updatedCourse, getAuthHeader());
         setCourse(response.data);
         showToast("success", "Updated successfully!");
       }
@@ -292,7 +302,10 @@ const CourseDetailPage = () => {
         `${API_BASE}/${courseId}/modules/${moduleIndex}/lessons`,
         formData,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { 
+            ...getAuthHeader().headers,
+            "Content-Type": "multipart/form-data" 
+          },
           onUploadProgress: (progressEvent) => {
             const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadProgress(percent);
@@ -429,7 +442,10 @@ const CourseDetailPage = () => {
         `${API_BASE}/${courseId}/modules/${moduleIndex}/lessons/${lessonIndex}`,
         formData,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { 
+            ...getAuthHeader().headers,
+            "Content-Type": "multipart/form-data" 
+          },
           onUploadProgress: (progressEvent) => {
             const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadProgress(percent);
