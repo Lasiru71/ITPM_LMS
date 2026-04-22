@@ -13,6 +13,7 @@ const AttendanceView = ({ courses }) => {
     const [attendanceData, setAttendanceData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLive, setIsLive] = useState(false); // For auto-refresh
 
     useEffect(() => {
         if (courses && courses.length > 0 && !selectedCourseId) {
@@ -34,12 +35,26 @@ const AttendanceView = ({ courses }) => {
         }
     }, [selectedSessionId]);
 
+    // Live Refresh Logic
+    useEffect(() => {
+        let interval;
+        if (isLive && selectedSessionId) {
+            interval = setInterval(() => {
+                fetchRoster(true); // silent fetch
+            }, 5000);
+        }
+        return () => clearInterval(interval);
+    }, [isLive, selectedSessionId]);
+
     const fetchSessions = async () => {
         try {
             const res = await api.get(`/attendance/sessions/${selectedCourseId}`);
             setSessions(res.data);
             if (res.data.length > 0) {
-                setSelectedSessionId(res.data[0]._id);
+                // If there's a session today, select it, otherwise select the latest
+                const today = new Date().toDateString();
+                const todaySession = res.data.find(s => new Date(s.sessionDate).toDateString() === today);
+                setSelectedSessionId(todaySession ? todaySession._id : res.data[0]._id);
             } else {
                 setSelectedSessionId("");
             }
@@ -49,9 +64,10 @@ const AttendanceView = ({ courses }) => {
         }
     };
 
-    const fetchRoster = async () => {
+    const fetchRoster = async (isSilent = false) => {
         try {
-            setLoading(true);
+            if (!isSilent) setLoading(true);
+            
             // 1. Get enrolled students
             const studentsRes = await api.get(`/enrollments/course/${selectedCourseId}/students`);
             const enrolledStudents = studentsRes.data;
@@ -69,16 +85,19 @@ const AttendanceView = ({ courses }) => {
                     name: std.name || "Unknown",
                     email: std.email || "N/A",
                     status: record ? record.status : "ABSENT",
-                    avatar: std.name ? std.name.substring(0, 2).toUpperCase() : "ST"
+                    avatar: std.name ? std.name.substring(0, 2).toUpperCase() : "ST",
+                    markedAt: record ? record.createdAt : null
                 };
             });
 
             setAttendanceData(mapped);
         } catch (error) {
-            console.error(error);
-            showToast("error", "Failed to load student roster");
+            if (!isSilent) {
+                console.error(error);
+                showToast("error", "Failed to load student roster");
+            }
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
     };
 
@@ -103,7 +122,7 @@ const AttendanceView = ({ courses }) => {
                 records: recordsToSave
             });
 
-            showToast("success", "Attendance saved successfully!");
+            showToast("success", "Attendance updated successfully!");
             fetchRoster();
         } catch (error) {
             console.error(error);
@@ -127,15 +146,16 @@ const AttendanceView = ({ courses }) => {
         present: attendanceData.filter(s => s.status === "PRESENT").length,
         absent: attendanceData.filter(s => s.status === "ABSENT").length,
         late: attendanceData.filter(s => s.status === "LATE").length,
+        health: attendanceData.length > 0 ? Math.round((attendanceData.filter(s => s.status === "PRESENT").length / attendanceData.length) * 100) : 0
     };
 
     if (!courses || courses.length === 0) {
         return (
-            <div className="attendance-view-container animate-in fade-in duration-500">
-                <div className="empty-course-state bg-white rounded-2xl border border-dashed border-gray-300" style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className="attendance-view-container">
+                <div className="empty-course-state" style={{ padding: '5rem', textAlign: 'center', background: 'white', borderRadius: '2rem', border: '2px dashed #e2e8f0' }}>
                     <Calendar size={64} color="#94a3b8" />
-                    <h3 style={{ marginTop: '1.5rem', color: '#1e293b' }}>No Courses Found</h3>
-                    <p style={{ color: '#64748b' }}>Select or create a course to manage attendance.</p>
+                    <h3 style={{ marginTop: '1.5rem', color: '#1e293b', fontSize: '1.5rem' }}>No Courses Found</h3>
+                    <p style={{ color: '#64748b' }}>Select or create a course to manage attendance tracking.</p>
                 </div>
             </div>
         );
@@ -144,123 +164,169 @@ const AttendanceView = ({ courses }) => {
     const selectedCourse = courses.find(c => (c._id || c.id) === selectedCourseId);
 
     return (
-        <div className="attendance-view-container" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+        <div className="attendance-view-container">
             {/* Header & Controls */}
-            <div className="attendance-header" style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(250px, 1fr) auto', gap: '1.5rem', marginBottom: '2rem', alignItems: 'end' }}>
-                <div className="course-selector">
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Course</label>
-                    <div style={{ position: 'relative' }}>
-                        <select 
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', appearance: 'none', background: 'white' }}
-                            value={selectedCourseId} 
-                            onChange={(e) => setSelectedCourseId(e.target.value)}
+            <div className="attendance-header-v4" style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <div>
+                        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Attendance Monitoring</h2>
+                        <p style={{ color: '#64748b', fontSize: '0.9rem', margin: '4px 0 0 0' }}>Track and manage student presence in real-time</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <button 
+                            className={`refresh-btn-v4 ${isLive ? 'active' : ''}`}
+                            onClick={() => setIsLive(!isLive)}
+                            title="Auto-refresh every 5s"
+                            style={{ background: isLive ? '#eff6ff' : '#f8fafc', color: isLive ? '#3b82f6' : '#64748b', borderColor: isLive ? '#3b82f6' : '#e2e8f0' }}
                         >
-                            {courses.map(course => (
-                                <option key={course._id || course.id} value={course._id || course.id}>
-                                    {course.title}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown size={14} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748b' }} />
+                            <RefreshCw size={18} className={isLive ? 'animate-spin' : ''} />
+                            <span style={{ marginLeft: '8px', fontWeight: 700, fontSize: '0.85rem' }}>{isLive ? 'Live Tracking On' : 'Live Tracking Off'}</span>
+                        </button>
+                        <button 
+                            className="save-action-btn-v4"
+                            onClick={handleSaveAttendance}
+                            disabled={isSaving || !selectedSessionId}
+                        >
+                            <Save size={18} />
+                            {isSaving ? "Updating..." : "Commit Changes"}
+                        </button>
                     </div>
                 </div>
 
-                <div className="session-selector">
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Date & Session Filter</label>
-                    <div style={{ position: 'relative' }}>
-                        <select 
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', appearance: 'none', background: 'white' }}
-                            value={selectedSessionId}
-                            onChange={(e) => setSelectedSessionId(e.target.value)}
-                            disabled={sessions.length === 0}
-                        >
-                            <option value="">{sessions.length === 0 ? "No Sessions Found" : "-- Select Session --"}</option>
-                            {sessions.map(session => (
-                                <option key={session._id} value={session._id}>
-                                    {new Date(session.sessionDate).toLocaleDateString()} - {new Date(session.sessionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </option>
-                            ))}
-                        </select>
-                        <Filter size={14} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748b' }} />
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-end' }}>
+                    <div className="course-selector-v4">
+                        <label>Course</label>
+                        <div style={{ position: 'relative' }}>
+                            <select 
+                                className="styled-select-v4"
+                                value={selectedCourseId} 
+                                onChange={(e) => setSelectedCourseId(e.target.value)}
+                            >
+                                {courses.map(course => (
+                                    <option key={course._id || course.id} value={course._id || course.id}>
+                                        {course.title}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8' }} />
+                        </div>
                     </div>
-                </div>
 
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button 
-                        className="save-action-btn"
-                        onClick={handleSaveAttendance}
-                        disabled={isSaving || !selectedSessionId}
-                        style={{ background: '#10b981', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: (isSaving || !selectedSessionId) ? 'not-allowed' : 'pointer', opacity: (isSaving || !selectedSessionId) ? 0.7 : 1 }}
-                    >
-                        <Save size={18} />
-                        {isSaving ? "Saving..." : "Save Attendance"}
-                    </button>
+                    <div className="course-selector-v4">
+                        <label>Session Date & Time</label>
+                        <div style={{ position: 'relative' }}>
+                            <select 
+                                className="styled-select-v4"
+                                style={{ width: '300px' }}
+                                value={selectedSessionId}
+                                onChange={(e) => setSelectedSessionId(e.target.value)}
+                                disabled={sessions.length === 0}
+                            >
+                                <option value="">{sessions.length === 0 ? "No Sessions Available" : "-- Select Active Session --"}</option>
+                                {sessions.map(session => (
+                                    <option key={session._id} value={session._id}>
+                                        {new Date(session.sessionDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} at {new Date(session.sessionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </option>
+                                ))}
+                            </select>
+                            <Calendar size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8' }} />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="attendance-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
-                <div className="attendance-stat-card" style={{ background: 'white', padding: '1.5rem', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div className="stat-icon-box blue" style={{ background: '#eff6ff', color: '#3b82f6', padding: '1rem', borderRadius: '1rem' }}><Users size={24} /></div>
-                    <div><div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.total}</div><div style={{ color: '#64748b', fontSize: '0.85rem' }}>Total Enrolled</div></div>
+            {/* Stats Grid */}
+            <div className="attendance-stats-grid" style={{ marginBottom: '2rem' }}>
+                <div className="attendance-stat-card-v4 blue">
+                    <div className="stat-icon-v4"><Users size={24} /></div>
+                    <div className="stat-content-v4">
+                        <span className="val">{stats.total}</span>
+                        <span className="lbl">Enrolled Students</span>
+                    </div>
                 </div>
 
-                <div className="attendance-stat-card" style={{ background: 'white', padding: '1.5rem', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div className="stat-icon-box green" style={{ background: '#ecfdf5', color: '#10b981', padding: '1rem', borderRadius: '1rem' }}><CheckCircle size={24} /></div>
-                    <div><div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.present}</div><div style={{ color: '#64748b', fontSize: '0.85rem' }}>Present</div></div>
+                <div className="attendance-stat-card-v4 green">
+                    <div className="stat-icon-v4"><CheckCircle size={24} /></div>
+                    <div className="stat-content-v4">
+                        <span className="val">{stats.present}</span>
+                        <span className="lbl">Present Today</span>
+                    </div>
                 </div>
 
-                <div className="attendance-stat-card" style={{ background: 'white', padding: '1.5rem', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div className="stat-icon-box orange" style={{ background: '#fffbeb', color: '#f59e0b', padding: '1rem', borderRadius: '1rem' }}><Clock size={24} /></div>
-                    <div><div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.late}</div><div style={{ color: '#64748b', fontSize: '0.85rem' }}>Late</div></div>
+                <div className="attendance-stat-card-v4 orange">
+                    <div className="stat-icon-v4"><Clock size={24} /></div>
+                    <div className="stat-content-v4">
+                        <span className="val">{stats.late}</span>
+                        <span className="lbl">Late Arrival</span>
+                    </div>
                 </div>
 
-                <div className="attendance-stat-card" style={{ background: 'white', padding: '1.5rem', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div className="stat-icon-box purple" style={{ background: '#fef2f2', color: '#ef4444', padding: '1rem', borderRadius: '1rem' }}><XCircle size={24} /></div>
-                    <div><div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.absent}</div><div style={{ color: '#64748b', fontSize: '0.85rem' }}>Absent</div></div>
+                <div className="attendance-stat-card-v4 red">
+                    <div className="stat-icon-v4"><RefreshCw size={24} /></div>
+                    <div className="stat-content-v4">
+                        <span className="val">{stats.health}%</span>
+                        <span className="lbl">Attendance Rate</span>
+                    </div>
                 </div>
             </div>
 
             {/* Table Area */}
-            <div className="attendance-table-card" style={{ background: 'white', borderRadius: '1.5rem', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
-                <div className="table-header-bar" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0 }}>Student Roster: {selectedCourse?.title}</h3>
-                    {loading && <div style={{ fontSize: '0.85rem', color: '#3b82f6' }}>Refreshing...</div>}
+            <div className="attendance-table-card-v4">
+                <div className="table-header-v4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>Roster: {selectedCourse?.title}</h3>
+                        {isLive && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#ecfdf5', padding: '4px 12px', borderRadius: '20px', border: '1px solid #bbf7d0' }}>
+                                <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', display: 'inline-block', animation: 'pulse 2s infinite' }}></span>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>Live Monitoring</span>
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <div style={{ padding: '0.5rem 1rem', background: '#f8fafc', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>
+                            Last Sync: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </div>
+                    </div>
                 </div>
                 
-                <div className="attendance-table-wrap">
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead style={{ background: '#f8fafc' }}>
+                <div style={{ overflowX: 'auto' }}>
+                    <table className="attendance-table-v4">
+                        <thead>
                             <tr>
-                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', color: '#64748b', fontSize: '0.85rem' }}>Student</th>
-                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', color: '#64748b', fontSize: '0.85rem' }}>Email</th>
-                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', color: '#64748b', fontSize: '0.85rem' }}>Status</th>
-                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', color: '#64748b', fontSize: '0.85rem' }}>Health</th>
+                                <th>Student Details</th>
+                                <th>Email Address</th>
+                                <th>Marking Status</th>
+                                <th>Activity Log</th>
                             </tr>
                         </thead>
                         <tbody>
                             {attendanceData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" style={{ padding: '4rem', textAlign: 'center', color: '#94a3b8' }}>
-                                        {selectedSessionId ? "No students enrolled in this course yet." : "Please select a session to view the student roster."}
+                                    <td colSpan="4" style={{ padding: '5rem', textAlign: 'center', color: '#94a3b8' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                                            <Search size={48} />
+                                            <p style={{ fontWeight: 600 }}>{selectedSessionId ? "No students found in this course roster." : "Please select a session to monitor attendance."}</p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
                                 attendanceData.map(student => (
-                                    <tr key={student.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                        <td style={{ padding: '1rem 1.5rem' }}>
-                                            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                                <div style={{ width: 36, height: 36, borderRadius: '10px', background: '#f1f5f9', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>{student.avatar}</div>
-                                                <div>
-                                                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{student.name}</div>
-                                                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{student.id}</div>
+                                    <tr key={student.id}>
+                                        <td>
+                                            <div className="student-profile-v4">
+                                                <div className="student-initial-v4" style={{ background: student.status === 'PRESENT' ? '#eff6ff' : '#f8fafc', color: student.status === 'PRESENT' ? '#3b82f6' : '#64748b' }}>{student.avatar}</div>
+                                                <div className="student-info-v4">
+                                                    <span className="name">{student.name}</span>
+                                                    <span className="id">{student.id}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: '#475569' }}>{student.email}</td>
-                                        <td style={{ padding: '1rem 1.5rem' }}>
+                                        <td>
+                                            <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>{student.email}</span>
+                                        </td>
+                                        <td>
                                             <select 
-                                                style={{ padding: '0.4rem 0.75rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', fontSize: '0.85rem', fontWeight: 500, background: student.status === 'PRESENT' ? '#ecfdf5' : student.status === 'ABSENT' ? '#fef2f2' : '#fffbeb', color: student.status === 'PRESENT' ? '#059669' : student.status === 'ABSENT' ? '#ef4444' : '#d97706' }}
+                                                className={`status-select-v4 ${getStatusClass(student.status)}`}
                                                 value={student.status}
                                                 onChange={(e) => handleStatusChange(student.id, e.target.value)}
                                             >
@@ -269,12 +335,19 @@ const AttendanceView = ({ courses }) => {
                                                 <option value="LATE">Late</option>
                                             </select>
                                         </td>
-                                        <td style={{ padding: '1rem 1.5rem' }}>
-                                            {student.status === "ABSENT" ? (
-                                                <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}><XCircle size={14} /> Critical focus</span>
-                                            ) : (
-                                                <span style={{ color: '#10b981', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}><CheckCircle size={14} /> Normal</span>
-                                            )}
+                                        <td>
+                                            <div className="status-indicator-v4">
+                                                <div className={`dot ${student.status.toLowerCase()}`}></div>
+                                                <span className={student.status.toLowerCase()}>
+                                                    {student.status === "PRESENT" ? (
+                                                        <>Recorded {student.markedAt ? `at ${new Date(student.markedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "via Scanner"}</>
+                                                    ) : student.status === "LATE" ? (
+                                                        "Tardy"
+                                                    ) : (
+                                                        "Not marked"
+                                                    )}
+                                                </span>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -283,7 +356,18 @@ const AttendanceView = ({ courses }) => {
                     </table>
                 </div>
             </div>
+
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes pulse {
+                    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+                    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+                    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+                }
+                .animate-spin { animation: spin 1s linear infinite; }
+                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            `}} />
         </div>
     );
 };
+
 export default AttendanceView;

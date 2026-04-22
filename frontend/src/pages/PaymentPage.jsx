@@ -122,6 +122,13 @@ export default function PaymentPage() {
           }`,
         );
 
+        // Store as paid in localStorage
+        const paidCourses = JSON.parse(localStorage.getItem("paidCourses") || "[]");
+        if (!paidCourses.includes(courseId)) {
+          paidCourses.push(courseId);
+          localStorage.setItem("paidCourses", JSON.stringify(paidCourses));
+        }
+
         resetForm();
       } catch (error) {
         setMessage(error.response?.data?.message || "Payment failed");
@@ -173,6 +180,13 @@ export default function PaymentPage() {
           res.data.status || res.data.payment?.status || "PENDING"
         }`,
       );
+
+      // Store as paid in localStorage
+      const paidCourses = JSON.parse(localStorage.getItem("paidCourses") || "[]");
+      if (!paidCourses.includes(courseId)) {
+        paidCourses.push(courseId);
+        localStorage.setItem("paidCourses", JSON.stringify(paidCourses));
+      }
 
       resetForm();
     } catch (error) {
