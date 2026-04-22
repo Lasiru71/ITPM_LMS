@@ -189,7 +189,7 @@ const LecturerDashboard = () => {
         { id: "qr-session", label: "QR Session", icon: <QrCode size={20} /> },
         { id: "attendance", label: "Attendance Marking", icon: <Activity size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
-        { id: "attendance", label: "Attendance", icon: <Users size={20} /> },
+
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
