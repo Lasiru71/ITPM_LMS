@@ -189,7 +189,7 @@ const LecturerDashboard = () => {
         { id: "qr-session", label: "QR Session", icon: <QrCode size={20} /> },
         { id: "attendance", label: "Attendance Marking", icon: <Activity size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
-        { id: "materials", label: "Materials", icon: <FileText size={20} /> },
+
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
@@ -526,13 +526,7 @@ const LecturerDashboard = () => {
             );
         }
 
-        if (activeTab === "materials") {
-            return (
-                <div className="materials-section animate-in fade-in duration-500">
-                    <MaterialUpload />
-                </div>
-            );
-        }
+
 
         if (activeTab === "settings") {
             return (
