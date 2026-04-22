@@ -87,32 +87,51 @@ exports.deleteReview = async (req, res) => {
 
         // Permission check
         let hasPermission = false;
+        const currentUserId = String(userId);
 
         if (userRole === "Admin") {
             hasPermission = true;
-        } else if (userRole === "Student" && review.studentId.toString() === userId.toString()) {
+        } else if (userRole === "Student" && String(review.studentId) === currentUserId) {
             hasPermission = true;
         } else if (userRole === "Lecturer") {
             // Check if this lecturer owns the course
-            // First try finding by ObjectId
             let course = null;
-            try {
-                course = await Course.findById(review.courseId);
-            } catch (e) {
-                // If not ObjectId, try finding by custom id string if your schema has one
-                course = await Course.findOne({ id: review.courseId });
+            
+            // Try different ways to find the course
+            if (review.courseId) {
+                try {
+                    // Try by ObjectId first
+                    course = await Course.findById(review.courseId);
+                    if (!course) {
+                        // Try by custom id string
+                        course = await Course.findOne({ id: review.courseId });
+                    }
+                } catch (e) {
+                    // Fallback for non-ObjectId strings
+                    course = await Course.findOne({ id: review.courseId });
+                }
+            }
+
+            // Fallback: If no courseId in review, try finding by courseName
+            if (!course && review.courseName) {
+                course = await Course.findOne({ title: review.courseName });
             }
 
             if (course) {
-                if (String(course.instructorId) === String(userId) || String(course.instructor) === String(userId)) {
+                const isInstructor = 
+                    String(course.instructorId) === currentUserId || 
+                    String(course.instructor) === currentUserId ||
+                    course.instructor === req.user.name; // Match by name as ultimate fallback
+                
+                if (isInstructor) {
                     hasPermission = true;
                 }
             } else {
-                // Fallback: If course not in DB, maybe it's a mock course or deleted
-                // For now, if we can't verify ownership, we might need a safer fallback
-                // Let's assume if the review was filtered to them in UI, we should double check here
-                // BUT for safety, let's just log and deny if we can't prove it.
-                console.log(`Course not found for review ${id}, courseId: ${review.courseId}`);
+                // If we absolutely can't find the course, but the lecturer has already replied to it,
+                // we can assume they have some authority over it.
+                if (review.adminReply) {
+                    hasPermission = true;
+                }
             }
         }
 
