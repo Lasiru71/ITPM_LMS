@@ -193,28 +193,6 @@ const LecturerDashboard = () => {
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
-    const [lecturerCourses, setLecturerCourses] = useState([]);
-    const [coursesLoading, setCoursesLoading] = useState(false);
-
-    useEffect(() => {
-        if (activeTab === "attendance" || activeTab === "dashboard") {
-            fetchLecturerCourses();
-        }
-    }, [activeTab]);
-
-    const fetchLecturerCourses = async () => {
-        try {
-            setCoursesLoading(true);
-            const lecturerId = user.id || user._id;
-            const res = await api.get(`/courses/lecturer/${lecturerId}`);
-            setLecturerCourses(res.data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setCoursesLoading(false);
-        }
-    };
-
     const renderContent = () => {
         if (isLoading) return <div className="loading-state">Loading your dashboard...</div>;
 
@@ -234,7 +212,9 @@ const LecturerDashboard = () => {
         }
 
         if (activeTab === "attendance") {
-            return <AttendanceView courses={lecturerCourses} />;
+            // Pass all courses where this lecturer is involved
+            const availableCourses = allCourses.length > 0 ? allCourses : [];
+            return <AttendanceView courses={availableCourses} />;
         }
 
         if (activeTab === "dashboard") {
