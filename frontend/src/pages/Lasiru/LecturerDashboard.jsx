@@ -165,21 +165,25 @@ const LecturerDashboard = () => {
     };
 
     const handleDeleteCourse = async (courseId, courseTitle) => {
-        if (window.confirm(`Are you sure you want to delete "${courseTitle}"?`)) {
-            try {
-                // Only call API if it's a real course (string ID, not mock number ID)
-                if (isNaN(Number(courseId))) {
-                    await storeDeleteCourse(courseId);
-                }
-                
-                setAllCourses(prev => prev.filter(c => (c._id || c.id) !== courseId));
-                showToast("success", `Course "${courseTitle}" deleted successfully`);
-            } catch (err) {
-                console.error("Delete error:", err);
-                showToast("error", err.message || "Failed to delete course");
+        if (!window.confirm(`Are you sure you want to delete "${courseTitle}"?`)) return;
+        try {
+            await storeDeleteCourse(courseId);
+            // Re-fetch from server to confirm deletion
+            await fetchAllData();
+            showToast("success", `Course "${courseTitle}" deleted successfully`);
+        } catch (err) {
+            console.error("Delete error:", err);
+            const msg = err?.message || "Failed to delete course";
+            if (msg.toLowerCase().includes("forbidden") || msg.toLowerCase().includes("403")) {
+                showToast("error", "You can only delete courses you created.");
+            } else {
+                showToast("error", msg);
             }
+            // Re-fetch to restore correct state
+            await fetchAllData();
         }
     };
+
 
 
     const navItems = [
@@ -223,7 +227,7 @@ const LecturerDashboard = () => {
                 <CourseCreationForm
                     onSuccess={() => {
                         fetchAllData();
-                        setActiveTab("dashboard");
+                        setActiveTab("my-courses"); // Navigate to My Courses so the new course is visible
                     }}
                 />
             );
