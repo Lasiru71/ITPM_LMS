@@ -132,10 +132,13 @@ const LecturerDashboard = () => {
         .filter(c => String(c.instructorId || "") === currentUserId)
         .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
 
-    // Courses assigned/created by admin (anyone else)
-    const adminCourses = allCourses
-        .filter(c => String(c.instructorId || "") !== currentUserId)
-        .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+    // Admin courses: ONLY those created by an Admin (instructor name contains "Admin")
+    // and has a valid ID, but is not the current user
+    const adminCourses = allCourses.filter(c => 
+        c.instructorId && 
+        String(c.instructorId) !== currentUserId &&
+        (c.instructor?.toLowerCase().includes("admin"))
+    ).sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
 
 
 
@@ -165,21 +168,25 @@ const LecturerDashboard = () => {
     };
 
     const handleDeleteCourse = async (courseId, courseTitle) => {
-        if (window.confirm(`Are you sure you want to delete "${courseTitle}"?`)) {
-            try {
-                // Only call API if it's a real course (string ID, not mock number ID)
-                if (isNaN(Number(courseId))) {
-                    await storeDeleteCourse(courseId);
-                }
-                
-                setAllCourses(prev => prev.filter(c => (c._id || c.id) !== courseId));
-                showToast("success", `Course "${courseTitle}" deleted successfully`);
-            } catch (err) {
-                console.error("Delete error:", err);
-                showToast("error", err.message || "Failed to delete course");
+        if (!window.confirm(`Are you sure you want to delete "${courseTitle}"?`)) return;
+        try {
+            await storeDeleteCourse(courseId);
+            // Re-fetch from server to confirm deletion
+            await fetchAllData();
+            showToast("success", `Course "${courseTitle}" deleted successfully`);
+        } catch (err) {
+            console.error("Delete error:", err);
+            const msg = err?.message || "Failed to delete course";
+            if (msg.toLowerCase().includes("forbidden") || msg.toLowerCase().includes("403")) {
+                showToast("error", "You can only delete courses you created.");
+            } else {
+                showToast("error", msg);
             }
+            // Re-fetch to restore correct state
+            await fetchAllData();
         }
     };
+
 
 
     const navItems = [
@@ -189,7 +196,7 @@ const LecturerDashboard = () => {
         { id: "qr-session", label: "QR Session", icon: <QrCode size={20} /> },
         { id: "attendance", label: "Attendance Marking", icon: <Activity size={20} /> },
         { id: "reviews", label: "Reviews", icon: <Star size={20} /> },
-        { id: "materials", label: "Materials", icon: <FileText size={20} /> },
+
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
     ];
 
@@ -201,7 +208,7 @@ const LecturerDashboard = () => {
                 <CourseCreationForm
                     onSuccess={() => {
                         fetchAllData();
-                        setActiveTab("dashboard");
+                        setActiveTab("my-courses"); // Navigate to My Courses so the new course is visible immediately
                     }}
                 />
             );
@@ -299,8 +306,12 @@ const LecturerDashboard = () => {
                             </thead>
                             <tbody>
                                 {filteredCourses.length > 0 ? (
-                                    filteredCourses.map(course => (
-                                        <tr key={course._id || course.id}>
+                                    filteredCourses.map(course => {
+                                        const isOwner = String(course.instructorId || "") === currentUserId;
+                                        const courseId = String(course._id || course.id);
+                                        
+                                        return (
+                                            <tr key={courseId}>
                                                 <td>
                                                     <div className="table-course-info">
                                                         <div className="course-mini-thumb">
@@ -339,37 +350,42 @@ const LecturerDashboard = () => {
                                                             title="View & Manage Content"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                navigate(`/lecturer/courses/${course._id || course.id}`);
+                                                                navigate(`/lecturer/courses/${courseId}`);
                                                             }}
                                                         >
                                                             <Eye size={26} strokeWidth={2.5} color="#059669" />
                                                         </button>
-                                                        <button
-                                                            type="button"
-                                                            className="action-btn edit"
-                                                            title="Edit"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleEditCourse(course._id || course.id);
-                                                            }}
-                                                        >
-                                                            <Pencil size={26} strokeWidth={2.5} color="#2563eb" />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="action-btn delete"
-                                                            title="Delete"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteCourse(course._id || course.id, course.title);
-                                                            }}
-                                                        >
-                                                            <Trash2 size={26} strokeWidth={2.5} color="#dc2626" />
-                                                        </button>
+                                                        {isOwner && (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    className="action-btn edit"
+                                                                    title="Edit"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleEditCourse(courseId);
+                                                                    }}
+                                                                >
+                                                                    <Pencil size={26} strokeWidth={2.5} color="#2563eb" />
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="action-btn delete"
+                                                                    title="Delete"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDeleteCourse(courseId, course.title);
+                                                                    }}
+                                                                >
+                                                                    <Trash2 size={26} strokeWidth={2.5} color="#dc2626" />
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
-                                    ))
+                                        );
+                                    })
                                 ) : (
                                     <tr>
                                         <td colSpan="7" className="empty-table-row">
@@ -506,13 +522,7 @@ const LecturerDashboard = () => {
             );
         }
 
-        if (activeTab === "materials") {
-            return (
-                <div className="materials-section animate-in fade-in duration-500">
-                    <MaterialUpload />
-                </div>
-            );
-        }
+
 
         if (activeTab === "settings") {
             return (
@@ -549,34 +559,36 @@ const LecturerDashboard = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {myCourses.map(course => (
-                                <Card
-                                    key={course._id || course.id}
-                                    className="overflow-hidden hover:shadow-xl transition-all duration-300 group bg-white border-slate-100 flex flex-col"
-                                >
-                                    <div className="aspect-video relative overflow-hidden" onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}>
-                                        <img
-                                            src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
-                                            alt={course.title}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-300" />
-                                        <Badge className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-slate-800 border-none shadow-sm font-bold text-[10px]">
-                                            {course.category || "General"}
-                                        </Badge>
-                                    </div>
+                            {myCourses.map(course => {
+                                const courseId = String(course._id || course.id);
+                                return (
+                                    <Card
+                                        key={courseId}
+                                        className="overflow-hidden hover:shadow-xl transition-all duration-300 group bg-white border-slate-100 flex flex-col"
+                                    >
+                                        <div className="aspect-video relative overflow-hidden" onClick={() => navigate(`/lecturer/courses/${courseId}`)}>
+                                            <img
+                                                src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
+                                                alt={course.title}
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-300" />
+                                            <Badge className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-slate-800 border-none shadow-sm font-bold text-[10px]">
+                                                {course.category || "General"}
+                                            </Badge>
+                                        </div>
 
-                                    <CardHeader className="pb-2" onClick={() => navigate(`/lecturer/courses/${course._id || course.id}`)}>
-                                        <CardTitle className="text-lg leading-tight group-hover:text-emerald-600 transition-colors line-clamp-1">{course.title}</CardTitle>
-                                        <CardDescription className="line-clamp-2 mt-1 text-xs">
-                                            {course.shortDescription || course.description || "No description provided."}
-                                        </CardDescription>
-                                    </CardHeader>
+                                        <CardHeader className="pb-2" onClick={() => navigate(`/lecturer/courses/${courseId}`)}>
+                                            <CardTitle className="text-lg leading-tight group-hover:text-emerald-600 transition-colors line-clamp-1">{course.title}</CardTitle>
+                                            <CardDescription className="line-clamp-2 mt-1 text-xs">
+                                                {course.shortDescription || course.description || "No description provided."}
+                                            </CardDescription>
+                                        </CardHeader>
 
                                     <CardContent className="pt-0 flex-grow">
                                         <div className="flex justify-between items-center mt-2 pb-4 border-b border-slate-50">
                                             <span className="text-xl font-black text-emerald-600">
-                                                $ {course.price?.toLocaleString() || "Free"}
+                                                Rs. {course.price?.toLocaleString() || "Free"}
                                             </span>
                                             <div className="flex flex-col items-end">
                                                 <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
@@ -600,14 +612,14 @@ const LecturerDashboard = () => {
                                         <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-50">
                                             <div className="flex items-center gap-2">
                                                 <button 
-                                                    onClick={(e) => { e.stopPropagation(); navigate(`/lecturer/courses/${course._id || course.id}`); }}
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/lecturer/courses/${courseId}`); }}
                                                     className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-500 transition-all flex items-center justify-center"
                                                     title="View Course"
                                                 >
                                                     <Eye size={16} />
                                                 </button>
                                                 <button 
-                                                    onClick={(e) => { e.stopPropagation(); navigate(`/edit-course/${course._id || course.id}`); }}
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/edit-course/${courseId}`); }}
                                                     className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500 transition-all flex items-center justify-center"
                                                     title="Edit Course"
                                                 >
@@ -615,7 +627,7 @@ const LecturerDashboard = () => {
                                                 </button>
                                             </div>
                                             <button 
-                                                onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course._id || course.id, course.title); }}
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteCourse(courseId, course.title); }}
                                                 className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center justify-center"
                                                 title="Delete Course"
                                             >
@@ -623,8 +635,9 @@ const LecturerDashboard = () => {
                                             </button>
                                         </div>
                                     </CardContent>
-                                </Card>
-                            ))}
+                                    </Card>
+                                );
+                            })}
                         </div>
                     )}
                 </div>

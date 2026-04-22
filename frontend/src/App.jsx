@@ -23,16 +23,18 @@ import FreeExam from "./pages/Home/FreeExam.jsx";
 import GptHelper from "./pages/Home/GptHelper.jsx";
 import PublicCourseDetail from "./pages/Home/PublicCourseDetail.jsx";
 
+// Finance & Attendance imports
+import PaymentPage from "./pages/PaymentPage";
+import AdminPayments from "./pages/AdminPayments";
+import GenerateQRPage from "./pages/GenerateQRPage";
+import ScanAttendancePage from "./pages/ScanAttendancePage";
+import AttendanceReport from "./pages/AttendanceReport";
+
 import NotificationsPage from "./pages/Lasiru/NotificationsPage.jsx";
 import ProtectedRoute from "./components/Lasiru/ProtectedRoute.jsx";
 import CreateCourse from "./pages/Lasiru/CreateCourse.jsx";
 
-// Financial and Attendance Imports
-import AdminPayments from "./pages/AdminPayments.jsx";
-import AttendanceReport from "./pages/AttendanceReport.jsx";
-import GenerateQRPage from "./pages/GenerateQRPage.jsx";
-import PaymentPage from "./pages/PaymentPage.jsx";
-import ScanAttendancePage from "./pages/ScanAttendancePage.jsx";
+
 
 function App() {
   return (
@@ -53,6 +55,8 @@ function App() {
       {/* Auth Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+
+
 
       {/* Dashboard Routes - PROTECTED */}
       <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

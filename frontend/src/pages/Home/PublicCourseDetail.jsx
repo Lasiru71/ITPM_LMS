@@ -1,62 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  ChevronRight, 
-  Play, 
-  FileText, 
-  Clock, 
-  ShieldCheck, 
-  Globe, 
-  Users, 
-  Award,
-  BookOpen,
-  ChevronDown,
-  ChevronUp,
-  Lock,
-  CreditCard,
-  ArrowLeft,
-  CircleCheck,
-  Zap,
-  Trophy
+  ChevronRight, Play, FileText, Clock, ShieldCheck, Globe, Users, Award,
+  BookOpen, ChevronDown, ChevronUp, Lock, CreditCard, CircleCheck, Zap, Trophy,
+  Download, Image as ImageIcon, Book
 } from 'lucide-react';
 
-const API_BASE = "http://localhost:5000/api/courses";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 const PublicCourseDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedModules, setExpandedModules] = useState({});
-
-  const [isEnrolled, setIsEnrolled] = useState(false); // Default to not enrolled
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [materials, setMaterials] = useState([]);
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchAll = async () => {
       try {
-        const localCourses = JSON.parse(localStorage.getItem("courses") || "[]");
-        const localCourse = localCourses.find(c => c._id === id || c.id === id);
+        // 1. Fetch course details from DB
+        const courseRes = await axios.get(`${API_BASE}/courses/${id}`);
+        const fetchedCourse = courseRes.data;
+        setCourse(fetchedCourse);
+        if (fetchedCourse.modules?.length > 0) setExpandedModules({ 0: true });
 
-        // Mock check for enrollment (could be from localStorage or API)
-        const userEnrollments = JSON.parse(localStorage.getItem("enrolled_courses") || "[]");
-        if (userEnrollments.includes(id)) {
-          setIsEnrolled(true);
-        }
-
-        if (localCourse) {
-          setCourse(localCourse);
-          setLoading(false);
-          if (localCourse.modules?.length > 0) {
-            setExpandedModules({ 0: true });
+        // 2. Check enrollment via payment records
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            const payRes = await axios.get(`${API_BASE}/payments`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const payments = Array.isArray(payRes.data) ? payRes.data : payRes.data?.payments || [];
+            const enrolled = payments.some(p =>
+              (String(p.courseId) === String(id) || String(p.courseId?._id) === String(id)) &&
+              (p.status === 'APPROVED' || p.status === 'COMPLETED' || p.status === 'PENDING')
+            );
+            setIsEnrolled(enrolled);
           }
-          return;
+        } catch (_) {
+          // Not logged in or payment check failed — treat as not enrolled
         }
 
-        const response = await axios.get(`${API_BASE}/${id}`);
-        setCourse(response.data);
-        if (response.data.modules?.length > 0) {
-          setExpandedModules({ 0: true });
+        // 3. Fetch lecture materials (visible to all, access gated)
+        try {
+          const token = localStorage.getItem('token');
+          const matRes = await axios.get(`${API_BASE}/sadeepa/materials`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          setMaterials(Array.isArray(matRes.data) ? matRes.data : []);
+        } catch (_) {
+          setMaterials([]);
         }
+
       } catch (error) {
         console.error("Error fetching course:", error);
       } finally {
@@ -64,27 +63,41 @@ const PublicCourseDetail = () => {
       }
     };
 
-    fetchCourse();
+    fetchAll();
     window.scrollTo(0, 0);
   }, [id]);
 
   const toggleModule = (index) => {
-    setExpandedModules(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
+    setExpandedModules(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
   const handleLessonClick = (lesson) => {
     if (!isEnrolled) {
-      alert("🔒 Access Denied: This content is locked. Please enroll in the course to access videos and documents.");
-      // Option to scroll to enrollment section
-      const enrollButton = document.getElementById('enroll-section');
-      if (enrollButton) enrollButton.scrollIntoView({ behavior: 'smooth' });
+      const el = document.getElementById('enroll-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
       return;
     }
-    // Proceed to view lesson
-    console.log("Viewing lesson:", lesson.title);
+    alert(`Opening: ${lesson.title}`);
+  };
+
+  const handleMaterialAccess = (material) => {
+    if (!isEnrolled) {
+      alert("Payment Required: Please book this course to view and download the lecture materials.");
+      const el = document.getElementById('enroll-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    
+    if (material.fileData) {
+      const link = document.createElement('a');
+      link.href = material.fileData;
+      link.download = material.title || 'material_download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert(`No file attached to: ${material.title}`);
+    }
   };
 
   if (loading) {
@@ -108,74 +121,71 @@ const PublicCourseDetail = () => {
 
   const totalModules = course.modules?.length || 0;
   const totalLessons = course.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0;
-  const coursePrice = (course.price === 0 || course.price === "0" || course.price === 'Free' || !course.price) ? 'Free' : `$${course.price}`;
+  const coursePrice = (!course.price || course.price === 0) ? 'Free' : `$${course.price}`;
+
+  const typeIcon = (type) => {
+    if (type === 'video') return <Play size={14} fill="currentColor" />;
+    if (type === 'Book') return <Book size={14} />;
+    return <FileText size={14} />;
+  };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pt-20">
-      
-      {/* Dark Hero - Classic Style */}
+
+      {/* Dark Hero */}
       <div className="bg-[#0f172a] text-white pt-16 pb-32 px-4 shadow-sm relative overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-8 items-start relative z-10">
           <div className="md:col-span-8">
             <div className="flex items-center gap-2 mb-6 text-emerald-400 text-xs font-bold uppercase tracking-widest">
-              <span>Courses</span>
+              <Link to="/courses" className="hover:text-emerald-300">Courses</Link>
               <ChevronRight size={14} />
-              <span>{course.category || 'Professional Development'}</span>
+              <span>{course.category || 'General'}</span>
             </div>
-            
-            <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
-              {course.title || "DSA Mastery"}
-            </h1>
-            
+            <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">{course.title}</h1>
             <p className="text-lg text-slate-300 mb-8 max-w-2xl leading-relaxed">
-              {course.description || course.shortDescription || "Gain industry-ready skills with our professional curriculum lead by expert instructors."}
+              {course.description || course.shortDescription || "Gain industry-ready skills with expert instructors."}
             </p>
-            
             <div className="flex flex-wrap gap-8 pt-2">
               <div className="flex items-center gap-3">
-                <Globe size={18} className="text-slate-400 font-bold" />
+                <Globe size={18} className="text-slate-400" />
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Language</span>
-                  <span className="text-sm font-bold">English</span>
+                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Language</span>
+                  <span className="text-sm font-bold">{course.language || 'English'}</span>
                 </div>
               </div>
-              
               <div className="flex items-center gap-3">
                 <Users size={18} className="text-slate-400" />
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Students</span>
-                  <span className="text-sm font-bold">1,245+ Enrolled</span>
+                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Level</span>
+                  <span className="text-sm font-bold">{course.level || 'All Levels'}</span>
                 </div>
               </div>
-
               <div className="flex items-center gap-3">
-                <ShieldCheck size={18} className="text-slate-400" />
+                <BookOpen size={18} className="text-slate-400" />
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Status</span>
-                  <span className="text-sm font-bold">Accredited</span>
+                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Lessons</span>
+                  <span className="text-sm font-bold">{totalLessons} Lessons</span>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                 <Clock size={18} className="text-slate-400" />
-                 <div className="flex flex-col">
-                  <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] leading-none mb-1">Access</span>
-                  <span className="text-sm font-bold">Lifetime</span>
+              {isEnrolled && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-xl">
+                  <CircleCheck size={16} className="text-emerald-400" />
+                  <span className="text-emerald-400 text-sm font-bold">Enrolled</span>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Overlapping Feature Boxes - Precisely as in the user screenshot */}
+      {/* Feature Boxes */}
       <div className="max-w-7xl mx-auto px-4 mt-[-60px] relative z-20">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { title: "Adaptive Learning", desc: "Quizzes and assessments that adjust to your pace.", icon: <Award className="text-emerald-500" /> },
-            { title: "Expert Support", desc: "Direct guidance on complex topics from mentors.", icon: <Zap className="text-blue-500" /> },
-            { title: "Lifetime Access", desc: "Never lose access to your learning materials.", icon: <ShieldCheck className="text-amber-500" /> },
-            { title: "Verified Status", desc: "Get a professional certificate upon completion.", icon: <Trophy className="text-teal-500" /> }
+            { title: "Adaptive Learning", desc: "Assessments that adjust to your pace.", icon: <Award className="text-emerald-500" /> },
+            { title: "Expert Support", desc: "Direct guidance from mentors.", icon: <Zap className="text-blue-500" /> },
+            { title: "Lifetime Access", desc: "Never lose access to your materials.", icon: <ShieldCheck className="text-amber-500" /> },
+            { title: "Verified Certificate", desc: "Get certified upon completion.", icon: <Trophy className="text-teal-500" /> }
           ].map((item, idx) => (
             <div key={idx} className="bg-white p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-50 hover:shadow-xl transition-all">
               <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center mb-4">
@@ -188,18 +198,18 @@ const PublicCourseDetail = () => {
         </div>
       </div>
 
-      {/* Main Container */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 mt-12 mb-32">
         <div className="grid lg:grid-cols-12 gap-10 items-start">
           
           <div className="lg:col-span-8 space-y-10">
-            
-            {/* Course Content - Classic Success Style */}
+
+            {/* Course Curriculum */}
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
               <div className="flex items-center justify-between mb-8 pb-4">
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900 mb-1">Course Content</h2>
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">Structured learning path for this course.</p>
+                  <h2 className="text-2xl font-black text-slate-900 mb-1">Course Curriculum</h2>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Structured learning path</p>
                 </div>
                 <div className="flex gap-2 p-1 bg-slate-50 rounded-2xl border border-slate-100">
                   <div className="px-5 py-2 text-center">
@@ -214,11 +224,23 @@ const PublicCourseDetail = () => {
                 </div>
               </div>
 
+              {!isEnrolled && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3">
+                  <Lock size={18} className="text-amber-500 flex-shrink-0" />
+                  <p className="text-sm text-amber-700 font-semibold">
+                    <strong>Book Now</strong> to unlock all lessons and lecture materials.
+                  </p>
+                  <Link to={`/payment/${id}`} className="ml-auto shrink-0 px-4 py-2 bg-emerald-500 text-white text-xs font-black rounded-xl hover:bg-emerald-600 transition">
+                    Book Now
+                  </Link>
+                </div>
+              )}
+
               <div className="space-y-4">
                 {course.modules && course.modules.length > 0 ? (
                   course.modules.map((module, mIndex) => (
                     <div key={mIndex} className={`bg-white border border-slate-100 rounded-3xl overflow-hidden transition-all duration-300 ${expandedModules[mIndex] ? 'shadow-md border-emerald-50' : ''}`}>
-                      <button 
+                      <button
                         className={`w-full flex items-center justify-between p-6 text-left ${expandedModules[mIndex] ? 'bg-slate-50/50' : 'bg-white hover:bg-slate-50/30'}`}
                         onClick={() => toggleModule(mIndex)}
                       >
@@ -228,36 +250,34 @@ const PublicCourseDetail = () => {
                           </div>
                           <div>
                             <h3 className="text-sm font-black text-slate-900 uppercase">{module.title}</h3>
-                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{module.lessons?.length || 0} Lessons Included</span>
+                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{module.lessons?.length || 0} Lessons</span>
                           </div>
                         </div>
                         {expandedModules[mIndex] ? <ChevronUp size={18} className="text-emerald-500" /> : <ChevronDown size={18} className="text-slate-300" />}
                       </button>
-                      
+
                       {expandedModules[mIndex] && (
                         <div className="px-6 pb-6 pt-2 space-y-2 border-t border-slate-50">
-                          {module.lessons && module.lessons.length > 0 ? (
-                            module.lessons.map((lesson, lIndex) => (
-                              <div 
-                                key={lIndex} 
-                                onClick={() => handleLessonClick(lesson)}
-                                className={`flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-50 transition-all group ${!isEnrolled ? 'opacity-70 cursor-not-allowed' : 'hover:border-emerald-100 cursor-pointer'}`}
-                              >
-                                <div className="flex items-center gap-4">
-                                  <div className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center transition-colors ${!isEnrolled ? 'text-slate-300' : 'text-slate-400 group-hover:text-emerald-500 group-hover:bg-emerald-50'}`}>
-                                    {lesson.type === 'video' ? <Play size={14} fill="currentColor" /> : <FileText size={14} />}
-                                  </div>
-                                  <div>
-                                    <h4 className="text-[13px] font-bold text-slate-700">{lesson.title}</h4>
-                                    <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{lesson.type} • {lesson.duration || "15 mins"}</span>
-                                  </div>
+                          {module.lessons && module.lessons.length > 0 ? module.lessons.map((lesson, lIndex) => (
+                            <div
+                              key={lIndex}
+                              onClick={() => handleLessonClick(lesson)}
+                              className={`flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-50 transition-all group ${!isEnrolled ? 'cursor-pointer opacity-80' : 'hover:border-emerald-100 cursor-pointer'}`}
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center transition-colors ${!isEnrolled ? 'text-slate-300' : 'text-slate-400 group-hover:text-emerald-500 group-hover:bg-emerald-50'}`}>
+                                  {isEnrolled ? typeIcon(lesson.type) : <Lock size={14} />}
                                 </div>
-                                <div className={`${!isEnrolled ? 'text-slate-300' : 'text-slate-100'}`}>
-                                  {isEnrolled ? <CircleCheck size={14} className="text-emerald-500" /> : <Lock size={14} />}
+                                <div>
+                                  <h4 className="text-[13px] font-bold text-slate-700">{lesson.title}</h4>
+                                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{lesson.type} • {lesson.duration || '15 mins'}</span>
                                 </div>
                               </div>
-                            ))
-                          ) : (
+                              <div>
+                                {isEnrolled ? <CircleCheck size={14} className="text-emerald-500" /> : <Lock size={14} className="text-slate-300" />}
+                              </div>
+                            </div>
+                          )) : (
                             <div className="p-8 text-center text-slate-400 text-xs italic">Upcoming lessons.</div>
                           )}
                         </div>
@@ -273,90 +293,148 @@ const PublicCourseDetail = () => {
               </div>
             </div>
 
-            {/* Instructor - High Contrast & Visible */}
+            {/* Lecture Materials Section */}
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                  <FileText size={18} className="text-emerald-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900">Lecture Materials</h2>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5">Books, PDFs &amp; Documents</p>
+                </div>
+              </div>
+
+              {!isEnrolled && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3">
+                  <Lock size={18} className="text-amber-500 flex-shrink-0" />
+                  <p className="text-sm text-amber-700 font-semibold">
+                    Enroll to download and access all lecture materials.
+                  </p>
+                </div>
+              )}
+
+              {materials.length === 0 ? (
+                <div className="p-12 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                  <FileText size={40} className="mx-auto text-slate-200 mb-3" />
+                  <p className="text-slate-400 font-semibold text-sm">No materials uploaded yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {materials.map((material, idx) => (
+                    <div
+                      key={material._id || idx}
+                      onClick={() => handleMaterialAccess(material)}
+                      className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group ${
+                        isEnrolled
+                          ? 'border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/20'
+                          : 'border-slate-100 opacity-75'
+                      }`}
+                    >
+                      {/* Thumbnail */}
+                      <div className="w-12 h-12 rounded-xl bg-slate-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                        {material.image
+                          ? <img src={material.image} alt="" className="w-full h-full object-cover" />
+                          : <FileText size={20} className="text-slate-400" />
+                        }
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-bold text-sm truncate ${!isEnrolled ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{material.title}</p>
+                        <p className={`text-xs truncate max-w-xs ${!isEnrolled ? 'text-slate-300 line-through' : 'text-slate-400'}`}>{material.description}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-bold">{material.type}</span>
+                          <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-bold">{material.category}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex-shrink-0">
+                        {isEnrolled
+                          ? <Download size={16} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                          : <Lock size={16} className="text-slate-300" />
+                        }
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Instructor */}
             <div className="bg-white rounded-3xl p-10 shadow-sm border border-slate-100">
               <h2 className="text-xl font-black text-slate-900 mb-8 uppercase tracking-tight">Meet Your Instructor</h2>
               <div className="flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
-                <div className="w-24 h-24 rounded-[2rem] bg-slate-900 flex items-center justify-center font-black text-white border border-slate-800 text-2xl shadow-xl">
-                   {course.instructorName ? course.instructorName.charAt(0) : "I"}
-                   {course.instructorName ? course.instructorName.charAt(1) : ""}
+                <div className="w-24 h-24 rounded-[2rem] bg-slate-900 flex items-center justify-center font-black text-white text-2xl shadow-xl">
+                  {(course.instructor || course.instructorName || 'I').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-slate-950 leading-none mb-2">{course.instructorName || "Principal Instructor"}</h3>
-                  <p className="text-emerald-600 font-black text-[10px] uppercase tracking-[0.2em] mb-4">Master Course Lecturer</p>
+                  <h3 className="text-2xl font-black text-slate-950 leading-none mb-2">{course.instructor || course.instructorName || 'Principal Instructor'}</h3>
+                  <p className="text-emerald-600 font-black text-[10px] uppercase tracking-[0.2em] mb-4">Course Lecturer</p>
                   <p className="text-slate-700 text-[13px] leading-relaxed max-w-lg font-medium">
-                    "Bringing real-world industry experience directly to your screen, simplifying complex concepts for every learner through expert-led sessions."
+                    "Bringing real-world industry experience directly to your screen, simplifying complex concepts for every learner."
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Sidebar - Classic Polished */}
+          {/* Right Sidebar */}
           <div className="lg:col-span-4 lg:sticky lg:top-24 h-fit" id="enroll-section">
             <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.08)] border border-white">
               <div className="relative aspect-video group">
-                <img 
-                  src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=450&fit=crop"} 
+                <img
+                  src={course.thumbnail || course.image || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=450&fit=crop"}
                   alt={course.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center">
-                   <div className="w-14 h-14 rounded-full bg-white text-emerald-500 flex items-center justify-center shadow-xl">
-                     <Play size={20} fill="currentColor" />
-                   </div>
-                </div>
               </div>
-              
-              <div className="p-10">
-                <div className="flex items-baseline gap-3 mb-8">
-                  <span className="text-5xl font-black text-slate-900 tracking-tighter">{coursePrice}</span>
-                  {course.price > 0 && <span className="text-slate-500 line-through font-bold text-lg decoration-slate-400">$199.99</span>}
-                </div>
-                
-                <div className="space-y-4 mb-10">
-                  <Link 
-                    to={`/payment/${course._id || id}`}
-                    className="w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-center shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 transform active:scale-95"
-                  >
-                    <CreditCard size={20} />
-                    ENROLL NOW
-                  </Link>
-                  <button className="w-full py-4 bg-slate-50 border border-slate-100 text-slate-600 rounded-2xl font-black text-[10px] tracking-widest hover:bg-slate-100 transition-all uppercase">
-                    Launch Sneak Peek
-                  </button>
-                </div>
-                
-                <div className="space-y-4">
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] block mb-2">Specifications</span>
+
+              <div className="p-8">
+                {isEnrolled ? (
+                  <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center">
+                    <CircleCheck className="mx-auto text-emerald-500 mb-2" size={32} />
+                    <p className="font-black text-emerald-700 text-sm">You're Enrolled!</p>
+                    <p className="text-xs text-emerald-600 mt-1">You have full access to all course content.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-baseline gap-3 mb-6">
+                      <span className="text-5xl font-black text-slate-900 tracking-tighter">{coursePrice}</span>
+                    </div>
+                    <div className="space-y-3 mb-8">
+                      <Link
+                        to={`/payment/${course._id || id}`}
+                        className="w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-center shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        <CreditCard size={20} />
+                        BOOK NOW
+                      </Link>
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-4 border-t border-slate-100 pt-6">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] block">Course Includes</span>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500 font-bold flex items-center gap-2"><Clock size={16} /> Total Load</span>
-                    <span className="text-slate-900 font-black">12.5 Hours</span>
+                    <span className="text-slate-500 font-bold flex items-center gap-2"><BookOpen size={16} /> Modules</span>
+                    <span className="text-slate-900 font-black">{totalModules}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm pt-4 border-t border-dashed border-slate-100">
-                    <span className="text-slate-500 font-bold flex items-center gap-2"><Users size={16} /> Students</span>
-                    <span className="text-slate-900 font-black">1,500+</span>
+                  <div className="flex justify-between items-center text-sm border-t border-dashed border-slate-100 pt-3">
+                    <span className="text-slate-500 font-bold flex items-center gap-2"><FileText size={16} /> Lessons</span>
+                    <span className="text-slate-900 font-black">{totalLessons}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm pt-4 border-t border-dashed border-slate-100">
+                  <div className="flex justify-between items-center text-sm border-t border-dashed border-slate-100 pt-3">
+                    <span className="text-slate-500 font-bold flex items-center gap-2"><Download size={16} /> Materials</span>
+                    <span className="text-slate-900 font-black">{materials.length} Files</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm border-t border-dashed border-slate-100 pt-3">
                     <span className="text-slate-500 font-bold flex items-center gap-2"><Award size={16} /> Certificate</span>
                     <span className="text-emerald-600 font-black">Included</span>
-                  </div>
-                </div>
-
-                <div className="mt-10 pt-8 border-t border-slate-50 text-center">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Certified Secure Payments</p>
-                  <div className="flex justify-center gap-3">
-                    <div className="px-3 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black text-[#1A1F71] border border-slate-100 italic tracking-tighter">VISA</div>
-                    <div className="px-3 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black flex items-center gap-0.5 border border-slate-100">
-                      <span className="text-[#EB001B]">Master</span><span className="text-[#F79E1B]">card</span>
-                    </div>
-                    <div className="px-3 py-1.5 bg-slate-50 rounded-xl text-[9px] font-black text-[#003087] border border-slate-100 italic">PayPal</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

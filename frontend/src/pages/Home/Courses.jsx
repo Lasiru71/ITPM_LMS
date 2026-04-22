@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, BookOpen } from 'lucide-react';
-import { MOCK_COURSES } from '../../constants/Home/mockData';
 import { useCourseStore } from '../../stores/courseStore';
 import CourseCard from '../../components/Home/CourseCard';
 import '../../Styles/Home/Home.css';
@@ -11,41 +10,35 @@ export default function Courses() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const categories = ['All', 'Web Development', 'Data Science', 'Mobile Development', 'Design', 'Business'];
+  const categories = ['All', 'Web Development', 'Data Science', 'Mobile Development', 'Design', 'Business', 'General'];
 
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
 
+  // Show ALL real DB courses (admin-created + lecturer-created)
   const allCourses = React.useMemo(() => {
-    const mappedRealCourses = realCourses.map(c => ({
+    return realCourses.map(c => ({
       ...c,
       id: c._id || c.id,
-      title: c.title,
-      instructor: c.instructorName || 'Lecturer',
+      title: c.title || 'Untitled Course',
+      instructor: c.instructor || c.instructorName || 'Instructor',
       price: c.price,
       image: c.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
       thumbnail: c.thumbnail,
       rating: c.rating || 4.5,
-      reviews: c.reviews || 10,
+      reviews: c.reviews || 0,
       category: c.category || 'General',
       level: c.level || 'All Levels'
     }));
-
-    return [
-      ...mappedRealCourses,
-      ...MOCK_COURSES.filter(
-        (mock) => !mappedRealCourses.some((real) => real.id === mock.id)
-      ),
-    ];
   }, [realCourses]);
 
   const filteredCourses = React.useMemo(() => {
     let result = allCourses;
     if (searchTerm) {
-      result = result.filter(c => 
-        c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+      result = result.filter(c =>
+        (c.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.instructor || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     if (selectedCategory !== 'All') {

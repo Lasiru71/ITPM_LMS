@@ -14,6 +14,7 @@ const AttendanceView = ({ courses }) => {
     const [attendanceData, setAttendanceData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLive, setIsLive] = useState(false); // For auto-refresh
 
     useEffect(() => {
         if (courses && courses.length > 0 && !selectedCourseId) {
@@ -41,12 +42,26 @@ const AttendanceView = ({ courses }) => {
         };
     }, [selectedSessionId]);
 
+    // Live Refresh Logic
+    useEffect(() => {
+        let interval;
+        if (isLive && selectedSessionId) {
+            interval = setInterval(() => {
+                fetchRoster(true); // silent fetch
+            }, 5000);
+        }
+        return () => clearInterval(interval);
+    }, [isLive, selectedSessionId]);
+
     const fetchSessions = async () => {
         try {
             const res = await api.get(`/attendance/sessions/${selectedCourseId}`);
             setSessions(res.data);
             if (res.data.length > 0) {
-                setSelectedSessionId(res.data[0]._id);
+                // If there's a session today, select it, otherwise select the latest
+                const today = new Date().toDateString();
+                const todaySession = res.data.find(s => new Date(s.sessionDate).toDateString() === today);
+                setSelectedSessionId(todaySession ? todaySession._id : res.data[0]._id);
             } else {
                 setSelectedSessionId("");
             }
@@ -56,11 +71,12 @@ const AttendanceView = ({ courses }) => {
         }
     };
 
-    const fetchRoster = async () => {
+    const fetchRoster = async (isSilent = false) => {
         try {
             // Only show loading spinner on first load to avoid flickering during polling
-            if (attendanceData.length === 0) setLoading(true);
+            if (!isSilent && attendanceData.length === 0) setLoading(true);
             
+            // 1. Get enrolled students
             const studentsRes = await api.get(`/enrollments/course/${selectedCourseId}/students`);
             const enrolledStudents = studentsRes.data;
 
@@ -75,7 +91,8 @@ const AttendanceView = ({ courses }) => {
                     name: std.name || "Enrolled Student",
                     email: std.email || "N/A",
                     avatar: std.name ? std.name.substring(0, 2).toUpperCase() : "ST",
-                    status: "ABSENT"
+                    status: "ABSENT",
+                    markedAt: null
                 });
             });
 
@@ -83,22 +100,27 @@ const AttendanceView = ({ courses }) => {
                 const sid = String(rec.studentId);
                 if (enrolledMap.has(sid)) {
                     enrolledMap.get(sid).status = rec.status;
+                    enrolledMap.get(sid).markedAt = rec.createdAt || rec.updatedAt;
                 } else {
                     enrolledMap.set(sid, {
                         id: sid,
                         name: "Guest Student",
                         email: "External Join",
                         avatar: "QR",
-                        status: rec.status
+                        status: rec.status,
+                        markedAt: rec.createdAt || rec.updatedAt
                     });
                 }
             });
 
             setAttendanceData(Array.from(enrolledMap.values()));
         } catch (error) {
-            console.error("Fetch error:", error);
+            if (!isSilent) {
+                console.error("Fetch error:", error);
+                showToast("error", "Failed to load student roster");
+            }
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
     };
 
@@ -127,7 +149,6 @@ const AttendanceView = ({ courses }) => {
             
             const confirmDownload = window.confirm("Records saved. Generate PDF report now?");
             if (confirmDownload) generatePDF();
-            
             fetchRoster();
         } catch (error) {
             console.error("Save error:", error);
@@ -192,6 +213,7 @@ const AttendanceView = ({ courses }) => {
         present: attendanceData.filter(s => s.status === "PRESENT").length,
         absent: attendanceData.filter(s => s.status === "ABSENT").length,
         late: attendanceData.filter(s => s.status === "LATE").length,
+        health: attendanceData.length > 0 ? Math.round((attendanceData.filter(s => s.status === "PRESENT").length / attendanceData.length) * 100) : 0
     });
 
     const stats = getStats();
@@ -202,7 +224,7 @@ const AttendanceView = ({ courses }) => {
                 <div className="empty-course-state" style={{ padding: '6rem 2rem', textAlign: 'center', background: 'white', borderRadius: '2rem', border: '1px dashed #e2e8f0' }}>
                     <Calendar size={64} color="#94a3b8" />
                     <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e293b', marginTop: '1.5rem' }}>No Courses Found</h3>
-                    <p style={{ color: '#64748b' }}>Create or join a course to start tracking attendance.</p>
+                    <p style={{ color: '#64748b' }}>Select or create a course to manage attendance tracking.</p>
                 </div>
             </div>
         );
@@ -212,6 +234,7 @@ const AttendanceView = ({ courses }) => {
 
     return (
         <div className="attendance-view-container">
+            {/* Header & Controls */}
             <div className="attendance-header-v4" style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
                 <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                     <div className="course-selector-v4">
@@ -255,6 +278,16 @@ const AttendanceView = ({ courses }) => {
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button 
+                        className={`refresh-btn-v4 ${isLive ? 'active' : ''}`}
+                        onClick={() => setIsLive(!isLive)}
+                        title="Auto-refresh every 5s"
+                        style={{ background: isLive ? '#eff6ff' : '#f8fafc', color: isLive ? '#3b82f6' : '#64748b', borderColor: isLive ? '#3b82f6' : '#e2e8f0' }}
+                    >
+                        <RefreshCw size={20} className={isLive ? 'animate-spin' : ''} />
+                        <span style={{ marginLeft: '8px', fontWeight: 700, fontSize: '0.85rem' }}>{isLive ? 'Live On' : 'Live Off'}</span>
+                    </button>
+
+                    <button 
                         className="save-action-btn-v4"
                         onClick={handleSaveAttendance}
                         disabled={isSaving || !selectedSessionId}
@@ -274,6 +307,7 @@ const AttendanceView = ({ courses }) => {
                 </div>
             </div>
 
+            {/* Stats Grid */}
             <div className="attendance-stats-grid" style={{ marginBottom: '2.5rem' }}>
                 <div className="attendance-stat-card-v4 blue">
                     <div className="stat-icon-v4"><Users size={24} /></div>
@@ -288,20 +322,29 @@ const AttendanceView = ({ courses }) => {
                     <div className="stat-content-v4"><span className="val">{stats.late}</span><span className="lbl">Late</span></div>
                 </div>
                 <div className="attendance-stat-card-v4 red">
-                    <div className="stat-icon-v4"><XCircle size={24} /></div>
-                    <div className="stat-content-v4"><span className="val">{stats.absent}</span><span className="lbl">Absent</span></div>
+                    <div className="stat-icon-v4"><RefreshCw size={24} /></div>
+                    <div className="stat-content-v4"><span className="val">{stats.health}%</span><span className="lbl">Rate</span></div>
                 </div>
             </div>
 
             <div className="attendance-table-card-v4">
                 <div className="table-header-v4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>Student Attendance List</h3>
-                        <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>Tracking roster for {selectedCourse?.title}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>Student Attendance List</h3>
+                            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>Tracking roster for {selectedCourse?.title}</p>
+                        </div>
+                        {isLive && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#ecfdf5', padding: '4px 12px', borderRadius: '20px', border: '1px solid #bbf7d0' }}>
+                                <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', display: 'inline-block', animation: 'pulse 2s infinite' }}></span>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>Live</span>
+                            </div>
+                        )}
                     </div>
-                    <div className="status-indicator-v4">
-                        <span className="present">Present: {stats.present}</span>
-                        <span className="absent">Absent: {stats.absent}</span>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <div style={{ padding: '0.5rem 1rem', background: '#f8fafc', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>
+                            Last Sync: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </div>
                     </div>
                 </div>
                 
@@ -310,16 +353,19 @@ const AttendanceView = ({ courses }) => {
                         <thead>
                             <tr>
                                 <th>Student Details</th>
-                                <th>Attendance Status</th>
-                                <th>Status Marker</th>
+                                <th>Email Address</th>
+                                <th>Marking Status</th>
+                                <th>Activity Log</th>
                             </tr>
                         </thead>
                         <tbody>
                             {attendanceData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="3" style={{ textAlign: 'center', padding: '5rem 0', color: '#94a3b8' }}>
-                                        <FileText size={48} style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.2 }} />
-                                        {selectedSessionId ? "No students currently enrolled." : "Please select a session to view the roster."}
+                                    <td colSpan="4" style={{ textAlign: 'center', padding: '5rem 0', color: '#94a3b8' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                                            <Search size={48} style={{ opacity: 0.2 }} />
+                                            <p style={{ fontWeight: 600 }}>{selectedSessionId ? "No students found in this course roster." : "Please select a session to monitor attendance."}</p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
@@ -327,12 +373,15 @@ const AttendanceView = ({ courses }) => {
                                     <tr key={student.id}>
                                         <td>
                                             <div className="student-profile-v4">
-                                                <div className="student-initial-v4">{student.avatar}</div>
+                                                <div className="student-initial-v4" style={{ background: student.status === 'PRESENT' ? '#eff6ff' : '#f8fafc', color: student.status === 'PRESENT' ? '#3b82f6' : '#64748b' }}>{student.avatar}</div>
                                                 <div className="student-info-v4">
                                                     <span className="name">{student.name}</span>
                                                     <span className="id">{student.id}</span>
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>{student.email}</span>
                                         </td>
                                         <td>
                                             <select 
@@ -342,12 +391,21 @@ const AttendanceView = ({ courses }) => {
                                             >
                                                 <option value="PRESENT">Present</option>
                                                 <option value="LATE">Late</option>
+                                                <option value="ABSENT">Absent</option>
                                             </select>
                                         </td>
                                         <td>
                                             <div className="status-indicator-v4">
                                                 <div className={`dot ${student.status.toLowerCase()}`}></div>
-                                                <span className={student.status.toLowerCase()}>{student.status}</span>
+                                                <span className={student.status.toLowerCase()}>
+                                                    {student.status === "PRESENT" ? (
+                                                        <>Recorded {student.markedAt ? `at ${new Date(student.markedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "via Scanner"}</>
+                                                    ) : student.status === "LATE" ? (
+                                                        "Tardy"
+                                                    ) : (
+                                                        "Not marked"
+                                                    )}
+                                                </span>
                                             </div>
                                         </td>
                                     </tr>
@@ -357,6 +415,16 @@ const AttendanceView = ({ courses }) => {
                     </table>
                 </div>
             </div>
+
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes pulse {
+                    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+                    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+                    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+                }
+                .animate-spin { animation: spin 1s linear infinite; }
+                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            `}} />
         </div>
     );
 };
