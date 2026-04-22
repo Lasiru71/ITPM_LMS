@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BookOpen, Plus, Trash2, Edit, Search } from "lucide-react";
-import axios from "axios";
+import api from "../../services/api";
 import { useToast } from "./ToastProvider";
 
 const CourseManagement = () => {
@@ -16,7 +16,7 @@ const CourseManagement = () => {
     const fetchCourses = async () => {
         try {
             setLoading(true);
-            const res = await axios.get("http://localhost:5000/api/courses");
+            const res = await api.get("/courses");
             setCourses(res.data);
         } catch (error) {
             console.error(error);
@@ -29,7 +29,7 @@ const CourseManagement = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this course?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/courses/${id}`);
+            await api.delete(`/courses/${id}`);
             showToast("success", "Course deleted successfully");
             fetchCourses();
         } catch (error) {
@@ -76,7 +76,7 @@ const CourseManagement = () => {
                             <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, marginBottom: '0.5rem' }}>{course.courseId || 'CID-' + course._id.slice(-4)}</div>
                             <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', fontWeight: 700 }}>{course.title}</h3>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ fontWeight: 700, color: '#10b981' }}>Rs. {(course.price || course.fee || 0).toLocaleString()}</div>
+                                <div style={{ fontWeight: 700, color: '#10b981' }}>$ {(course.price || course.fee || 0).toLocaleString()}</div>
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                                     <button onClick={() => window.location.href = `/edit-course/${course._id}`} style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0', color: '#64748b', cursor: 'pointer' }}><Edit size={16} /></button>
                                     <button onClick={() => handleDelete(course._id)} style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid #fee2e2', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={16} /></button>

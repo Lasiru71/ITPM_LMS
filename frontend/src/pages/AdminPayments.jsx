@@ -44,8 +44,9 @@ export default function AdminPayments() {
   };
 
   const rejectPayment = async (id) => {
+    const remark = window.prompt("Enter reason for rejection (optional):");
     try {
-      await api.put(`/payments/reject/${id}`);
+      await api.put(`/payments/reject/${id}`, { adminRemark: remark });
       setMessageType("error");
       setMessage("Payment rejected");
       fetchPayments();
@@ -250,7 +251,7 @@ export default function AdminPayments() {
                   Total Revenue
                 </p>
                 <p className="text-2xl font-bold text-slate-900 font-mono tracking-tight">
-                  Rs. {stats.totalRevenue.toLocaleString()}
+                  $ {stats.totalRevenue.toLocaleString()}
                 </p>
               </div>
               <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600">
@@ -384,7 +385,7 @@ export default function AdminPayments() {
                         </td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-900">
-                        Rs. {Number(payment.amount || payment.course?.price || payment.course?.fee || 0).toLocaleString()}
+                        $ {Number(payment.amount || payment.course?.price || payment.course?.fee || 0).toLocaleString()}
                         </td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
@@ -395,7 +396,7 @@ export default function AdminPayments() {
                           {payment.method === "BANK_TRANSFER" ? (
                             payment.slipImage ? (
                               <a
-                                href={`http://localhost:5000${payment.slipImage}`}
+                                href={`${payment.slipImage}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 onClick={(e) => e.stopPropagation()}
@@ -607,7 +608,7 @@ export default function AdminPayments() {
                     Amount
                   </p>
                   <p className="text-3xl font-bold text-slate-900 font-mono">
-                    Rs. {Number(selectedPayment.amount || 0).toLocaleString()}
+                    $ {Number(selectedPayment.amount || 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="text-right">
@@ -684,7 +685,7 @@ export default function AdminPayments() {
 
                         {selectedPayment.slipImage && (
                           <a
-                            href={`http://localhost:5000${selectedPayment.slipImage}`}
+                            href={`${selectedPayment.slipImage}`}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Users, CheckCircle, XCircle, Clock, Save, Search, Calendar, Filter, ChevronDown, Download, RefreshCw } from "lucide-react";
+import { Users, CheckCircle, XCircle, Clock, Save, Search, Calendar, Filter, ChevronDown, Download, RefreshCw, FileText } from "lucide-react";
 import { useToast } from "./ToastProvider";
 import api from "../../services/api";
 import "../../Styles/Lasiru/AttendanceView.css";
-import { getAllStudents } from "../../api/Lasiru/adminApi";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const AttendanceView = ({ courses }) => {
     const { showToast } = useToast();
@@ -28,11 +29,17 @@ const AttendanceView = ({ courses }) => {
     }, [selectedCourseId]);
 
     useEffect(() => {
+        let interval;
         if (selectedSessionId) {
             fetchRoster();
+            // Auto-refresh every 5 seconds to show students as they scan QR codes
+            interval = setInterval(fetchRoster, 5000);
         } else {
             setAttendanceData([]);
         }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [selectedSessionId]);
 
     // Live Refresh Logic
@@ -66,34 +73,50 @@ const AttendanceView = ({ courses }) => {
 
     const fetchRoster = async (isSilent = false) => {
         try {
-            if (!isSilent) setLoading(true);
+            // Only show loading spinner on first load to avoid flickering during polling
+            if (!isSilent && attendanceData.length === 0) setLoading(true);
             
             // 1. Get enrolled students
             const studentsRes = await api.get(`/enrollments/course/${selectedCourseId}/students`);
             const enrolledStudents = studentsRes.data;
 
-            // 2. Get attendance records for this session
             const recordsRes = await api.get(`/attendance/records/${selectedSessionId}`);
             const records = recordsRes.data;
 
-            // 3. Merge
-            const mapped = enrolledStudents.map(std => {
-                const record = records.find(r => r.studentId === (std.studentId || std._id));
-                return {
-                    id: std.studentId || std._id,
-                    dbId: std._id,
-                    name: std.name || "Unknown",
+            const enrolledMap = new Map();
+            enrolledStudents.forEach(std => {
+                const id = std.studentId || std._id || std.id;
+                enrolledMap.set(String(id), {
+                    id: String(id),
+                    name: std.name || "Enrolled Student",
                     email: std.email || "N/A",
-                    status: record ? record.status : "ABSENT",
                     avatar: std.name ? std.name.substring(0, 2).toUpperCase() : "ST",
-                    markedAt: record ? record.createdAt : null
-                };
+                    status: "ABSENT",
+                    markedAt: null
+                });
             });
 
-            setAttendanceData(mapped);
+            records.forEach(rec => {
+                const sid = String(rec.studentId);
+                if (enrolledMap.has(sid)) {
+                    enrolledMap.get(sid).status = rec.status;
+                    enrolledMap.get(sid).markedAt = rec.createdAt || rec.updatedAt;
+                } else {
+                    enrolledMap.set(sid, {
+                        id: sid,
+                        name: "Guest Student",
+                        email: "External Join",
+                        avatar: "QR",
+                        status: rec.status,
+                        markedAt: rec.createdAt || rec.updatedAt
+                    });
+                }
+            });
+
+            setAttendanceData(Array.from(enrolledMap.values()));
         } catch (error) {
             if (!isSilent) {
-                console.error(error);
+                console.error("Fetch error:", error);
                 showToast("error", "Failed to load student roster");
             }
         } finally {
@@ -122,39 +145,85 @@ const AttendanceView = ({ courses }) => {
                 records: recordsToSave
             });
 
-            showToast("success", "Attendance updated successfully!");
+            showToast("success", "Attendance records synchronized!");
+            
+            const confirmDownload = window.confirm("Records saved. Generate PDF report now?");
+            if (confirmDownload) generatePDF();
             fetchRoster();
         } catch (error) {
-            console.error(error);
-            showToast("error", "Failed to save attendance");
+            console.error("Save error:", error);
+            const errMsg = error.response?.data?.message || error.message || "Server connection error";
+            showToast("error", `Failed: ${errMsg}`);
         } finally {
             setIsSaving(false);
         }
     };
 
-    const getStatusClass = (status) => {
-        switch (status) {
-            case "PRESENT": return "status-present";
-            case "ABSENT": return "status-absent";
-            case "LATE": return "status-late";
-            default: return "";
+    const generatePDF = () => {
+        if (!selectedSessionId || attendanceData.length === 0) {
+            showToast("warning", "No attendance data to download");
+            return;
         }
+
+        const doc = new jsPDF();
+        const selectedSession = sessions.find(s => s._id === selectedSessionId);
+        const selectedCourse = courses.find(c => (c._id || c.id) === selectedCourseId);
+        
+        const dateStr = new Date(selectedSession.sessionDate).toLocaleDateString();
+        const timeStr = new Date(selectedSession.sessionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        doc.setFontSize(22);
+        doc.setTextColor(30, 41, 59);
+        doc.text("Attendance Report", 14, 22);
+        
+        doc.setFontSize(12);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Course: ${selectedCourse?.title || "N/A"}`, 14, 32);
+        doc.text(`Session: ${dateStr} at ${timeStr}`, 14, 38);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 44);
+
+        const stats = getStats();
+        doc.setFontSize(11);
+        doc.setTextColor(30, 41, 59);
+        doc.text(`Summary: Total ${stats.total} | Present ${stats.present} | Late ${stats.late} | Absent ${stats.absent}`, 14, 55);
+
+        const tableColumn = ["ID", "Student Name", "Email", "Status"];
+        const tableRows = attendanceData.map(student => [
+            student.id,
+            student.name,
+            student.email,
+            student.status
+        ]);
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 65,
+            theme: 'grid',
+            headStyles: { fillColor: [37, 99, 235], fontWeight: 'bold' },
+            styles: { fontSize: 9 }
+        });
+
+        doc.save(`Attendance_${selectedCourse?.title.replace(/\s+/g, '_')}_${dateStr}.pdf`);
+        showToast("success", "Attendance PDF Downloaded");
     };
 
-    const stats = {
+    const getStats = () => ({
         total: attendanceData.length,
         present: attendanceData.filter(s => s.status === "PRESENT").length,
         absent: attendanceData.filter(s => s.status === "ABSENT").length,
         late: attendanceData.filter(s => s.status === "LATE").length,
         health: attendanceData.length > 0 ? Math.round((attendanceData.filter(s => s.status === "PRESENT").length / attendanceData.length) * 100) : 0
-    };
+    });
+
+    const stats = getStats();
 
     if (!courses || courses.length === 0) {
         return (
             <div className="attendance-view-container">
-                <div className="empty-course-state" style={{ padding: '5rem', textAlign: 'center', background: 'white', borderRadius: '2rem', border: '2px dashed #e2e8f0' }}>
+                <div className="empty-course-state" style={{ padding: '6rem 2rem', textAlign: 'center', background: 'white', borderRadius: '2rem', border: '1px dashed #e2e8f0' }}>
                     <Calendar size={64} color="#94a3b8" />
-                    <h3 style={{ marginTop: '1.5rem', color: '#1e293b', fontSize: '1.5rem' }}>No Courses Found</h3>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e293b', marginTop: '1.5rem' }}>No Courses Found</h3>
                     <p style={{ color: '#64748b' }}>Select or create a course to manage attendance tracking.</p>
                 </div>
             </div>
@@ -166,36 +235,10 @@ const AttendanceView = ({ courses }) => {
     return (
         <div className="attendance-view-container">
             {/* Header & Controls */}
-            <div className="attendance-header-v4" style={{ marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <div>
-                        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Attendance Monitoring</h2>
-                        <p style={{ color: '#64748b', fontSize: '0.9rem', margin: '4px 0 0 0' }}>Track and manage student presence in real-time</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <button 
-                            className={`refresh-btn-v4 ${isLive ? 'active' : ''}`}
-                            onClick={() => setIsLive(!isLive)}
-                            title="Auto-refresh every 5s"
-                            style={{ background: isLive ? '#eff6ff' : '#f8fafc', color: isLive ? '#3b82f6' : '#64748b', borderColor: isLive ? '#3b82f6' : '#e2e8f0' }}
-                        >
-                            <RefreshCw size={18} className={isLive ? 'animate-spin' : ''} />
-                            <span style={{ marginLeft: '8px', fontWeight: 700, fontSize: '0.85rem' }}>{isLive ? 'Live Tracking On' : 'Live Tracking Off'}</span>
-                        </button>
-                        <button 
-                            className="save-action-btn-v4"
-                            onClick={handleSaveAttendance}
-                            disabled={isSaving || !selectedSessionId}
-                        >
-                            <Save size={18} />
-                            {isSaving ? "Updating..." : "Commit Changes"}
-                        </button>
-                    </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-end' }}>
+            <div className="attendance-header-v4" style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
+                <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                     <div className="course-selector-v4">
-                        <label>Course</label>
+                        <label>Select Course</label>
                         <div style={{ position: 'relative' }}>
                             <select 
                                 className="styled-select-v4"
@@ -213,72 +256,88 @@ const AttendanceView = ({ courses }) => {
                     </div>
 
                     <div className="course-selector-v4">
-                        <label>Session Date & Time</label>
+                        <label>Session & Date Filter</label>
                         <div style={{ position: 'relative' }}>
                             <select 
                                 className="styled-select-v4"
-                                style={{ width: '300px' }}
                                 value={selectedSessionId}
                                 onChange={(e) => setSelectedSessionId(e.target.value)}
                                 disabled={sessions.length === 0}
                             >
-                                <option value="">{sessions.length === 0 ? "No Sessions Available" : "-- Select Active Session --"}</option>
+                                <option value="">{sessions.length === 0 ? "No Sessions Found" : "-- Choose Session --"}</option>
                                 {sessions.map(session => (
                                     <option key={session._id} value={session._id}>
-                                        {new Date(session.sessionDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} at {new Date(session.sessionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(session.sessionDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} - {new Date(session.sessionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </option>
                                 ))}
                             </select>
-                            <Calendar size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8' }} />
+                            <Filter size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8' }} />
                         </div>
                     </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button 
+                        className={`refresh-btn-v4 ${isLive ? 'active' : ''}`}
+                        onClick={() => setIsLive(!isLive)}
+                        title="Auto-refresh every 5s"
+                        style={{ background: isLive ? '#eff6ff' : '#f8fafc', color: isLive ? '#3b82f6' : '#64748b', borderColor: isLive ? '#3b82f6' : '#e2e8f0' }}
+                    >
+                        <RefreshCw size={20} className={isLive ? 'animate-spin' : ''} />
+                        <span style={{ marginLeft: '8px', fontWeight: 700, fontSize: '0.85rem' }}>{isLive ? 'Live On' : 'Live Off'}</span>
+                    </button>
+
+                    <button 
+                        className="save-action-btn-v4"
+                        onClick={handleSaveAttendance}
+                        disabled={isSaving || !selectedSessionId}
+                    >
+                        {isSaving ? <RefreshCw size={20} className="animate-spin" /> : <Save size={20} />}
+                        <span>{isSaving ? "Saving..." : "Save Record"}</span>
+                    </button>
+                    
+                    <button 
+                        className="refresh-btn-v4"
+                        onClick={generatePDF}
+                        disabled={attendanceData.length === 0}
+                        title="Download PDF Report"
+                    >
+                        <Download size={20} />
+                    </button>
                 </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="attendance-stats-grid" style={{ marginBottom: '2rem' }}>
+            <div className="attendance-stats-grid" style={{ marginBottom: '2.5rem' }}>
                 <div className="attendance-stat-card-v4 blue">
                     <div className="stat-icon-v4"><Users size={24} /></div>
-                    <div className="stat-content-v4">
-                        <span className="val">{stats.total}</span>
-                        <span className="lbl">Enrolled Students</span>
-                    </div>
+                    <div className="stat-content-v4"><span className="val">{stats.total}</span><span className="lbl">Enrolled</span></div>
                 </div>
-
                 <div className="attendance-stat-card-v4 green">
                     <div className="stat-icon-v4"><CheckCircle size={24} /></div>
-                    <div className="stat-content-v4">
-                        <span className="val">{stats.present}</span>
-                        <span className="lbl">Present Today</span>
-                    </div>
+                    <div className="stat-content-v4"><span className="val">{stats.present}</span><span className="lbl">Present</span></div>
                 </div>
-
                 <div className="attendance-stat-card-v4 orange">
                     <div className="stat-icon-v4"><Clock size={24} /></div>
-                    <div className="stat-content-v4">
-                        <span className="val">{stats.late}</span>
-                        <span className="lbl">Late Arrival</span>
-                    </div>
+                    <div className="stat-content-v4"><span className="val">{stats.late}</span><span className="lbl">Late</span></div>
                 </div>
-
                 <div className="attendance-stat-card-v4 red">
                     <div className="stat-icon-v4"><RefreshCw size={24} /></div>
-                    <div className="stat-content-v4">
-                        <span className="val">{stats.health}%</span>
-                        <span className="lbl">Attendance Rate</span>
-                    </div>
+                    <div className="stat-content-v4"><span className="val">{stats.health}%</span><span className="lbl">Rate</span></div>
                 </div>
             </div>
 
-            {/* Table Area */}
             <div className="attendance-table-card-v4">
                 <div className="table-header-v4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>Roster: {selectedCourse?.title}</h3>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>Student Attendance List</h3>
+                            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>Tracking roster for {selectedCourse?.title}</p>
+                        </div>
                         {isLive && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#ecfdf5', padding: '4px 12px', borderRadius: '20px', border: '1px solid #bbf7d0' }}>
                                 <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', display: 'inline-block', animation: 'pulse 2s infinite' }}></span>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>Live Monitoring</span>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>Live</span>
                             </div>
                         )}
                     </div>
@@ -302,9 +361,9 @@ const AttendanceView = ({ courses }) => {
                         <tbody>
                             {attendanceData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" style={{ padding: '5rem', textAlign: 'center', color: '#94a3b8' }}>
+                                    <td colSpan="4" style={{ textAlign: 'center', padding: '5rem 0', color: '#94a3b8' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                                            <Search size={48} />
+                                            <Search size={48} style={{ opacity: 0.2 }} />
                                             <p style={{ fontWeight: 600 }}>{selectedSessionId ? "No students found in this course roster." : "Please select a session to monitor attendance."}</p>
                                         </div>
                                     </td>
@@ -326,13 +385,13 @@ const AttendanceView = ({ courses }) => {
                                         </td>
                                         <td>
                                             <select 
-                                                className={`status-select-v4 ${getStatusClass(student.status)}`}
+                                                className={`status-select-v4 ${student.status.toLowerCase() === 'present' ? 'status-present' : student.status.toLowerCase() === 'absent' ? 'status-absent' : 'status-late'}`}
                                                 value={student.status}
                                                 onChange={(e) => handleStatusChange(student.id, e.target.value)}
                                             >
                                                 <option value="PRESENT">Present</option>
-                                                <option value="ABSENT">Absent</option>
                                                 <option value="LATE">Late</option>
+                                                <option value="ABSENT">Absent</option>
                                             </select>
                                         </td>
                                         <td>

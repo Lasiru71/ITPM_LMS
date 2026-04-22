@@ -219,7 +219,9 @@ const LecturerDashboard = () => {
         }
 
         if (activeTab === "attendance") {
-            return <AttendanceView courses={myCourses} />;
+            // Pass all courses where this lecturer is involved
+            const availableCourses = allCourses.length > 0 ? allCourses : [];
+            return <AttendanceView courses={availableCourses} />;
         }
 
         if (activeTab === "dashboard") {
@@ -327,7 +329,7 @@ const LecturerDashboard = () => {
                                                     <span className="level-text">{course.level || "Beginner"}</span>
                                                 </td>
                                                 <td>
-                                                    <span className="price-text">Rs. {course.price?.toLocaleString() || "0"}</span>
+                                                    <span className="price-text">$ {course.price?.toLocaleString() || "0"}</span>
                                                 </td>
                                                 <td>
                                                     <span className="module-count">
@@ -583,56 +585,56 @@ const LecturerDashboard = () => {
                                             </CardDescription>
                                         </CardHeader>
 
-                                        <CardContent className="pt-0 flex-grow">
-                                            <div className="flex justify-between items-center mt-2 pb-4 border-b border-slate-50">
-                                                <span className="text-xl font-black text-emerald-600">
-                                                    Rs. {course.price?.toLocaleString() || "Free"}
-                                                </span>
-                                                <div className="flex flex-col items-end">
-                                                    <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
-                                                        <Star size={12} className="fill-amber-500" />
-                                                        {course.rating || "4.5"}
-                                                    </div>
+                                    <CardContent className="pt-0 flex-grow">
+                                        <div className="flex justify-between items-center mt-2 pb-4 border-b border-slate-50">
+                                            <span className="text-xl font-black text-emerald-600">
+                                                Rs. {course.price?.toLocaleString() || "Free"}
+                                            </span>
+                                            <div className="flex flex-col items-end">
+                                                <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                                                    <Star size={12} className="fill-amber-500" />
+                                                    {course.rating || "4.5"}
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            <div className="grid grid-cols-2 gap-3 mt-4">
-                                                <div className="flex items-center gap-2 text-slate-400">
-                                                    <GraduationCap size={14} />
-                                                    <span className="text-[11px] font-bold uppercase tracking-wider">{course.level || 'Beginner'}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-slate-400">
-                                                    <BookOpen size={14} />
-                                                    <span className="text-[11px] font-bold uppercase tracking-wider">{course.totalLessons || '0'} Lessons</span>
-                                                </div>
+                                        <div className="grid grid-cols-2 gap-3 mt-4">
+                                            <div className="flex items-center gap-2 text-slate-400">
+                                                <GraduationCap size={14} />
+                                                <span className="text-[11px] font-bold uppercase tracking-wider">{course.level || 'Beginner'}</span>
                                             </div>
+                                            <div className="flex items-center gap-2 text-slate-400">
+                                                <BookOpen size={14} />
+                                                <span className="text-[11px] font-bold uppercase tracking-wider">{course.totalLessons || '0'} Lessons</span>
+                                            </div>
+                                        </div>
 
-                                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-50">
-                                                <div className="flex items-center gap-2">
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); navigate(`/lecturer/courses/${courseId}`); }}
-                                                        className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-500 transition-all flex items-center justify-center"
-                                                        title="View Course"
-                                                    >
-                                                        <Eye size={16} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); navigate(`/edit-course/${courseId}`); }}
-                                                        className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500 transition-all flex items-center justify-center"
-                                                        title="Edit Course"
-                                                    >
-                                                        <Pencil size={16} />
-                                                    </button>
-                                                </div>
+                                        <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-50">
+                                            <div className="flex items-center gap-2">
                                                 <button 
-                                                    onClick={(e) => { e.stopPropagation(); handleDeleteCourse(courseId, course.title); }}
-                                                    className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center justify-center"
-                                                    title="Delete Course"
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/lecturer/courses/${courseId}`); }}
+                                                    className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-500 transition-all flex items-center justify-center"
+                                                    title="View Course"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/edit-course/${courseId}`); }}
+                                                    className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500 transition-all flex items-center justify-center"
+                                                    title="Edit Course"
+                                                >
+                                                    <Pencil size={16} />
                                                 </button>
                                             </div>
-                                        </CardContent>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteCourse(courseId, course.title); }}
+                                                className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center justify-center"
+                                                title="Delete Course"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </CardContent>
                                     </Card>
                                 );
                             })}

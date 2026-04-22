@@ -101,6 +101,21 @@ export default function PaymentPage() {
         return;
       }
 
+      const [expMonth, expYear] = expiry.split("/").map(Number);
+      if (expMonth < 1 || expMonth > 12) {
+        setMessage("Invalid month (01-12 only)");
+        return;
+      }
+
+      const now = new Date();
+      const currentYear = now.getFullYear() % 100;
+      const currentMonth = now.getMonth() + 1;
+
+      if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+        setMessage("Card has already expired");
+        return;
+      }
+
       try {
         const formData = new FormData();
         formData.append("studentId", studentId);
@@ -568,7 +583,7 @@ export default function PaymentPage() {
                     <p className="mt-1 text-xs text-slate-500">Tuition Fee</p>
                   </div>
                   <p className="text-sm font-semibold text-slate-900">
-                    Rs.{" "}
+                    ${" "}
                     {selectedCourse
                       ? selectedCourse.price || selectedCourse.fee || 0
                       : 0}
@@ -595,7 +610,7 @@ export default function PaymentPage() {
                       Total
                     </p>
                     <p className="text-2xl font-bold text-indigo-600">
-                      Rs.{" "}
+                      ${" "}
                       {selectedCourse
                         ? selectedCourse.price || selectedCourse.fee || 0
                         : 0}

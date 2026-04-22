@@ -80,7 +80,7 @@ const PaymentManagement = () => {
                         </div>
                         <div>
                             <div style={{ color: '#64748b', fontSize: '0.85rem' }}>Amount</div>
-                            <div style={{ fontWeight: 700, color: '#10b981', fontSize: '1.2rem' }}>Rs. {(p.amount || 0).toLocaleString()}</div>
+                            <div style={{ fontWeight: 700, color: '#10b981', fontSize: '1.2rem' }}>$ {(p.amount || 0).toLocaleString()}</div>
                         </div>
                         <div>
                             <div style={{ color: '#64748b', fontSize: '0.85rem' }}>Method</div>
@@ -111,10 +111,10 @@ const PaymentManagement = () => {
                             <h3 style={{ fontSize: '1rem', margin: '0 0 1rem' }}>Bank Transfer Slip</h3>
                             <div style={{ borderRadius: '0.75rem', overflow: 'hidden', border: '1px solid #e2e8f0', background: 'white' }}>
                                 <img 
-                                    src={`http://localhost:5000${p.slipImage}`} 
-                                    alt="Payment Slip" 
-                                    style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
-                                    onClick={() => window.open(`http://localhost:5000${p.slipImage}`, '_blank')}
+                                    src={`${p.slipImage}`} 
+                                    alt="Payment Slip"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                                    onClick={() => window.open(`${p.slipImage}`, '_blank')}
                                 />
                             </div>
                             <p style={{ fontSize: '0.75rem', color: '#64748b', textAlign: 'center', marginTop: '0.5rem' }}>Click image to view full size</p>
@@ -200,7 +200,7 @@ const PaymentManagement = () => {
                                     <div style={{ fontWeight: 600 }}>{p.studentId}</div>
                                 </td>
                                 <td style={{ padding: '1rem', color: '#475569' }}>{p.course?.title || 'N/A'}</td>
-                                <td style={{ padding: '1rem', fontWeight: 600 }}>Rs. {(p.amount || 0).toLocaleString()}</td>
+                                <td style={{ padding: '1rem', fontWeight: 600 }}>$ {(p.amount || 0).toLocaleString()}</td>
                                 <td style={{ padding: '1rem', fontSize: '0.85rem' }}>{p.method}</td>
                                 <td style={{ padding: '1rem' }}>
                                     <span style={{ 
