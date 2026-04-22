@@ -573,3 +573,188 @@
   font-weight: 700;
   color: var(--text-main);
 }
+/* Payment Tracking Styles */
+.payments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.payment-card {
+  background: white;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.payment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.payment-course-info h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.payment-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.payment-amount {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* Tracking Line (Stepper) */
+.tracking-line {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin: 2rem 1rem;
+}
+
+.tracking-line::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.tracking-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  border: 4px solid white;
+  transition: all 0.3s ease;
+}
+
+.step-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Active/Completed States */
+.tracking-step.completed .step-dot {
+  background: #10b981;
+  color: white;
+}
+
+.tracking-step.completed .step-label {
+  color: #10b981;
+}
+
+.tracking-step.active .step-dot {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.tracking-step.active .step-label {
+  color: var(--primary);
+}
+
+.tracking-step.rejected .step-dot {
+  background: #ef4444;
+  color: white;
+}
+
+.tracking-step.rejected .step-label {
+  color: #ef4444;
+}
+
+.tracking-progress-fill {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  height: 3px;
+  background: #10b981;
+  z-index: 1;
+  transition: width 0.5s ease;
+}
+
+.tracking-progress-fill.primary-fill {
+  background: var(--primary);
+}
+
+.tracking-progress-fill.rejected-fill {
+  background: #ef4444;
+}
+
+.no-payments {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+}
+.track-search-bar {
+  margin-bottom: 2rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.track-search-bar form {
+  display: flex;
+  gap: 1rem;
+}
+
+.track-search-bar input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  outline: none;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.track-search-bar input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.track-search-bar button {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.track-search-bar button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
@@ -10,7 +10,11 @@ import {
     Bell,
     ChevronRight,
     User,
-    PlayCircle
+    PlayCircle,
+    CreditCard,
+    CheckCircle,
+    Clock,
+    XCircle
 } from "lucide-react";
 import { useToast } from "../../components/Lasiru/ToastProvider";
 import DashboardHeader from "../../components/Lasiru/DashboardHeader";
@@ -21,6 +25,51 @@ const StudentDashboard = () => {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const [payments, setPayments] = useState([]);
+    const [paymentsLoading, setPaymentsLoading] = useState(false);
+    const [trackId, setTrackId] = useState("");
+
+    useEffect(() => {
+        fetchStudentPayments();
+    }, []);
+
+    const fetchStudentPayments = async () => {
+        try {
+            setPaymentsLoading(true);
+            const studentId = user.studentId || user.id || user._id;
+            if (!studentId) return;
+            const res = await api.get(`/payments/student/${studentId}`);
+            setPayments(res.data);
+        } catch (error) {
+            console.error("Error fetching payments:", error);
+        } finally {
+            setPaymentsLoading(false);
+        }
+    };
+
+    const handleTrackSearch = async (e) => {
+        e.preventDefault();
+        if (!trackId) {
+            showToast("warning", "Please enter a Student ID");
+            return;
+        }
+        try {
+            setPaymentsLoading(true);
+            const res = await api.get(`/payments/student/${trackId.trim()}`);
+            setPayments(res.data);
+            if (res.data.length === 0) {
+                showToast("info", "No records found for this ID");
+            } else {
+                showToast("success", `Found ${res.data.length} records`);
+            }
+        } catch (error) {
+            console.error("Track error:", error);
+            const msg = error.response?.data?.message || "Connection failed";
+            showToast("error", `Tracking Failed: ${msg}`);
+        } finally {
+            setPaymentsLoading(false);
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -30,7 +79,8 @@ const StudentDashboard = () => {
     };
 
     const navItems = [
-        { id: "my-learning", label: "MyLearning", icon: <PlayCircle size={20} /> },
+        { id: "my-learning", label: "My Learning", icon: <PlayCircle size={20} /> },
+        { id: "my-payments", label: "My Payments", icon: <CreditCard size={20} /> },
         { id: "browse", label: "Browse Courses", icon: <Search size={20} /> },
         { id: "certificates", label: "Certificates", icon: <Award size={20} /> },
         { id: "settings", label: "Settings", icon: <Settings size={20} /> },
@@ -130,9 +180,99 @@ const StudentDashboard = () => {
         );
     };
 
+    const renderPayments = () => {
+        if (paymentsLoading) return <div className="loading-state">Loading your payments...</div>;
+
+        return (
+            <div className="payments-container">
+                <div className="track-search-bar">
+                    <form onSubmit={handleTrackSearch}>
+                        <input 
+                            type="text" 
+                            placeholder="Enter Student ID to track (e.g. IT2024001)" 
+                            value={trackId}
+                            onChange={(e) => setTrackId(e.target.value)}
+                        />
+                        <button type="submit">Track Status</button>
+                    </form>
+                </div>
+                {payments.length === 0 ? (
+                    <div className="no-payments">
+                        <CreditCard size={48} opacity={0.2} style={{ marginBottom: '1rem' }} />
+                        <p>No payment records found. Enroll in a course to see your payment status.</p>
+                    </div>
+                ) : (
+                    payments.map((p) => {
+                        const isApproved = p.status === "APPROVED";
+                        const isRejected = p.status === "REJECTED";
+                        const isPending = p.status === "PENDING";
+
+                        return (
+                            <div key={p._id} className="payment-card">
+                                <div className="payment-header">
+                                    <div className="payment-course-info">
+                                        <h4>{p.course?.title || "Unknown Course"}</h4>
+                                        <div className="payment-meta">
+                                            <span>Date: {new Date(p.createdAt).toLocaleDateString()}</span>
+                                            <span style={{ margin: '0 0.5rem' }}>•</span>
+                                            <span>Method: {p.method}</span>
+                                        </div>
+                                    </div>
+                                    <div className="payment-amount">
+                                        $ {p.amount?.toLocaleString()}
+                                    </div>
+                                </div>
+
+                                <div className="tracking-line">
+                                    {/* Progress Fill */}
+                                    <div 
+                                        className={`tracking-progress-fill ${isPending ? 'primary-fill' : isRejected ? 'rejected-fill' : ''}`} 
+                                        style={{ width: isApproved || isRejected ? '100%' : '50%' }}
+                                    ></div>
+
+                                    {/* Step 1: Submitted */}
+                                    <div className="tracking-step completed">
+                                        <div className="step-dot"><CheckCircle size={16} /></div>
+                                        <span className="step-label">Payment Submitted</span>
+                                    </div>
+
+                                    {/* Step 2: Under Review */}
+                                    <div className={`tracking-step ${isPending ? 'active' : 'completed'}`}>
+                                        <div className="step-dot">
+                                            {isPending ? <Clock size={16} /> : <CheckCircle size={16} />}
+                                        </div>
+                                        <span className="step-label">Under Review</span>
+                                    </div>
+
+                                    {/* Step 3: Approved / Rejected */}
+                                    <div className={`tracking-step ${isApproved ? 'completed' : isRejected ? 'rejected' : ''}`}>
+                                        <div className="step-dot">
+                                            {isApproved ? <CheckCircle size={16} /> : isRejected ? <XCircle size={16} /> : <div style={{width: 8, height: 8, borderRadius: '50%', background: '#cbd5e1'}} />}
+                                        </div>
+                                        <span className="step-label">{isRejected ? 'Rejected' : 'Approved'}</span>
+                                    </div>
+                                </div>
+
+                                {isRejected && p.adminRemark && (
+                                    <div className="rejection-note" style={{ marginTop: '1rem', padding: '0.75rem', background: '#fef2f2', borderRadius: '0.5rem', border: '1px solid #fee2e2', color: '#b91c1c', fontSize: '0.85rem' }}>
+                                        <strong>Reason:</strong> {p.adminRemark}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
+                )}
+            </div>
+        );
+    };
+
     const renderContent = () => {
         if (activeTab === "my-learning") {
             return renderDashboardOverview();
+        }
+
+        if (activeTab === "my-payments") {
+            return renderPayments();
         }
 
         return (

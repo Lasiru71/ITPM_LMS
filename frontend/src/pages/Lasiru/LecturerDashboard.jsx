@@ -318,7 +318,7 @@ const LecturerDashboard = () => {
                                                     <span className="level-text">{course.level || "Beginner"}</span>
                                                 </td>
                                                 <td>
-                                                    <span className="price-text">Rs. {course.price?.toLocaleString() || "0"}</span>
+                                                    <span className="price-text">$ {course.price?.toLocaleString() || "0"}</span>
                                                 </td>
                                                 <td>
                                                     <span className="module-count">
@@ -576,7 +576,7 @@ const LecturerDashboard = () => {
                                     <CardContent className="pt-0 flex-grow">
                                         <div className="flex justify-between items-center mt-2 pb-4 border-b border-slate-50">
                                             <span className="text-xl font-black text-emerald-600">
-                                                Rs. {course.price?.toLocaleString() || "Free"}
+                                                $ {course.price?.toLocaleString() || "Free"}
                                             </span>
                                             <div className="flex flex-col items-end">
                                                 <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">

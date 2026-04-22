@@ -111,8 +111,9 @@ exports.getPaymentByStudent = async (req, res) => {
 
     res.json(payments);
   } catch (error) {
+    console.error("Error in getPaymentByStudent:", error);
     res.status(500).json({
-      message: error.message,
+      message: "Payment tracking failed: " + error.message,
     });
   }
 };
@@ -144,9 +145,10 @@ exports.approvePayment = async (req, res) => {
 
 exports.rejectPayment = async (req, res) => {
   try {
+    const { adminRemark } = req.body;
     const payment = await Payment.findByIdAndUpdate(
       req.params.id,
-      { status: "REJECTED" },
+      { status: "REJECTED", adminRemark: adminRemark || "" },
       { new: true }
     ).populate("course");
 
