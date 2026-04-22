@@ -1,10 +1,12 @@
 import React from 'react';
-import { Star, ChevronRight, CreditCard } from 'lucide-react';
+import { Star, ChevronRight, CreditCard, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/Button';
 
 export default function CourseCard({ course }) {
   const courseId = course._id || course.id;
+  const paidCourses = JSON.parse(localStorage.getItem("paidCourses") || "[]");
+  const isPaid = paidCourses.includes(String(courseId));
 
   return (
     <div className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300">
@@ -52,12 +54,19 @@ export default function CourseCard({ course }) {
             </Link>
           </div>
           
-          <Link to={`/payment/${courseId}`} className="w-full">
-            <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2 py-5">
-              <CreditCard className="size-4" />
-              Book Now
+          {isPaid ? (
+            <Button className="w-full bg-emerald-100 hover:bg-emerald-100 text-emerald-700 gap-2 py-5 cursor-default">
+              <CheckCircle className="size-4" />
+              Paid / Enrolled
             </Button>
-          </Link>
+          ) : (
+            <Link to={`/payment/${courseId}`} className="w-full">
+              <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2 py-5">
+                <CreditCard className="size-4" />
+                Book Now
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>
