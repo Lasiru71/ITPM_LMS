@@ -30,7 +30,19 @@ export default function Courses() {
       reviews: c.reviews || 0,
       category: c.category || 'General',
       level: c.level || 'All Levels'
-    }));
+    })).sort((a, b) => {
+        // Priority 1: Admin Courses
+        const aIsAdmin = (a.instructor || "").toLowerCase().includes("admin");
+        const bIsAdmin = (b.instructor || "").toLowerCase().includes("admin");
+        
+        if (aIsAdmin && !bIsAdmin) return -1;
+        if (!aIsAdmin && bIsAdmin) return 1;
+        
+        // Priority 2: Latest Courses
+        const aDate = new Date(a.updatedAt || a.createdAt || 0);
+        const bDate = new Date(b.updatedAt || b.createdAt || 0);
+        return bDate - aDate;
+    });
   }, [realCourses]);
 
   const filteredCourses = React.useMemo(() => {

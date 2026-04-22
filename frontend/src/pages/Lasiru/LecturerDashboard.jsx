@@ -132,11 +132,9 @@ const LecturerDashboard = () => {
         .filter(c => String(c.instructorId || "") === currentUserId)
         .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
 
-    // Admin courses: ONLY those created by an Admin (instructor name contains "Admin")
-    // and has a valid ID, but is not the current user
+    // Dashboard courses: Includes those created by Admin OR those created by the current lecturer
     const adminCourses = allCourses.filter(c => 
-        c.instructorId && 
-        String(c.instructorId) !== currentUserId &&
+        (String(c.instructorId) === currentUserId) ||
         (c.instructor?.toLowerCase().includes("admin"))
     ).sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
 
@@ -556,84 +554,85 @@ const LecturerDashboard = () => {
                             </Button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="my-courses-grid-v4">
                             {myCourses.map(course => {
                                 const courseId = String(course._id || course.id);
                                 return (
-                                    <Card
-                                        key={courseId}
-                                        className="overflow-hidden hover:shadow-xl transition-all duration-300 group bg-white border-slate-100 flex flex-col"
-                                    >
-                                        <div className="aspect-video relative overflow-hidden" onClick={() => navigate(`/lecturer/courses/${courseId}`)}>
+                                    <div key={courseId} className="my-course-card-v4 group">
+                                        <div className="my-course-image-wrapper-v4" onClick={() => navigate(`/lecturer/courses/${courseId}`)}>
                                             <img
                                                 src={course.image || course.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop"}
                                                 alt={course.title}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                className="my-course-image-v4"
                                             />
-                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-300" />
-                                            <Badge className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-slate-800 border-none shadow-sm font-bold text-[10px]">
+                                            <div className="my-course-badge-v4">
                                                 {course.category || "General"}
-                                            </Badge>
+                                            </div>
                                         </div>
 
-                                        <CardHeader className="pb-2" onClick={() => navigate(`/lecturer/courses/${courseId}`)}>
-                                            <CardTitle className="text-lg leading-tight group-hover:text-emerald-600 transition-colors line-clamp-1">{course.title}</CardTitle>
-                                            <CardDescription className="line-clamp-2 mt-1 text-xs">
+                                        <div className="my-course-body-v4">
+                                            <h3 className="my-course-title-v4" onClick={() => navigate(`/lecturer/courses/${courseId}`)}>
+                                                {course.title}
+                                            </h3>
+                                            <p className="my-course-desc-v4">
                                                 {course.shortDescription || course.description || "No description provided."}
-                                            </CardDescription>
-                                        </CardHeader>
+                                            </p>
 
-                                        <CardContent className="pt-0 flex-grow">
-                                            <div className="flex justify-between items-center mt-2 pb-4 border-b border-slate-50">
-                                                <span className="text-xl font-black text-emerald-600">
-                                                    Rs. {course.price?.toLocaleString() || "Free"}
+                                            <div className="my-course-meta-v4">
+                                                <span className="my-course-price-v4">
+                                                    ${course.price || "0"}
                                                 </span>
-                                                <div className="flex flex-col items-end">
-                                                    <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
-                                                        <Star size={12} className="fill-amber-500" />
-                                                        {course.rating || "4.5"}
+                                                <div className="my-course-rating-row-v4">
+                                                    <div className="my-course-rating-v4">
+                                                        <Star size={14} className="fill-amber-400 text-amber-400" />
+                                                        <span>{course.rating || "4.5"}</span>
                                                     </div>
+                                                    <span className="my-course-updated-v4">
+                                                        Updated: {course.updatedAt ? new Date(course.updatedAt).toLocaleDateString() : '4/7/2026'}
+                                                    </span>
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-3 mt-4">
-                                                <div className="flex items-center gap-2 text-slate-400">
-                                                    <GraduationCap size={14} />
-                                                    <span className="text-[11px] font-bold uppercase tracking-wider">{course.level || 'Beginner'}</span>
+                                            <div className="my-course-footer-v4">
+                                                <div className="footer-item-v4">
+                                                    <GraduationCap size={16} />
+                                                    <span>{course.level || 'Beginner'}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-slate-400">
-                                                    <BookOpen size={14} />
-                                                    <span className="text-[11px] font-bold uppercase tracking-wider">{course.totalLessons || '0'} Lessons</span>
+                                                <div className="footer-item-v4">
+                                                    <BookOpen size={16} />
+                                                    <span>{course.totalLessons || '0'} Lessons</span>
+                                                </div>
+                                                <div className="footer-item-v4">
+                                                    <Globe size={16} />
+                                                    <span>{course.language || 'English'}</span>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-50">
-                                                <div className="flex items-center gap-2">
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); navigate(`/lecturer/courses/${courseId}`); }}
-                                                        className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-500 transition-all flex items-center justify-center"
-                                                        title="View Course"
-                                                    >
-                                                        <Eye size={16} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); navigate(`/edit-course/${courseId}`); }}
-                                                        className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500 transition-all flex items-center justify-center"
-                                                        title="Edit Course"
-                                                    >
-                                                        <Pencil size={16} />
-                                                    </button>
-                                                </div>
+                                            <div className="my-course-actions-v4">
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/lecturer/courses/${courseId}`); }}
+                                                    className="action-icon-btn-v4 view"
+                                                    title="View"
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/edit-course/${courseId}`); }}
+                                                    className="action-icon-btn-v4 edit"
+                                                    title="Edit"
+                                                >
+                                                    <Pencil size={18} />
+                                                </button>
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); handleDeleteCourse(courseId, course.title); }}
-                                                    className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center justify-center"
-                                                    title="Delete Course"
+                                                    className="action-icon-btn-v4 delete"
+                                                    title="Delete"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 );
                             })}
                         </div>
