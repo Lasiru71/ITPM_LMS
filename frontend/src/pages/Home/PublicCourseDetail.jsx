@@ -82,12 +82,22 @@ const PublicCourseDetail = () => {
 
   const handleMaterialAccess = (material) => {
     if (!isEnrolled) {
+      alert("Payment Required: Please book this course to view and download the lecture materials.");
       const el = document.getElementById('enroll-section');
       if (el) el.scrollIntoView({ behavior: 'smooth' });
       return;
     }
-    // In a real system, navigate to viewer or open file
-    alert(`Accessing: ${material.title}`);
+    
+    if (material.fileData) {
+      const link = document.createElement('a');
+      link.href = material.fileData;
+      link.download = material.title || 'material_download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert(`No file attached to: ${material.title}`);
+    }
   };
 
   if (loading) {
@@ -330,8 +340,8 @@ const PublicCourseDetail = () => {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-slate-900 text-sm truncate">{material.title}</p>
-                        <p className="text-xs text-slate-400 truncate max-w-xs">{material.description}</p>
+                        <p className={`font-bold text-sm truncate ${!isEnrolled ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{material.title}</p>
+                        <p className={`text-xs truncate max-w-xs ${!isEnrolled ? 'text-slate-300 line-through' : 'text-slate-400'}`}>{material.description}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-bold">{material.type}</span>
                           <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-bold">{material.category}</span>
